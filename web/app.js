@@ -92,7 +92,13 @@ const DEFAULT_MSGS_M = {
   morning:["صباح الخير يا راجلي ☀️ قوم يلا، الدنيا مستنياك","اصحى يا بطلي، النهارده يوم حلو","صباح الفل يا حبيبي، اشرب مية وابتسم 😁","وحشتني، ابعتلي أول ما تصحى 💌"],
   period:[]
 };
-const defMsgs = g => JSON.parse(JSON.stringify(g === "m" ? DEFAULT_MSGS_M : DEFAULT_MSGS));
+const ISLAMIC = /ميزان حسنات|اللهم|ما شاء الله|الحمد لله|ربنا يتقبل|بإذن الله|سبحان/;
+const NEUTRAL_FALLBACK = "أنا جنبك على طول 🤍";
+function defMsgs(g, rel){
+  const m = JSON.parse(JSON.stringify(g === "m" ? DEFAULT_MSGS_M : DEFAULT_MSGS));
+  if (rel === "christian") for (const k in m){ const f = m[k].filter(t => !ISLAMIC.test(t)); m[k] = f.length || !m[k].length ? f : [NEUTRAL_FALLBACK]; }
+  return m;
+}
 /* keyword → reply group for the diary (checked in order) */
 const DIARY_RULES = [
   ["d_sad",   ["زعلان","مخنوق","مضايق","عيطت","بعيط","حزين","زهقان","مقهور","وحش اوي","مكتئب"]],
@@ -119,7 +125,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "كويسة":"كويس","ليكي":"ليك","مبسوطة":"مبسوط","مبسوطه":"مبسوط","متأكدة":"متأكد","مختارتيش":"مختارتش","مصرفتيش":"مصرفتش","مضايقة":"مضايق","مضغوطة":"مضغوط",
 "معاكي":"معاك","موافقة":"موافق","مستعدة":"مستعد","مستنيكي":"مستنيك","نامي":"نام","نسيتي":"نسيت","نمتي":"نمت","هتعوضي":"هتعوض","هصحّيكي":"هصحّيك","هنناديكي":"هنناديك",
 "وابتسمي":"وابتسم","وافقتي":"وافقت","شغالة":"شغال","بطلة":"بطل","بسبوسة":"وحش","بسبوسه":"وحش","نونو":"بطل","بنوتي":"بطل","حبيبتي":"حبيبي",
-"هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
+"مسلمة":"مسلم","مسيحية":"مسيحي","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
 const MASC_RE = new RegExp("(^|[^\\u0600-\\u06FF])(" + Object.keys(MASC).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0600-\\u06FF])", "g");
 const mascRaw = str => String(str).replace(MASC_RE, (m, pre, w) => pre + MASC[w]);
 const stripMarks = h => String(h).replace(/[]/g, "");
@@ -231,7 +237,7 @@ function blank(){
 function normalize(s, gender){
   const b = blank();
   for (const k in b) if (s[k] === undefined || s[k] === null && k !== "pin" && k !== "lastMorning" && k !== "timer") s[k] = b[k];
-  const dm = defMsgs(gender); for (const k in dm) if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
+  const dm = defMsgs(gender, s.religionHint); for (const k in dm) if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
   s.diary.forEach(e => { if (!e.chat) e.chat = "c0"; if (!e.reply && e.from !== "him" && e.pending) { e.reply = e.pending; delete e.pending; } });
   return s;
 }
@@ -291,9 +297,10 @@ async function boot(u){
   const secs = await Promise.all(Object.keys(SEC).map(sec => fb.get(`u/${UID}/sec/${sec}`).catch(()=>null)));
   const st = S && S.v ? S : blank();
   Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d){ Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); } });
+  st.religionHint = ME.religion || "muslim";
   S = normalize(st, ME.gender); S.tab = S.tab || "home";
   if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; save(); }
-  S.user = {name:ME.name, username:ME.username, gender:ME.gender}; S.share = Object.assign({}, ME.share || {});
+  S.user = {name:ME.name, username:ME.username, gender:ME.gender, religion:ME.religion || "muslim"}; S.share = Object.assign({}, ME.share || {});
   IS_ADMIN = !!(await fb.get(`admins/${UID}`).catch(()=>null));
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
     const local = new Map(S.diary.filter(e=>e.pending).map(e=>[e.id,e]));
@@ -302,7 +309,7 @@ async function boot(u){
     if (S.tab === "diary" && !$("#layer").innerHTML){ const typing = document.activeElement && document.activeElement.id === "diarytext" ? $("#diarytext").value : null; render(); if (typing !== null){ $("#diarytext").value = typing; $("#diarytext").focus(); } scrollChat(); }
   }));
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
-  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; S.user = {name:d.name, username:d.username, gender:d.gender};
+  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
@@ -343,14 +350,14 @@ function notifyPartner(text, force){
   fetch("https://ntfy.sh/" + P.user.ntfy, {method:"POST", body:text, headers:{"Title":"Nono's World","Tags":"heart","Priority":"high"}}).catch(()=>{});
 }
 const genCode = () => (Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6)).toUpperCase().replace(/[O0I1]/g,"7").slice(0,6);
-async function signUp(name, username, pass, gender){
+async function signUp(name, username, pass, gender, religion = "muslim"){
   let resolveSU, rejectSU; signingUp = new Promise((r,j)=>{resolveSU=r; rejectSU=j;});
   try {
     const uidNew = await fb.signUp(username, pass);
     const code = genCode(), topic = "nw-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    await fb.set(`users/${uidNew}`, {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, createdAt:Date.now()}, false);
+    await fb.set(`users/${uidNew}`, {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, religion, createdAt:Date.now()}, false);
     await fb.set(`invites/${code}`, {uid:uidNew, name}, false);
-    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender);
+    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion);
     if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
     await fb.set(`u/${uidNew}/sec/prefs`, secData(st, "prefs"), false);
     await fb.set(`u/${uidNew}/sec/msgs`, secData(st, "msgs"), false);
@@ -404,6 +411,18 @@ function onVacation(day = dkey()){
 }
 const PRAYERS = [["fajr","الفجر"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]];
 const CARE_TIPS = ["اشربي حاجة دافية زي ينسون أو قرفة","قربة مية سخنة على بطنك بتريّح جدًا","نامي بدري واديله راحة","كُلي حاجة فيها حديد زي العدس والسبانخ","مشي بسيط أو حركة خفيفة بيفرق","اشربي مية كتير النهارده","اتفرجي على حاجة بتحبيها وانسي المذاكرة شوية"];
+const isMuslim = () => !(S && S.user && S.user.religion === "christian");
+const cycleName = () => isMuslim() ? "العذر الشرعي" : "أيام الدورة";
+function cycleInterval(){
+  const h = ((S.cycle && S.cycle.history) || []).map(x=>x.start).sort();
+  const gaps = []; for (let i = 1; i < h.length; i++){ const g = Math.round((fromKey(h[i]) - fromKey(h[i-1]))/864e5); if (g >= 18 && g <= 45) gaps.push(g); }
+  return gaps.length ? Math.round(gaps.slice(-6).reduce((a,x)=>a+x,0) / Math.min(6, gaps.length)) : 28;
+}
+function nextCycle(){
+  const h = (S.cycle && S.cycle.history) || []; if (!h.length) return null;
+  const last = h.map(x=>x.start).sort().pop(), next = addDays(fromKey(last), cycleInterval());
+  return {date: next, days: Math.round((next - fromKey(dkey()))/864e5)};
+}
 function cycleOn(day = dkey()){
   const c = S.cycle; if (!c || !c.on || !c.start) return false;
   return day >= c.start && day <= dkey(addDays(fromKey(c.start), (c.days||7) - 1));
@@ -438,7 +457,7 @@ const hm = m => m >= 60 ? (Math.floor(m/60) + " س" + (m%60 ? " و" + (m%60) + "
 
 /* ================= UI shell ================= */
 let tapCount = 0, tapTimer = null;
-const U = {authMode:"signup", ag:"f", busy:false, admin:null, edit:"me"};
+const U = {authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
 function render(){
   applyTheme();
   const app = $("#app");
@@ -695,7 +714,7 @@ function dashboard(o){
   ${upset?`<div class="card alert"><h3>🚨 ${name} ${fem?"مضايقة":"مضايق"}</h3><p class="small" style="margin:4px 0 10px">${m&&(mood==="sad"||mood==="stressed")?`${fem?"اختارت":"اختار"} ${m.e} ${m.t} النهارده`:(fem?"كتبت":"كتب")+" حكاية زعلانة"}، ${fem?"كلّمها":"كلّمه"} 🤍</p><button class="btn small" ${send}>💌 ابعت كلمة</button></div>`:""}
   <div class="grid2">
     ${sh("mood")?`<div class="card"><h3>النفسيه</h3><div class="big" style="margin-top:6px">${m?m.e+` <small>${m.t}</small>`:`<small>لسه ${fem?"مختارتش":"مختارش"}</small>`}</div></div>`:lock("النفسيه")}
-    ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.water||0}</b><span>💧 كوباية</span></div><div class="stat"><b class="num">${care.stars||0}/5</b><span>⭐ اهتمام</span></div><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات</span></div></div>${o.gender !== "m" && cycleOn() ? "" : `<div class="muted small" style="margin-top:8px">الصلاة: <b class="num">${PRAYERS.filter(([p])=>(S.prayers[k]||{})[p]).length}</b> من 5</div>`}</div>`:lock(L.care)}
+    ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.water||0}</b><span>💧 كوباية</span></div><div class="stat"><b class="num">${care.stars||0}/5</b><span>⭐ اهتمام</span></div><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات</span></div></div>${(o.gender !== "m" && cycleOn()) || !isMuslim() ? "" : `<div class="muted small" style="margin-top:8px">الصلاة: <b class="num">${PRAYERS.filter(([p])=>(S.prayers[k]||{})[p]).length}</b> من 5</div>`}</div>`:lock(L.care)}
   </div>
   ${sh("diary")?`<div class="card"><div class="row between"><h3>${L.diary}</h3><button class="btn small" ${send}>ردّ بنفسك 💌</button></div>
     <div class="chat" style="padding-bottom:0;margin-top:10px">${chat.length?chat.map(e=>{const tm=new Date(e.ts).toTimeString().slice(0,5); const flag = o.admin && e.flagged ? " 🚩" : "";
@@ -711,6 +730,7 @@ function dashboard(o){
   ${o.footer||""}`, o.gender);
 }
 function prayersBlock(k){
+  if (!isMuslim()) return "";
   const pr = S.prayers[k] || {}, n = PRAYERS.filter(([p])=>pr[p]).length;
   if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>`;
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
@@ -718,12 +738,14 @@ function prayersBlock(k){
 }
 function cycleBlock(){
   const c = S.cycle || {};
-  if (cycleOn()) return `<div class="row between" style="margin-top:12px"><div><span class="sectionlbl" style="margin:0">العذر الشرعي</span><div class="muted small">باقي <b class="num">${cycleLeft()}</b> ${cycleLeft()===1?"يوم":"أيام"} · لحد ${prettyDate(addDays(fromKey(c.start),(c.days||7)-1))}</div></div><button class="mini" data-act="cycle-end">خلص</button></div>`;
-  return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">العذر الشرعي</span><button class="mini" data-act="cycle-start">جالي</button></div>`;
+  if (cycleOn()) return `<div class="row between" style="margin-top:12px"><div><span class="sectionlbl" style="margin:0">${cycleName()}</span><div class="muted small">باقي <b class="num">${cycleLeft()}</b> ${cycleLeft()===1?"يوم":"أيام"} · لحد ${prettyDate(addDays(fromKey(c.start),(c.days||7)-1))}</div></div><button class="mini" data-act="cycle-end">خلص</button></div>`;
+  const nx = nextCycle();
+  const hint = !nx ? "" : nx.days > 1 ? `المرة الجاية متوقعة بعد <b class="num">${nx.days}</b> يوم · حوالي ${prettyDate(nx.date)}` : nx.days >= -3 ? "ممكن تيجي في أي وقت الأيام دي 🤍" : `اتأخرت <b class="num">${-nx.days}</b> يوم عن المتوقع`;
+  return `<div class="row between" style="margin-top:12px"><div><span class="sectionlbl" style="margin:0">${cycleName()}</span>${hint?`<div class="muted small">${hint}</div>`:""}</div><button class="mini" data-act="cycle-start">جالي</button></div>`;
 }
 function cycleSheet(){
   const linked = CLOUD && P && P.linked;
-  sheet(`<h2>العذر الشرعي 🤍</h2>
+  sheet(`<h2>${cycleName()} 🤍</h2>
   <form class="form" data-form="cycle">
     <div class="two"><label class="f">بدأ يوم<input class="in num" type="date" id="cy-start" value="${dkey()}" max="${dkey()}" required></label>
     <label class="f">بيقعد كام يوم؟<input class="in num" type="number" id="cy-days" min="2" max="12" value="${avgCycleDays()}" required inputmode="numeric"></label></div>
@@ -819,6 +841,8 @@ function settingsView(){
     <ul class="list">${SHARE.map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="share" data-v="${k}" role="switch" aria-checked="${S.share[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
     <div class="row wrap" style="margin-top:10px"><button class="btn small" data-act="tab" data-v="partner">👀 شوفي هو بيشوفك إزاي</button></div>
   </div>
+  <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
+    <div class="seg"><button data-act="set-rel" data-v="muslim" aria-pressed="${isMuslim()}">مسلمة</button><button data-act="set-rel" data-v="christian" aria-pressed="${!isMuslim()}">مسيحية</button></div></div>
   ${partnerCard()}
   ${CLOUD && ME ? `<div class="card"><h3>🔔 تنبيه لما ${ME.gender==="m"?"شريكتك":"شريكك"} ${ME.gender==="m"?"تبقى مضايقة":"يبقى مضايق"}</h3>
     <ol class="small" style="margin:8px 0 0;padding-inline-start:18px;line-height:1.9"><li>نزّل تطبيق <b>ntfy</b> (موجود على Google Play وApp Store ومتاح للكمبيوتر).</li><li>دوس <b>+</b> واكتب الاسم ده بالظبط:</li></ol>
@@ -850,7 +874,8 @@ function authView(){
       ${login?"":`<label class="f">اسمك (هنناديكي بيه)<input class="in" id="a-name" required placeholder="نونو"></label>`}
       <label class="f">اسم المستخدم (إنجليزي وأرقام)<input class="in" id="a-user" required autocomplete="username" dir="ltr" placeholder="nono" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي أو رقم"></label>
       <label class="f">الباسورد<input class="in" id="a-pass" type="password" required minlength="6" autocomplete="${login?"current-password":"new-password"}" dir="ltr"></label>
-      ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>`}
+      ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>
+      <div class="seg" role="group" aria-label="الديانة"><button type="button" data-act="arel" data-v="muslim" aria-pressed="${U.rel!=="christian"}">مسلمة</button><button type="button" data-act="arel" data-v="christian" aria-pressed="${U.rel==="christian"}">مسيحية</button></div>`}
       <div class="notice" id="a-err" style="display:none;color:var(--bad);font-weight:700"></div>
       <button class="btn" type="submit" ${U.busy?"disabled":""}>${U.busy?"لحظة…":login?"ادخلي":"اعملي حساب"}</button>
       ${login?"":`<div class="notice">🔒 بتسجيلك، إنتي موافقة إن بياناتك محفوظة أونلاين، وإن صاحب التطبيق يقدر يوصلها لأغراض الإدارة ومنع الإساءة.</div>`}
@@ -1105,7 +1130,7 @@ document.addEventListener("click", e => {
     case "water": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.water = c.water === +v ? +v-1 : +v; save(); render(); if (c.water===8) toast("8 كوبايات! إيه الشطارة دي 💧"); break; }
     case "pray": { const pr = S.prayers[k] = S.prayers[k] || {}; pr[v] = !pr[v]; save(); render(); if (PRAYERS.every(([p])=>pr[p])) toast("ما شاء الله، الخمس فروض كاملين، ربنا يتقبل"); break; }
     case "cycle-start": cycleSheet(); break;
-    case "cycle-end": { const c = S.cycle; const days = Math.max(1, Math.round((fromKey(dkey()) - fromKey(c.start))/864e5) + 1); c.history = (c.history||[]).concat({start:c.start, days}).slice(-12); c.on = false; save(); render(); toast("ألف سلامة عليكي 🤍"); break; }
+    case "cycle-end": { const c = S.cycle; const days = Math.max(1, Math.round((fromKey(dkey()) - fromKey(c.start))/864e5) + 1); c.history = (c.history||[]).concat({start:c.start, days}).slice(-12); c.on = false; save(); render(); const nx = nextCycle(); toast("ألف سلامة عليكي 🤍" + (nx ? " · المرة الجاية حوالي " + prettyDate(nx.date) : "")); break; }
     case "new-pmsg": S._pmsg = pick(S.msgs.period); render(); break;
     case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast("ايه الحلاوه دي كلها 💅✨"); break; }
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
@@ -1191,8 +1216,10 @@ document.addEventListener("click", e => {
     case "adm-rmmsg": { const r = U.admin.reports.find(x=>x.id===v); if (!r) break; (r.path ? fb.del(r.path) : Promise.resolve()).then(()=>fb.del(`reports/${v}`)).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); toast("اتمسحت 🗑️"); }); break; }
     case "adm-dismiss": { fb.del(`reports/${v}`).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); }); break; }
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
-    case "agender": U.ag = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
-    case "reset-msgs": { const T = msgsTarget(); T.msgs = defMsgs(msgsTarget() === P && P && P.user ? P.user.gender : (S && S.user && S.user.gender)); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
+    case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
+    case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
+    case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
+    case "reset-msgs": { const T = msgsTarget(); T.msgs = T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
     case "change-pin": S.pin = null; save(); pinSheet(); break;
   }
 });
@@ -1277,7 +1304,7 @@ document.addEventListener("submit", e => {
     }
     case "msgs": {
       const T = msgsTarget();
-      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : defMsgs(T === P && P.user ? P.user.gender : S.user.gender)[t.dataset.msg]; });
+      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : (T === P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion))[t.dataset.msg]; });
       S._love = null; saveMsgs(); closeSheet(); render(); toast("اتحفظت الرسايل 💌"); break;
     }
     case "restore": {
@@ -1295,7 +1322,7 @@ document.addEventListener("submit", e => {
       if (!/^[A-Za-z0-9_.]{3,20}$/.test(user)){ const er = $("#a-err"); er.textContent = "اسم المستخدم من 3 لـ 20 حرف إنجليزي أو رقم"; er.style.display = "block"; return; }
       const nm = val("a-name") || user;
       U.busy = true; render();
-      const p = U.authMode === "login" ? fb.signIn(user, pass) : signUp(nm, user, pass, U.ag || "f");
+      const p = U.authMode === "login" ? fb.signIn(user, pass) : signUp(nm, user, pass, U.ag || "f", U.rel || "muslim");
       p.then(() => { U.busy = false; }).catch(err => { U.busy = false; render(); const er = $("#a-err"); if (er){ er.textContent = authError(err); er.style.display = "block"; } });
       break;
     }
