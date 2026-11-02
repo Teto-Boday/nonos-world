@@ -172,6 +172,10 @@ html.boy .blobs i:nth-child(3){background:#dbe6f5}
 .review.new{animation:rvin .7s ease both}
 @keyframes rvin{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 .review .st{font-size:22px;letter-spacing:3px;color:#f5b301}
+.review.summary{background:linear-gradient(160deg, color-mix(in srgb, var(--pink) 16%, var(--surface)), var(--surface));gap:4px}
+.review.summary .avg{font-size:44px;font-weight:800;line-height:1;color:var(--ink)}
+.review.summary .note{font-size:13px;color:var(--muted);margin:6px 0}
+.review.summary .btn{align-self:center}
 .review p{margin:0;font-size:18px;font-weight:600}
 .review .who{color:var(--muted);font-weight:700}
 
@@ -451,7 +455,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   document.getElementById("lang").onclick = function(){ setLang(root.lang === "en" ? "ar" : "en"); };
 
   // girl / guy wording
-  var MASC = {"حمّلي":"حمّل","حمّليه":"حمّله","جرّبيه":"جرّبه","اختاري":"اختار","واختاري":"واختار","اصرفي":"اصرف","يا بسبوسه":"يا وحش","بسبوسه":"وحش","اظبطي":"اظبط","افتحي":"افتح","وافتحيه":"وافتحه","انزلي":"انزل","إنتي":"إنت","وإنتي":"وإنت","بتختاري":"بتختار","بتذاكري":"بتذاكر","بتقرري":"بتقرر","بيكي":"بيك","تبقي":"تبقى","تسجّليها":"تسجّلها","تشوفيه":"تشوفه","تصرفي":"تصرف","تقدري":"تقدر","تقفلي":"تقفل","تقلبيه":"تقلبه","تكتبي":"تكتب","جنبك":"جنبك","دوسي":"دوس","ودوسي":"ودوس","سامحة":"سامح","عليكي":"عليك","مضايقة":"مضايق","نسيتي":"نسيت","وأضيفي":"وأضيف","وارجعي":"وارجع","واعملي":"واعمل","وامشي":"وامشي","وتفكّي":"وتفكّ","وحطي":"وحط","وشوفي":"وشوف","وفعّلي":"وفعّل","ومعاكي":"ومعاك","وابعتي":"وابعت","اعملي":"اعمل","شريك حياتك":"شريكة حياتك","وشريك حياتك":"وشريكة حياتك","شريكك":"شريكتك","لشريكك":"لشريكتك","وشريكك":"وشريكتك","يطمّن":"تطمّن","ويرد":"وترد","ويفتكرك":"وتفتكرك","يدلّعك":"يدلّعك","بيدلّعك":"بيدلّعك","يهتم":"تهتم","يشوف":"تشوف","هو يشوف":"هي تشوف","يجيله":"يجيلها","يكون":"تكون","يرد":"ترد","هيرد":"هترد","وادردشوا":"وادردشوا"};
+  var MASC = {"حمّلي":"حمّل","حمّليه":"حمّله","قيّمي":"قيّم","وجرّبي":"وجرّب","جرّبيه":"جرّبه","اختاري":"اختار","واختاري":"واختار","اصرفي":"اصرف","يا بسبوسه":"يا وحش","بسبوسه":"وحش","اظبطي":"اظبط","افتحي":"افتح","وافتحيه":"وافتحه","انزلي":"انزل","إنتي":"إنت","وإنتي":"وإنت","بتختاري":"بتختار","بتذاكري":"بتذاكر","بتقرري":"بتقرر","بيكي":"بيك","تبقي":"تبقى","تسجّليها":"تسجّلها","تشوفيه":"تشوفه","تصرفي":"تصرف","تقدري":"تقدر","تقفلي":"تقفل","تقلبيه":"تقلبه","تكتبي":"تكتب","جنبك":"جنبك","دوسي":"دوس","ودوسي":"ودوس","سامحة":"سامح","عليكي":"عليك","مضايقة":"مضايق","نسيتي":"نسيت","وأضيفي":"وأضيف","وارجعي":"وارجع","واعملي":"واعمل","وامشي":"وامشي","وتفكّي":"وتفكّ","وحطي":"وحط","وشوفي":"وشوف","وفعّلي":"وفعّل","ومعاكي":"ومعاك","وابعتي":"وابعت","اعملي":"اعمل","شريك حياتك":"شريكة حياتك","وشريك حياتك":"وشريكة حياتك","شريكك":"شريكتك","لشريكك":"لشريكتك","وشريكك":"وشريكتك","يطمّن":"تطمّن","ويرد":"وترد","ويفتكرك":"وتفتكرك","يدلّعك":"يدلّعك","بيدلّعك":"بيدلّعك","يهتم":"تهتم","يشوف":"تشوف","هو يشوف":"هي تشوف","يجيله":"يجيلها","يكون":"تكون","يرد":"ترد","هيرد":"هترد","وادردشوا":"وادردشوا"};
   var keys = Object.keys(MASC).sort(function(a,b){ return b.length - a.length; });
   var RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + keys.map(function(k){ return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
   var orig = new Map();
@@ -482,18 +486,26 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   // reviews from inside the app: the newest 5 show up on their own
   var seen = {};
   function loadReviews(){
-    var url = "https://firestore.googleapis.com/v1/projects/nonos-world/databases/(default)/documents/publicReviews?pageSize=5&orderBy=at%20desc&key=AIzaSyD8G36U_KYYVulOFJze12m9gmXczjhgt-Y";
+    var url = "https://firestore.googleapis.com/v1/projects/nonos-world/databases/(default)/documents/publicReviews?pageSize=100&orderBy=at%20desc&key=AIzaSyD8G36U_KYYVulOFJze12m9gmXczjhgt-Y";
     fetch(url, {cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
-      var docs = (d.documents || []).map(function(x){ var f = x.fields || {}; return {id:x.name, at:+((f.at||{}).integerValue||0), name:(f.name||{}).stringValue||"", text:(f.text||{}).stringValue||"", stars:+((f.stars||{}).integerValue||5)}; }).slice(0, 5);
+      var all = (d.documents || []).map(function(x){ var f = x.fields || {}; return {id:x.name, at:+((f.at||{}).integerValue||0), name:(f.name||{}).stringValue||"", text:(f.text||{}).stringValue||"", stars:+((f.stars||{}).integerValue||5)}; });
+      var docs = all.slice(0, 5), avg = all.length ? all.reduce(function(a, r){ return a + r.stars; }, 0) / all.length : 0;
       var box = document.getElementById("rv"), sec = document.getElementById("reviews");
       if (!docs.length){ sec.hidden = true; return; }
       sec.hidden = false; box.innerHTML = "";
+      var sum = document.createElement("div"); sum.className = "review summary";
+      sum.innerHTML = '<div class="avg num">' + avg.toFixed(1) + '</div><div class="st">' + "★★★★★".slice(0, Math.round(avg)) + "☆☆☆☆☆".slice(0, 5 - Math.round(avg)) + '</div>'
+        + '<div class="who"><span data-l="ar">من ' + all.length + ' تقييم</span><span data-l="en">from ' + all.length + ' reviews</span></div>'
+        + '<p class="note"><span data-l="ar">قيّمونا من جوه التطبيق: الإعدادات ← ⭐ قيّمي التطبيق</span><span data-l="en">Rate us from inside the app: Settings → ⭐ Rate the app</span></p>'
+        + '<a class="btn small" href="#download"><span data-l="ar">حمّليه وجرّبي 💗</span><span data-l="en">Get it free 💗</span></a>';
+      box.appendChild(sum);
       docs.forEach(function(r){ var c = document.createElement("div"), key = r.id + r.at; c.className = "review" + (seen[key] ? "" : " new"); seen[key] = 1;
         var st = document.createElement("div"); st.className = "st"; st.setAttribute("aria-label", r.stars + " / 5"); st.textContent = "★★★★★".slice(0, Math.max(1, Math.min(5, r.stars))) + "☆☆☆☆☆".slice(0, 5 - Math.max(1, Math.min(5, r.stars)));
         c.appendChild(st);
         if (r.text){ var p = document.createElement("p"); p.textContent = "“" + r.text + "”"; p.dir = "auto"; c.appendChild(p); }
         var w = document.createElement("div"); w.className = "who"; w.textContent = r.name; w.dir = "auto"; c.appendChild(w);
         box.appendChild(c); });
+      if (root.classList.contains("boy")) walk(true);
     }).catch(function(){});
   }
   loadReviews(); setInterval(loadReviews, 30000);
