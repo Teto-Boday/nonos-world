@@ -373,6 +373,7 @@ async function boot(u){
   S = normalize(st, ME.gender); S.tab = S.tab || "home";
   try { localStorage.setItem("nw-lang", S.lang || "ar"); } catch(e){}
   if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; save(); }
+  try { localStorage.setItem("nw-g", ME.gender || "f"); localStorage.setItem("nw-name", ME.name || ""); } catch(e){}
   S.user = {name:ME.name, username:ME.username, gender:ME.gender, religion:ME.religion || "muslim"}; S.share = Object.assign({}, ME.share || {});
   IS_ADMIN = !!(await fb.get(`admins/${UID}`).catch(()=>null));
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
@@ -531,12 +532,26 @@ const hm = m => isEN() ? (m >= 60 ? Math.floor(m/60) + "h" + (m%60 ? " " + (m%60
 
 /* ================= UI shell ================= */
 let tapCount = 0, tapTimer = null;
-const U = {authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
+function CLOUD_BOOT(){ return !!window.fb; }
+const U = {booting:CLOUD_BOOT(), authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
+function splashView(){
+  let g = "f", name = ""; try { g = localStorage.getItem("nw-g") || U.ag || "f"; name = localStorage.getItem("nw-name") || ""; } catch(e){}
+  const en = isEN(), boy = g === "m";
+  const title = en ? (boy ? (name ? "Welcome back, " + escP(name) : "Welcome, champ") : (name ? "Welcome back, " + escP(name) : "Welcome to your world"))
+                   : (boy ? (name ? "أهلًا بيك يا " + escP(name) : "أهلًا بيك يا بطل") : (name ? "أهلًا بيكي يا " + escP(name) : "أهلًا بيكي في دنيتك"));
+  const sub = en ? (boy ? "Your world is ready and waiting for you" : "Everything you love is waiting for you here")
+                 : (boy ? "دنيتك جاهزة ومستنياك" : "كل حاجة بتحبيها مستنياكي هنا");
+  return `<div class="splash ${boy ? "boy" : "girl"}" role="status" aria-live="polite">
+    <div class="splash-in"><img src="icon-192.png" alt="" class="splash-logo">
+    <div class="splash-brand">Nono's World</div>
+    <h1 class="splash-title">${title}</h1><p class="splash-sub">${sub}</p>
+    <div class="splash-dots" aria-hidden="true"><i></i><i></i><i></i></div></div></div>`;
+}
 function render(){
   applyTheme();
   document.documentElement.lang = LANG(); document.documentElement.dir = isEN() ? "ltr" : "rtl";
   const app = $("#app");
-  if (CLOUD && UID && !S){ app.innerHTML = `<div class="auth"><div class="logo">🌍</div><p class="center muted">بنجهّز دنيتك… 🌸</p></div>`; $("#tabs")?.remove(); return; }
+  if (CLOUD && (U.booting || (UID && !S))){ app.innerHTML = splashView(); $("#tabs")?.remove(); return; }
   if (!S || !S.user){ app.innerHTML = gx(authView(), U.ag === "m" && U.authMode !== "login"); $("#tabs")?.remove(); return; }
   if (ME && ME.banned){ app.innerHTML = `<div class="auth"><div class="logo">⛔</div><h1>الحساب موقوف</h1><p class="center muted">الحساب ده اتوقف من إدارة التطبيق. لو فاكرة إن ده غلط، كلّمي صاحب التطبيق.</p><button class="btn ghost" data-act="logout">خروج</button></div>`; app.innerHTML = gx(app.innerHTML); $("#tabs")?.remove(); return; }
   const v = {home:homeView, money:moneyView, day:dayView, study:studyView, diary:diaryView, settings:settingsView, partner:partnerView, mate:mateView, admin:adminView}[S.tab] || homeView;
@@ -1273,7 +1288,7 @@ document.addEventListener("click", e => {
       S = Object.assign(seed(), keep, {sample:false, money:{allowance:0,period:"month",expenses:[]}, schedule:[], tasks:[], sessions:[], exams:[], grades:[], moods:{}, care:{}, diary:[], subjects:["مادة 1"], tab:"home"});
       save(); render(); toast("بقت دنيتك فاضية ونضيفة ✨"); break;
     }
-    case "logout": U.authMode = "login"; closeSheet(); $("#tabs")?.remove(); if (CLOUD){ pushNow(); fb.signOut(); } else { S.user = null; save(); render(); } break;
+    case "logout": try { localStorage.removeItem("nw-name"); } catch(e){} U.authMode = "login"; closeSheet(); $("#tabs")?.remove(); if (CLOUD){ pushNow(); fb.signOut(); } else { S.user = null; save(); render(); } break;
     case "copy": { (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(()=>toast("اتنسخ ✅")).catch(()=>toast(v)); break; }
     case "unlink": { if (!CLOUD) break; const pid = ME.partner; saveMe({partner:null}); fb.del(`linkRequests/${pid}`).catch(()=>{}); setupPartner(); render(); toast("اتفك الربط"); break; }
     case "link-accept": { saveMe({partner:v}); fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); setupPartner(); toast("اتربطتوا 💞"); break; }
@@ -1469,7 +1484,8 @@ setInterval(scheduleNative, 15000);
 if (CLOUD){
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
   S = null; render();
-  fb.onUser(u => boot(u).catch(e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); }));
+  const t0 = Date.now();
+  fb.onUser(u => { const wait = u ? Math.max(0, 900 - (Date.now() - t0)) : 0; setTimeout(() => { U.booting = false; boot(u).catch(e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); }); }, wait); });
 } else {
   S = normalize(load());
   if (S.vacation.on && S.vacation.until && dkey() > S.vacation.until) S.vacation = {on:false};
