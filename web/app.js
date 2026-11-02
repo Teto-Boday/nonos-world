@@ -20,13 +20,16 @@ const prettyDate = d => DAYS[d.getDay()] + " " + d.getDate() + " " + MONTHS[d.ge
 const norm = s => s.replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي");
 
 /* ================= labels (his names) ================= */
-const L = {
+const L_BASE = {
   app:"Nono's World 🌍", money:"اصرفي براحتك يا بسبوسه 💸", day:"علينا ايه النهارده 🤔", tasks:"مهماتي",
   done:"عملتيها يا نونو 🤏🏽", lazy:"كسلت 🙈", study:"ركن المذاكرة 📚", focus:"حبه جد", rest:"حبه هدوء ☕",
   examsBad:"مكتوب عليا ⏳", examsGood:"إفراج 🎉", streak:"ايه الشطارة دي🔥", week:"راحه اخيرا 🫠", care:"الدلع",
   mood:"النفسيه", diary:"دفتر حكاياتي 📔", love:"فاكرك علطول 💌", alarm:"صحّيني ⏰", backup:"احفظي ذكرياتي 💾",
   daily:"قربنا نفلس", vacation:"إجازة 🏖️", left:{ok:"لسه في الخير 😌", near:"هنفلس 😬", out:"فلسنا 🙆🏽‍♀️"}
 };
+/* no partner: no nicknames, no romance in the labels */
+const L_SOLO = { money:"اصرفي براحتك 💸", done:"عملتيها 👏", love:"💪 كلمة حلوة" };
+const L = new Proxy(L_BASE, { get: (t, k) => (typeof hasMate === "function" && !hasMate() && k in L_SOLO) ? L_SOLO[k] : t[k] });
 const MOODS = [
   {k:"happy", e:"😍", t:"مبسوطة"}, {k:"good", e:"🙂", t:"كويسة"}, {k:"meh", e:"😐", t:"عادي"},
   {k:"sad", e:"😔", t:"زعلانة"}, {k:"stressed", e:"😫", t:"مضغوطة"}
@@ -352,6 +355,74 @@ const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة 
 const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
 const morningPick = () => loveOn() ? pick(S.msgs.morning) : (isEN() ? "Good morning ☀️ a new day, a new chance" : pick(S.user && S.user.gender === "m" ? MORNING_CHEER_M : MORNING_CHEER_F));
 const cheerPool = () => isEN() ? CHEER_EN : (S.user && S.user.gender === "m" ? CHEER_M : CHEER_F).concat(((CFG.cheer || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []);
+
+/* ================= messages when there's no partner: encouragement only, no romance, no nicknames ================= */
+const SOLO_F = {
+  happy:["مبسوطة؟ حقك، استمتعي باليوم ده 😍","الضحكة دي حلوة عليكي، خليها على طول","يوم حلو، خليه يكمّل كده ☀️"],
+  good:["حلو، كمّلي كده 🌸","يوم هادي ولطيف، استمتعي بيه","كويسة؟ يبقى يلا نعمل حاجة حلوة النهارده"],
+  meh:["عادي؟ ممكن تقومي تعملي حاجة بتحبيها وتفرق 😉","اليوم ده محتاج كوباية حاجة سخنة وأغنية حلوة ☕","مش كل الأيام لازم تبقى حلوة، وده طبيعي"],
+  sad:["الزعل ده ضيف وهيمشي 🤍","مسموحلك تزعلي، بس متنسيش إنك أقوى من اللي حاصل","طلّعي اللي جواكي، وبعدين اعملي حاجة صغيرة بتحبيها","كلّمي حد بتحبيه وبتثقي فيه، هيفرق معاكي"],
+  stressed:["خدي نفس عميق، حاجة واحدة بس في المرة 🌱","مش لازم تخلّصي كل حاجة النهارده","إنتي أشطر من الضغط ده بكتير","قسّمي الشغل حتت صغيرة، وابدئي بأسهلها"],
+  d_study:["كل صفحة بتذاكريها بتقرّبك من هدفك 🎉","إنك قاعدة تذاكري أصلًا دي لوحدها شطارة","كمّلي، إنتي قدها 💪"],
+  d_tired:["كفاية كده النهارده، ارتاحي ونامي بدري 😴","جسمك بيقولك ارتاحي، اسمعي كلامه","التعب ده معناه إنك بتعافري، ارتاحي بقى"],
+  d_sad:["مهما حصل، الأيام الصعبة بتعدّي 🤍","طلّعي كل اللي جواكي هنا، الدفتر ده بتاعك","كلّمي حد قريب منك، الكلام بيريّح","إنتي مش لوحدك، وفي ناس بتحبك"],
+  d_happy:["الله! قوليلي تاني 😍","ده يستاهل احتفال 🎉","شوفتي؟ إنتي جامدة","فرحتلك بجد 🌟"],
+  d_miss:["اللي وحشك أكيد هيفرح لو كلّمتيه 🤍","ابعتيله رسالة، مش هتخسري حاجة","الحنين ده معناه إن عندك ناس حلوة في حياتك"],
+  d_greet:["أهلًا 👋 عاملة إيه النهارده؟","تمام الحمد لله، وإنتي؟","أهلًا أهلًا، احكي"],
+  d_ghor:["😂 ماشي، بس ارجعي احكي لما تحبي","حاضر 😂 الدفتر مستنيكي"],
+  d_story:["احكي، أنا سامعة 👂🏽","الدفتر ده بتاعك، اكتبي كل اللي في بالك","يلا احكي من الأول"],
+  d_other:["شكرًا إنك كتبتي 🤍","كتابة اللي في بالك بتريّح","مستنية الحكاية الجاية 📔"],
+  g_high:["إيه الشطارة دي 😍🔥","الدرجة دي تستاهل تتبروز 🖼️","تعبك جاب نتيجة 👏"],
+  g_mid:["حلو، والمرة الجاية أحسن 💪","كويس، كمّلي وهتقفلي"],
+  g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنتي مين","هتعوّضيها، ابدئي من النهارده"],
+  done:["عملتيها 👏","برافو عليكي 💪","خطوة كمان، كمّلي"],
+  lazy:["كسلتي؟ عادي، بكرة نعوّضها 😌","مفيش مشكلة، بكرة يوم جديد"],
+  love:[],
+  morning:["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"],
+  period:["ألف سلامة عليكي، ارتاحي ومتشيليش هم حاجة 🤍","اعملي لنفسك حاجة دافية واتغطي كويس","لو تعبانة سيبي المذاكرة شوية، صحتك أهم","قربة مية سخنة وفيلم حلو والبطانية 😌","مسموحلك تدلّعي نفسك الأيام دي 🎀"]
+};
+const SOLO_M = {
+  happy:["مبسوط؟ حقك، استمتع باليوم ده 😎","يوم حلو، خليه يكمّل كده ☀️","كده يا بطل 🔥"],
+  good:["حلو، كمّل كده 💪","يوم هادي ولطيف، استمتع بيه","كويس؟ يبقى يلا نعمل حاجة مفيدة النهارده"],
+  meh:["عادي؟ قوم اعمل حاجة بتحبها وهتفرق 😉","اليوم ده محتاج كوباية شاي وأغنية حلوة ☕","مش كل الأيام لازم تبقى حلوة، وده طبيعي"],
+  sad:["الزعل ده ضيف وهيمشي 🤍","مسموحلك تزعل، بس إنت أقوى من اللي حاصل","طلّع اللي جواك، وبعدين اعمل حاجة صغيرة بتحبها","كلّم حد بتثق فيه، هيفرق معاك"],
+  stressed:["خد نفس عميق، حاجة واحدة بس في المرة 🌱","مش لازم تخلّص كل حاجة النهارده","إنت أقوى من الضغط ده بكتير 💪","قسّم الشغل حتت صغيرة، وابدأ بأسهلها"],
+  d_study:["كل صفحة بتذاكرها بتقرّبك من هدفك 🎉","إنك قاعد تذاكر أصلًا دي لوحدها شطارة","كمّل يا بطل، إنت قدها 💪"],
+  d_tired:["كفاية كده النهارده، ارتاح ونام بدري 😴","جسمك بيقولك ارتاح، اسمع كلامه","التعب ده معناه إنك بتعافر، ارتاح بقى"],
+  d_sad:["مهما حصل، الأيام الصعبة بتعدّي 🤍","طلّع كل اللي جواك هنا، الدفتر ده بتاعك","كلّم حد قريب منك، الكلام بيريّح","إنت مش لوحدك"],
+  d_happy:["الله! قولّي تاني 🔥","ده يستاهل احتفال 🎉","شوفت؟ إنت جامد","فرحتلك بجد 🌟"],
+  d_miss:["اللي وحشك أكيد هيفرح لو كلّمته 🤍","ابعتله رسالة، مش هتخسر حاجة","الحنين ده معناه إن عندك ناس حلوة في حياتك"],
+  d_greet:["أهلًا 👋 عامل إيه النهارده؟","تمام الحمد لله، وإنت؟","أهلًا أهلًا، احكي"],
+  d_ghor:["😂 ماشي، بس ارجع احكي لما تحب","حاضر 😂 الدفتر مستنيك"],
+  d_story:["احكي، أنا سامعك 👂🏽","الدفتر ده بتاعك، اكتب كل اللي في بالك","يلا احكي من الأول"],
+  d_other:["شكرًا إنك كتبت 🤍","كتابة اللي في بالك بتريّح","مستني الحكاية الجاية 📔"],
+  g_high:["إيه الشطارة دي 🔥","الدرجة دي تستاهل تتبروز 🖼️","تعبك جاب نتيجة يا بطل 👏"],
+  g_mid:["حلو، والمرة الجاية أحسن 💪","كويس، كمّل وهتقفل"],
+  g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنت مين","هتعوّضها، ابدأ من النهارده"],
+  done:["عملتها 👏","برافو عليك 💪","خطوة كمان يا بطل، كمّل"],
+  lazy:["كسلت؟ عادي، بكرة نعوّضها 😌","مفيش مشكلة، بكرة يوم جديد"],
+  love:[],
+  morning:["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"],
+  period:[]
+};
+const SOLO_EN = {
+  happy:["Happy? You deserve it, enjoy today 😍","Great day, keep it going ☀️"], good:["Nice, keep going 🌸","A calm, sweet day. Enjoy it"],
+  meh:["Meh? Do something you love, it helps 😉","Not every day has to be great, and that's okay"],
+  sad:["Sadness is a guest, it'll leave 🤍","Talk to someone you trust, it helps","You're stronger than what's happening"],
+  stressed:["Take a deep breath, one thing at a time 🌱","You don't have to finish everything today","Break it into small pieces and start with the easiest"],
+  d_study:["Every page brings you closer to your goal 🎉","Just sitting down to study is already a win","Keep going, you've got this 💪"],
+  d_tired:["That's enough for today, rest and sleep early 😴","Your body needs rest, listen to it"],
+  d_sad:["Hard days pass 🤍","Write it all out here, this diary is yours","Talk to someone close to you"],
+  d_happy:["Yay! Tell me again 😍","That deserves a celebration 🎉"], d_miss:["Whoever you miss would love to hear from you 🤍","Send them a message"],
+  d_greet:["Hi 👋 how's your day?","Hey, tell me everything"], d_ghor:["😂 Okay, come back when you want to talk"],
+  d_story:["Go ahead, I'm listening 👂🏽","This diary is yours, write everything"], d_other:["Thanks for writing 🤍","Writing it down helps"],
+  g_high:["Look at that grade 🔥","Your hard work paid off 👏"], g_mid:["Nice, next time will be even better 💪"], g_low:["Don't worry, it's one grade 🤍","You'll make up for it, start today"],
+  done:["Done 👏","Well done 💪"], lazy:["Too lazy? It's fine, tomorrow is a new day 😌"], love:[],
+  morning:["Good morning ☀️ a new day, a new chance","Drink some water and start your day 💧"],
+  period:["Feel better, rest and take it easy 🤍","Something warm and a cozy blanket 😌"]
+};
+/* the message pool to use: the partner's words when linked, encouragement otherwise */
+const MS = k => { if (hasMate()) return S.msgs[k] || []; const set = isEN() ? SOLO_EN : (S.user && S.user.gender === "m" ? SOLO_M : SOLO_F); return (set[k] && set[k].length ? set[k] : cheerPool()); };
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
@@ -573,7 +644,7 @@ function startupChecks(){
   setTimeout(vacationCheck, 300);
   const t = new Date(), k = dkey(t), now = t.toTimeString().slice(0,5);
   if (!vacDue() && S.lastMorning !== k && now >= S.alarm.wake && t.getHours() < 14){ S.lastMorning = k; save(); setTimeout(morningSheet, 400); }
-  else if (S.user.gender !== "m" && cycleOn() && S.lastCare !== k && !vacDue()){ S.lastCare = k; save(); setTimeout(() => message("🤍", pick(S.msgs.period), "دلع زيادة الأيام دي"), 500); }
+  else if (S.user.gender !== "m" && cycleOn() && S.lastCare !== k && !vacDue()){ S.lastCare = k; save(); setTimeout(() => message("🤍", pick(MS("period")), "دلع زيادة الأيام دي"), 500); }
 }
 
 /* ================= derived ================= */
@@ -715,8 +786,9 @@ function sheet(html, onMount){
 }
 let sheetLocked = false;
 function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; }
-function message(emoji, text, from = "منه 💌"){
-  sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p><small>${escP(from)}</small></div>
+function message(emoji, text, from){
+  if (from === undefined) from = hasMate() ? (P && P.user && P.user.gender === "f" ? "منها 💌" : "منه 💌") : "";
+  sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p>${from ? `<small>${escP(from)}</small>` : ""}</div>
     <button class="btn block" data-act="close" style="margin-top:14px">تسلم 🤍</button>`);
 }
 
@@ -740,7 +812,7 @@ function homeView(){
   </section>
 
   ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
-    <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(S.msgs.period)))}</p>
+    <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(MS("period"))))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
   <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${hasMate() ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
 
@@ -1026,7 +1098,7 @@ function diaryView(){
   const priv = CLOUD && P && P.linked && P.user ? `<button class="chip-priv" data-act="share" data-v="diary" aria-pressed="${S.share.diary === false}">${S.share.diary === false ? `🔒 مخفي عن ${esc(P.user.name)}` : `👁️ ${esc(P.user.name)} ${P.user.gender === "f" ? "تقدر تشوفه" : "يقدر يشوفه"}`}</button>` : "";
   return `
   ${CLOUD ? diarySwitch() : ""}
-  <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user ? (S.share.diary === false ? "الدفتر ده ليكي إنتي بس 🔒" : esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك")+" 🤍") : "هو سامعك 🤍"}</p>${priv}</section>
+  <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user ? (S.share.diary === false ? "الدفتر ده ليكي إنتي بس 🔒" : esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك")+" 🤍") : (CLOUD ? "الدفتر ده بتاعك 🤍" : "هو سامعك 🤍")}</p>${priv}</section>
   <div class="row"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button></div>
   <div class="chat" id="chat">${out || `<div class="empty">لسه مفيش حكايات… ابدئي إنتي 📔</div>`}</div>
   <form class="composer" data-form="diary">
@@ -1445,13 +1517,13 @@ function weekSheet(){
   <p class="muted" style="margin:-6px 0 12px">آخر 7 أيام</p>
   <div class="stats"><div class="stat"><b>${pc(pct)}</b><span>خلّصتي من مهماتك</span></div><div class="stat"><b class="num">${done}</b><span>${L.done}</span></div><div class="stat"><b class="num">${lazy}</b><span>${L.lazy}</span></div>
   <div class="stat"><b>${hm(mins)}</b><span>مذاكرة</span></div><div class="stat"><b class="num">${fmt(spent)}</b><span>${CUR()} صرفتيهم</span></div><div class="stat"><b>${top&&top.n?top.e:"·"}</b><span>أكتر مود</span></div></div>
-  <div class="letter" style="margin-top:14px"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><p>${esc(pick(loveOn() ? (pct>=60?S.msgs.g_high:S.msgs.lazy) : cheerPool()))}</p></div>
+  <div class="letter" style="margin-top:14px"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><p>${esc(pick(pct>=60 ? MS("g_high") : MS("lazy")))}</p></div>
   <button class="btn block" data-act="close" style="margin-top:14px">تمام 🫠</button>`);
 }
 function reminderSheet(){
   sheet(`<h2>تذكير جديد 🔔</h2>
   <form class="form" data-form="rem">
-    <label class="f">الكلام اللي يظهر<input class="in" id="r-text" required placeholder="اشربي مية يا نونو 💧"></label>
+    <label class="f">الكلام اللي يظهر<input class="in" id="r-text" required placeholder="اشربي مية 💧"></label>
     <label class="f">الساعة<input class="in num" type="time" id="r-time" value="20:00" required></label>
     <button class="btn" type="submit">ضيفي</button>
   </form>`);
@@ -1509,7 +1581,7 @@ function restoreSheet(){
 /* ================= actions ================= */
 function diaryReply(text){
   const n = norm(String(text).toLowerCase() + " ");
-  for (const r of (S.rules||[])) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
+  if (hasMate()) for (const r of (S.rules||[])) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
   for (const [cat, words] of DIARY_RULES) if (words.some(w => n.includes(norm(w)))) return cat;
   return "d_other";
 }
@@ -1535,7 +1607,7 @@ function tickTimer(){
       if (tm.mode === "focus"){
         S.sessions.push({date:dkey(), subject:tm.subject || S.subjects[0] || "مذاكرة", mins:Math.round(tm.total/60)});
         S.timer = newTimer("rest", tm.subject);
-        save(); render(); message("📚", pick(S.msgs.d_study), "خلّصتي "+L.focus+" 💪");
+        save(); render(); message("📚", pick(MS("d_study")), "خلّصتي "+L.focus+" 💪");
       } else {
         S.timer = newTimer("focus", tm.subject);
         save(); render(); toast("خلصت الراحة، يلا "+L.focus+" 😌");
@@ -1562,7 +1634,7 @@ document.addEventListener("click", e => {
     case "love-toggle": S.loveOff = !S.loveOff; S._love = null; save(); render(); toast(S.loveOff ? "تمام، هيظهرلك كلام تشجيع بس 💪" : "رجعت رسايل الحب 💌"); break;
     case "mood": {
       S.moods[k] = v; save(); render();
-      const m = MOODS.find(x=>x.k===v); message(m.e, pick(S.msgs[v]));
+      const m = MOODS.find(x=>x.k===v); message(m.e, pick(MS(v)));
       if (CLOUD && (v === "sad" || v === "stressed")) notifyPartner(`${S.user.name} ${S.user.gender==="m"?"مضايق":"مضايقة"} ${m.e} النهارده، كلّمه/كلّمها 🤍`);
       break;
     }
@@ -1570,7 +1642,7 @@ document.addEventListener("click", e => {
     case "pray": { const pr = S.prayers[k] = S.prayers[k] || {}; pr[v] = !pr[v]; save(); render(); if (PRAYERS.every(([p])=>pr[p])) toast("ما شاء الله، الخمس فروض كاملين، ربنا يتقبل"); break; }
     case "cycle-start": cycleSheet(); break;
     case "cycle-end": { const c = S.cycle; const days = Math.max(1, Math.round((fromKey(dkey()) - fromKey(c.start))/864e5) + 1); c.history = (c.history||[]).concat({start:c.start, days}).slice(-12); c.on = false; save(); render(); const nx = nextCycle(); toast("ألف سلامة عليكي 🤍" + (nx ? " · المرة الجاية حوالي " + prettyDate(nx.date) : "")); break; }
-    case "new-pmsg": S._pmsg = pick(S.msgs.period); render(); break;
+    case "new-pmsg": S._pmsg = pick(MS("period")); render(); break;
     case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast(S.user.gender === "m" ? "إيه الروقان ده كله 😎" : "ايه الحلاوه دي كلها 💅✨"); break; }
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
@@ -1585,8 +1657,8 @@ document.addEventListener("click", e => {
     case "task": {
       const t = S.tasks.find(x=>x.id===v); if (!t) break;
       const was = t.status; t.status = was === b.dataset.s ? null : b.dataset.s; save(); render();
-      if (t.status === "done") toast(L.done + " · " + pick(S.msgs.done));
-      if (t.status === "lazy") message(cycleOn() && S.user.gender !== "m" ? "🤍" : "🙈", pick(cycleOn() && S.user.gender !== "m" && S.msgs.period.length ? S.msgs.period : S.msgs.lazy));
+      if (t.status === "done") toast(L.done + " · " + pick(MS("done")));
+      if (t.status === "lazy") message(cycleOn() && S.user.gender !== "m" ? "🤍" : "🙈", pick(cycleOn() && S.user.gender !== "m" && MS("period").length ? MS("period") : MS("lazy")));
       break;
     }
     case "del-task": S.tasks = S.tasks.filter(x=>x.id!==v); save(); render(); break;
@@ -1762,7 +1834,7 @@ document.addEventListener("submit", e => {
       const amt = parseFloat(val("e-amt")); if (!(amt > 0)) return;
       S.money.expenses.push({id:uid(), amt, cat:S._cat||"food", note:val("e-note"), date:k}); save(); closeSheet(); render();
       const mi = moneyInfo();
-      if (mi.state === "out") message("🙆🏽‍♀️", L.left.out + " … خلّي بالك يا بسبوسة", "الفلوس");
+      if (mi.state === "out") message("🙆🏽‍♀️", L.left.out + (hasMate() ? " … خلّي بالك يا بسبوسة" : " … خلّي بالك"), "الفلوس");
       else if (mi.todaySpent > mi.daily) toast("عدّيتي المسموح النهارده 😬");
       else toast("اتسجلت ✅ فاضلّك " + fmt(mi.left));
       break;
@@ -1775,14 +1847,14 @@ document.addEventListener("submit", e => {
       const before = examGood();
       S.grades.push({id:uid(), subject:val("g-subj"), type:val("g-type"), score:sc, total:tot, date:k}); save(); closeSheet(); render();
       const p = sc/tot*100, grp = p >= 75 ? "g_high" : p >= 50 ? "g_mid" : "g_low";
-      message(p>=75?"🌟":p>=50?"🙂":"🫂", pick(S.msgs[grp]), (!before && examGood()) ? L.examsGood + " يا نونو!" : Math.round(p) + "٪");
+      message(p>=75?"🌟":p>=50?"🙂":"🫂", pick(MS(grp)), (!before && examGood()) ? L.examsGood + (hasMate() ? " يا نونو!" : "!") : Math.round(p) + "٪");
       break;
     }
     case "diary": {
       const t = val("diarytext"); if (!t) return;
       const cat = diaryReply(t), id = uid();
-      const pool = cat.startsWith("rule:") ? (S.rules.find(r=>"rule:"+r.id===cat)||{}).replies : S.msgs[cat];
-      const ans = pick(pool && pool.length ? pool : S.msgs.d_other);
+      const pool = cat.startsWith("rule:") ? (S.rules.find(r=>"rule:"+r.id===cat)||{}).replies : MS(cat);
+      const ans = pick(pool && pool.length ? pool : MS("d_other"));
       S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null, pending:ans}); save(); render(); scrollChat();
       if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
       if (CLOUD && cat === "d_sad") notifyPartner(`${S.user.name} كتب/كتبت حكاية زعلانة 📔 كلّمه/كلّمها 🤍`);
@@ -1799,7 +1871,7 @@ document.addEventListener("submit", e => {
       const bad = msg => { err.textContent = msg; err.style.display = "block"; };
       if (!(f >= 10)) return bad("المذاكرة لازم تبقى 10 دقايق على الأقل 📚");
       if (!(r >= 1)) return bad("البريك لازم يبقى دقيقة على الأقل ☕");
-      if (r > f) return bad("البريك ميزيدش عن وقت المذاكرة يا نونو 😏");
+      if (r > f) return bad("البريك ميزيدش عن وقت المذاكرة 😏");
       S.durations = {focus:f, rest:r};
       if (!S.timer || !S.timer.end) S.timer = newTimer((S.timer&&S.timer.mode)||"focus", S.timer&&S.timer.subject);
       save(); closeSheet(); render(); toast("اتظبط الوقت ⏱️"); break;
@@ -1811,7 +1883,7 @@ document.addEventListener("submit", e => {
       const tell = $("#cy-tell") && $("#cy-tell").checked;
       S.cycle = Object.assign({}, S.cycle, {on:true, start:st, days}); S._pmsg = null; save(); closeSheet(); render();
       if (tell) notifyPartner(`${S.user.name} محتاجة اهتمام ودلع زيادة الأيام دي 🤍 اهتم بيها أكتر`, true);
-      message("🤍", pick(S.msgs.period) || "ألف سلامة عليكي", "منه 💌");
+      message("🤍", pick(MS("period")) || "ألف سلامة عليكي", hasMate() ? "منه 💌" : "🤍");
       break;
     }
     case "gnew": {
