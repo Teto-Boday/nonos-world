@@ -337,8 +337,8 @@ const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","al
   study:["sessions","exams","grades","work"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
 const CP = {msgs:[], cid:null};
-const CFG = {love:{}, cheer:{}};
-const lovePool = () => { const extra = ((CFG.love || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []; return (S.msgs.love || []).concat(isEN() ? [] : extra); };
+const CFG = {love:{}, cheer:{}, msgs:{}};
+const lovePool = () => { const extra = ((CFG.love || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []; return baseMsgs("love").concat(isEN() ? [] : extra); };
 const PSUB = {};
 /* friends: a lighter link than a partner. They only see what you tap in "what did you do today", and chat in the friends tab */
 const FR = {list:[], acts:{}, subs:{}, open:null, msgs:[], unsub:null, mine:null, seen:{}};
@@ -422,7 +422,14 @@ const SOLO_EN = {
   period:["Feel better, rest and take it easy 🤍","Something warm and a cozy blanket 😌"]
 };
 /* the message pool to use: the partner's words when linked, encouragement otherwise */
-const MS = k => { if (loveOn()) return S.msgs[k] || []; const set = isEN() ? SOLO_EN : (S.user && S.user.gender === "m" ? SOLO_M : SOLO_F); return (set[k] && set[k].length ? set[k] : cheerPool()); };
+const gKey = () => S && S.user && S.user.gender === "m" ? "m" : "f";
+const cleanRel = arr => (S && S.user && S.user.religion === "christian") ? arr.filter(t => !ISLAMIC.test(t)) : arr;
+const baseMsgs = k => { const own = S.msgs[k] || [], glob = ((CFG.msgs || {})[gKey()] || {})[k];
+  if (isEN() || !glob || !glob.length) return own;
+  const def = defMsgs(gKey(), S.user && S.user.religion)[k] || [];
+  return JSON.stringify(own) === JSON.stringify(def) ? (cleanRel(glob).length ? cleanRel(glob) : own) : own; };
+const globalRules = () => isEN() ? [] : ((CFG.msgs || {})["rules_" + gKey()] || []);
+const MS = k => { if (loveOn()) return baseMsgs(k); const set = isEN() ? SOLO_EN : (S.user && S.user.gender === "m" ? SOLO_M : SOLO_F); return (set[k] && set[k].length ? set[k] : cheerPool()); };
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
@@ -543,6 +550,7 @@ async function boot(u){
   }, () => {}));
   unsubs.push(fb.listen("config/love", d => { CFG.love = d || {}; }, () => {}));
   unsubs.push(fb.listen("config/cheer", d => { CFG.cheer = d || {}; }, () => {}));
+  unsubs.push(fb.listen("config/msgs", d => { CFG.msgs = d || {}; }, () => {}));
   unsubs.push(fb.listen(`admins/${UID}`, d => { const was = IS_ADMIN; IS_ADMIN = !!d; if (was !== IS_ADMIN && S && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
@@ -787,12 +795,12 @@ function go(tab){ S.tab = tab; save(); render(); if (tab === "mate" && P && P.li
 function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent = isEN() ? trRaw(t, isMale()) : isMale() ? mascRaw(t) : String(t); document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
 function sheet(html, onMount){
   const layer = $("#layer");
-  layer.innerHTML = `<div class="scrim" data-act="close-scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${gx(html, isMale() && U.edit !== "mate")}</div></div>`;
+  layer.innerHTML = `<div class="scrim" data-act="close-scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${gx(html, isMale() && U.edit !== "mate" && U.edit !== "global")}</div></div>`;
   const first = layer.querySelector("input,textarea,select"); if (first && !matchMedia("(pointer:coarse)").matches) setTimeout(()=>first.focus(),60);
   onMount && onMount(layer.querySelector(".sheet"));
 }
 let sheetLocked = false;
-function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; }
+function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; if (U.edit === "global") U.edit = "me"; }
 function message(emoji, text, from){
   if (from === undefined) from = loveOn() ? (P && P.user && P.user.gender === "f" ? "منها 💌" : "منه 💌") : "";
   sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p>${from ? `<small>${escP(from)}</small>` : ""}</div>
@@ -1591,9 +1599,16 @@ function pinSheet(){
   <form class="form" data-form="pin"><input class="in num center" id="pin" type="password" inputmode="numeric" minlength="4" maxlength="8" required dir="ltr" aria-label="الرقم السري" style="font-size:24px;letter-spacing:8px">
   <button class="btn" type="submit">${setting?"حفظ":"افتح"}</button></form>`);
 }
+function openGlobalMsgs(g){
+  const saved = (CFG.msgs || {})[g] || {};
+  U.edit = "global"; U.gEdit = g;
+  U.G = {msgs:Object.assign(defMsgs(g, "muslim", "ar"), JSON.parse(JSON.stringify(saved))), rules:JSON.parse(JSON.stringify((CFG.msgs || {})["rules_" + g] || []))};
+  secretSheet();
+}
 function secretSheet(){
-  const T = U.edit === "mate" && P ? P : S;
-  return withState(T, () => sheet(`<h2>🤫 الرسايل</h2>
+  const T = U.edit === "mate" && P ? P : U.edit === "global" ? U.G : S;
+  return withState(T, () => sheet(`${U.edit === "global" ? `<h2>👑 الردود التلقائية للكل</h2><p class="muted small" style="margin:-6px 0 10px">اللي تكتبه هنا بيتغيّر عند كل الناس المرتبطين اللي كلام الحب عندهم شغال (إلا اللي شريكه عدّل رسايله بنفسه).</p>
+  <div class="seg" style="margin-bottom:14px"><button data-act="gedit" data-v="f" aria-pressed="${U.gEdit==="f"}">🎀 اللي بيظهر للبنات</button><button data-act="gedit" data-v="m" aria-pressed="${U.gEdit==="m"}">🧢 اللي بيظهر للولاد</button></div>` : `<h2>🤫 الرسايل</h2>`}
   <div class="card" style="margin-bottom:16px"><h3>💬 لو قالت… يبقى الرد…</h3>
     <p class="muted small" style="margin:2px 0 10px">الردود دي بتتجرّب الأول قبل أي رد تاني في دفتر حكاياتي.</p>
     <ul class="list">${S.rules.length?S.rules.map(r=>`<li class="item"><div class="grow"><div class="t">لو قالت: ${r.keys.map(esc).join(" أو ")}</div><div class="s">الرد: ${r.replies.map(esc).join(" · ")}</div></div><button class="x" data-act="del-rule" data-v="${r.id}" aria-label="امسح">✕</button></li>`).join(""):`<li class="empty">لسه مفيش ردود خاصة</li>`}</ul>
@@ -1609,11 +1624,12 @@ function secretSheet(){
     ${MSG_GROUPS.map(([t,k])=>`<label class="f">${t}<textarea class="in" data-msg="${k}" rows="4">${esc(S.msgs[k].join("\n"))}</textarea></label>`).join("")}
     <button class="btn" type="submit">حفظ الرسايل</button>
     <button class="btn ghost" type="button" data-act="reset-msgs">رجّع الرسايل الأصلية</button>
-    ${U.edit === "mate" ? "" : `<button class="btn ghost" type="button" data-act="change-pin">غيّر الرقم السري</button>`}
+    ${U.edit === "mate" || U.edit === "global" ? "" : `<button class="btn ghost" type="button" data-act="change-pin">غيّر الرقم السري</button>`}
   </form>`));
 }
-function msgsTarget(){ return U.edit === "mate" && P ? P : S; }
-function saveMsgs(){ if (U.edit === "mate" && P && CLOUD){ fb.set(`u/${P.uid}/sec/msgs`, {msgs:P.msgs, rules:P.rules||[]}, false).catch(()=>toast("مقدرتش أحفظ")); } else save(); }
+function msgsTarget(){ return U.edit === "mate" && P ? P : U.edit === "global" ? U.G : S; }
+function saveMsgs(){ if (U.edit === "global"){ const g = U.gEdit, d = {[g]:U.G.msgs, ["rules_" + g]:U.G.rules, at:Date.now()}; CFG.msgs = Object.assign({}, CFG.msgs, d); fb.set("config/msgs", d).then(()=>toast("اتحفظ عند الكل ✅")).catch(()=>toast("مقدرتش أحفظ")); return; }
+  if (U.edit === "mate" && P && CLOUD){ fb.set(`u/${P.uid}/sec/msgs`, {msgs:P.msgs, rules:P.rules||[]}, false).catch(()=>toast("مقدرتش أحفظ")); } else save(); }
 function backupSheet(){
   const data = JSON.stringify(S);
   sheet(`<h2>${L.backup}</h2><p class="muted small">انسخي الكلام ده واحفظيه في أي مكان (ملاحظات، واتساب لنفسك).</p>
@@ -1627,7 +1643,7 @@ function restoreSheet(){
 /* ================= actions ================= */
 function diaryReply(text){
   const n = norm(String(text).toLowerCase() + " ");
-  if (loveOn()) for (const r of (S.rules||[])) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
+  if (loveOn()) for (const r of (S.rules||[]).concat(globalRules())) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
   for (const [cat, words] of DIARY_RULES) if (words.some(w => n.includes(norm(w)))) return cat;
   return "d_other";
 }
@@ -1666,7 +1682,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]");
   if (e.target.id === "brand" || e.target.closest("#brand")){
     tapCount++; clearTimeout(tapTimer); tapTimer = setTimeout(()=>tapCount=0, 1500);
-    if (tapCount >= 5){ tapCount = 0; pinSheet(); }
+    if (tapCount >= 5){ tapCount = 0; if (!CLOUD) pinSheet(); else if (IS_ADMIN) openGlobalMsgs("f"); }
     return;
   }
   if (!b) return;
@@ -1865,7 +1881,8 @@ document.addEventListener("click", e => {
     case "set-stage": S.stage = v; save(); render(); toast("اتظبط ✅"); break;
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
-    case "reset-msgs": { const T = msgsTarget(); T.msgs = T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
+    case "gedit": openGlobalMsgs(v); break;
+    case "reset-msgs": { const T = msgsTarget(); T.msgs = U.edit === "global" ? defMsgs(U.gEdit, "muslim", "ar") : T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
     case "change-pin": S.pin = null; save(); pinSheet(); break;
   }
 });
@@ -1905,7 +1922,7 @@ document.addEventListener("submit", e => {
     case "diary": {
       const t = val("diarytext"); if (!t) return;
       const cat = diaryReply(t), id = uid();
-      const pool = cat.startsWith("rule:") ? (S.rules.find(r=>"rule:"+r.id===cat)||{}).replies : MS(cat);
+      const pool = cat.startsWith("rule:") ? ((S.rules||[]).concat(globalRules()).find(r=>"rule:"+r.id===cat)||{}).replies : MS(cat);
       const ans = pick(pool && pool.length ? pool : MS("d_other"));
       S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null, pending:ans}); save(); render(); scrollChat();
       if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
@@ -2020,7 +2037,7 @@ document.addEventListener("submit", e => {
     }
     case "msgs": {
       const T = msgsTarget();
-      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : (T === P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion))[t.dataset.msg]; });
+      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : (U.edit === "global" ? defMsgs(U.gEdit, "muslim", "ar") : T === P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion))[t.dataset.msg]; });
       S._love = null; saveMsgs(); closeSheet(); render(); toast("اتحفظت الرسايل 💌"); break;
     }
     case "restore": {
