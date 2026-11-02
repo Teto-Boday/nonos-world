@@ -95,20 +95,71 @@ const DEFAULT_MSGS_M = {
 };
 const ISLAMIC = /ميزان حسنات|اللهم|ما شاء الله|الحمد لله|ربنا يتقبل|بإذن الله|سبحان/;
 const NEUTRAL_FALLBACK = "أنا جنبك على طول 🤍";
-function defMsgs(g, rel){
-  const m = JSON.parse(JSON.stringify(g === "m" ? DEFAULT_MSGS_M : DEFAULT_MSGS));
+const DEFAULT_MSGS_EN = {
+  happy:["Lucky is the day you're happy 😍","That smile belongs in a museum, Nono","Stay like this forever, the world gets prettier when you do","I'm happy as long as you're happy 🤏🏽"],
+  good:["Good? Hmm, I'm not convinced 😑","A calm sweet day, just like you","Nice, keep going cupcake 🌸"],
+  meh:["Meh? Nothing about you is ever meh 🙄","This day needs a warm drink and a good song ☕","Go do something you love and tell me you feel better 😉","It'll all be for the best"],
+  sad:["Come here… who upset you? Just tell me 😤","Sadness is a guest, it'll leave. I'm staying 🤍","You're allowed to be sad, just never forget someone loves you so much","Cry if you need to, then let's go eat something sweet 🍫","What's wrong, Nono? I'm sorry if it's because of me 😟"],
+  stressed:["Life is heavy, but you're the strongest girl in the world 🤏🏽","You don't have to finish everything today, one thing is enough","You're way bigger than this stress, and I know it","I'm right here with you, everything will be okay ❤️"],
+  d_study:["You're the smartest girl in the world, you've got this ❤️","Every page you study brings you closer to freedom 🎉","I'm proud of you just for sitting down to study","So proud of you, my girl 🤏🏽"],
+  d_tired:["That's enough for today, go to bed early, that's an order 😤","Your body is asking for rest, listen to it and to me","Being tired means you're fighting for it. Rest now, I'm proud of you","You can handle it, but please rest for me ❤️"],
+  d_sad:["I'll never leave you sad alone 🤍","Whatever happens, you're not alone","I'm with you and I'll always be ❤️","What happened, Nono? Come tell me","Talk to me, what's wrong, love?"],
+  d_happy:["Say it again! 😍 I'm happier than you","See? I told you you're amazing","This deserves a celebration, it's on me 🎉","I knew you were the smartest girl in the world 🤏🏽","So proud of you, light of my eyes ❤️"],
+  d_greet:["Better than you 😂😂","Great, because you're with me","Good as long as you're with me"],
+  d_ghor:["To paradise, together with you 😂","Hopefully to our future home","Leave you? Nope, can't do it"],
+  d_story:["Tell me, love ❤️","I'm all ears 👂🏽","I'm here, tell me everything"],
+  d_other:["Thanks for telling me 🤍","Your stories are the best part of my day","Waiting for the next story, cupcake 📔"],
+  g_high:["Look at you, Nono 😍🔥","I knew it! Smartest girl as always","That grade deserves a frame 🖼️"],
+  g_mid:["Nice, the next one will be even better 💪","You're smart, you'll ace it next time"],
+  g_low:["Don't worry, it's one grade, not the end of the world 🤍","That grade doesn't say who you are, you're better than it","You'll make up for it, I'm sure"],
+  done:["Smartest girl in the world 🤏🏽","So proud of you 🤏🏽"],
+  lazy:["Too lazy? It's fine, we'll make it up tomorrow 😌","Okay lazy girl, but no excuses tomorrow 😂"],
+  love:["You crossed my mind, and I love you even more","You're truly the best thing in the world","You're the most beautiful thing that ever happened to me","I'm sorry for every time I upset you"],
+  morning:["Good morning to the sweetest Nono ☀️ get up, the world is waiting","Wake up cupcake, today will be a good day","Get up… drink some water and smile 😁","Text me, I miss you so much","I've been waiting for you to wake up"],
+  period:["Feel better, love. Rest and don't worry about anything 🤍","Make yourself something warm and stay cozy, I'm with you","If you're tired, skip studying for a bit, your health comes first","You're the prettiest thing in the world, even when you're tired ❤️","Want chocolate? Tell me and I'll get it 🍫","Hot water bottle, a nice movie and a blanket. That's an order 😤","Anything bothering you, tell me. I'm here","You're allowed to be spoiled all you want these days 🎀"]
+};
+const DEFAULT_MSGS_EN_M = {
+  happy:["Lucky is the day you're happy, my man 😍","Your smile is the best part of my day, my hero","Stay happy like this forever, love","I'm happy as long as you're happy 🤍"],
+  good:["Good? Then let's make it even better, my hero 💪","A calm sweet day, just like you","Keep going, love, I'm proud of you"],
+  meh:["Meh? Nothing about you is ever meh 🙄","Go do something you love and tell me you feel better 😉","It'll all be for the best, love","This day needs tea and a good song, and I'm with you ☕"],
+  sad:["What's wrong, my man? Who upset you? 😤","Sadness is a guest, it'll leave. I'm staying 🤍","You're allowed to be sad, just remember someone loves you so much","I'm sorry if it's because of me, love 😟"],
+  stressed:["Breathe, my hero… this will pass and you're stronger 💪","You don't have to finish everything today, one thing is enough","You're the strongest man I know, this stress is small for you","I'm right here with you, everything will be okay ❤️"],
+  d_study:["You've got this, my hero, I believe in you 💪","Every page brings you closer to freedom 🎉","I'm proud of you just for sitting down to study","Come on, my hero, almost there 🔥"],
+  d_tired:["That's enough for today, love, sleep early, that's an order 😤","Your body needs rest, listen to it and to me","You can handle it, but rest for me ❤️","You're stronger than tired, but take a break, my man"],
+  d_sad:["I'll never leave you sad alone 🤍","Whatever happens, you're not alone, I'm with you","I'm with you and I'll always be ❤️","What's wrong, love? Talk to me"],
+  d_happy:["Say it again! 😍 I'm so happy for you","See? I told you you're my hero","This deserves a celebration 🎉","I knew you were the smartest man in the world 💪"],
+  d_greet:["Better than you 😂😂","Great, because you're with me, love","Good as long as you're with me"],
+  d_ghor:["To paradise, together with you 😂","Hopefully to our future home","Leave you? Nope, can't do it"],
+  d_story:["Tell me, love ❤️","I'm listening, my hero 👂🏽","I'm here, tell me everything"],
+  d_other:["Thanks for telling me, love 🤍","Your stories are the best part of my day","Waiting for the next story, my hero 📔"],
+  g_high:["Look at you, my hero 🔥","I knew it! My man is the best as always 💪","That grade deserves a frame 🖼️"],
+  g_mid:["Nice, the next one will be even better 💪","Good job, you'll ace it next time"],
+  g_low:["Don't worry, love, it's one grade, not the end of the world 🤍","That grade doesn't say who you are","I know you'll make up for it 💪"],
+  done:["Way to go, my hero 💪","That's my man 🔥","So proud of you, love"],
+  lazy:["Too lazy? It's fine, we'll make it up tomorrow 😌","Okay lazy, but no excuses tomorrow 😂"],
+  love:["Just so you know, I'm thinking of you right now 💌","Drink some water, love. It's not advice, it's a love note 💧","You're the best thing that ever happened to me","If anything's bothering you, call me right away"],
+  morning:["Good morning, my man ☀️ get up, the world is waiting","Wake up, my hero, today will be a good day","Morning, love. Drink some water and smile 😁","I miss you, text me when you wake up 💌"],
+  period:[]
+};
+/* when the language changes, untouched default groups switch language too; edited groups stay as written */
+function swapDefaultMsgs(st, g, rel, from, to){
+  const A = defMsgs(g, rel, from), B = defMsgs(g, rel, to);
+  for (const k in B) if (st.msgs && JSON.stringify(st.msgs[k]) === JSON.stringify(A[k])) st.msgs[k] = B[k];
+}
+function defMsgs(g, rel, lang = (typeof LANG === "function" ? LANG() : "ar")){
+  const m = JSON.parse(JSON.stringify(lang === "en" ? (g === "m" ? DEFAULT_MSGS_EN_M : DEFAULT_MSGS_EN) : (g === "m" ? DEFAULT_MSGS_M : DEFAULT_MSGS)));
   if (rel === "christian") for (const k in m){ const f = m[k].filter(t => !ISLAMIC.test(t)); m[k] = f.length || !m[k].length ? f : [NEUTRAL_FALLBACK]; }
   return m;
 }
 /* keyword → reply group for the diary (checked in order) */
 const DIARY_RULES = [
-  ["d_sad",   ["زعلان","مخنوق","مضايق","عيطت","بعيط","حزين","زهقان","مقهور","وحش اوي","مكتئب"]],
-  ["d_tired", ["تعبان","تعبت","مرهق","مصدع","هلكان","نعسان","مفيش طاقه","تعب"]],
-  ["d_study", ["مذاكر","ذاكرت","امتحان","كويز","ميدترم","فاينل","محاضر","سكشن","شيت","دكتور","مذاكره"]],
-  ["d_happy", ["فرحان","مبسوط","نجحت","قفلت","فرحت","جبت الدرجه","مبسوطه","حلو اوي","اتبسطت"]],
-  ["d_ghor",  ["غور","غوري","اتغور"]],
-  ["d_greet", ["ازيك","عامل ايه","اخبارك","عامله ايه"]],
-  ["d_story", ["عايزه احكي","عايزة احكي","هحكيلك","احكيلك","هقولك حاجه"]]
+  ["d_sad",   ["sad","upset","crying","cried","depressed","lonely","hurt","زعلان","مخنوق","مضايق","عيطت","بعيط","حزين","زهقان","مقهور","وحش اوي","مكتئب"]],
+  ["d_tired", ["tired","exhausted","sleepy","headache","no energy","تعبان","تعبت","مرهق","مصدع","هلكان","نعسان","مفيش طاقه","تعب"]],
+  ["d_study", ["exam","study","studied","quiz","midterm","final","lecture","doctor","مذاكر","ذاكرت","امتحان","كويز","ميدترم","فاينل","محاضر","سكشن","شيت","دكتور","مذاكره"]],
+  ["d_happy", ["happy","passed","yay","so good","excited","great day","فرحان","مبسوط","نجحت","قفلت","فرحت","جبت الدرجه","مبسوطه","حلو اوي","اتبسطت"]],
+  ["d_ghor",  ["get lost","go away","غور","غوري","اتغور"]],
+  ["d_greet", ["how are you","how r u","hello","hi ","ازيك","عامل ايه","اخبارك","عامله ايه"]],
+  ["d_story", ["want to talk","let me tell you","i need to talk","عايزه احكي","عايزة احكي","هحكيلك","احكيلك","هقولك حاجه"]]
 ];
 
 
@@ -1091,7 +1142,7 @@ function restoreSheet(){
 
 /* ================= actions ================= */
 function diaryReply(text){
-  const n = norm(text);
+  const n = norm(String(text).toLowerCase() + " ");
   for (const r of (S.rules||[])) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
   for (const [cat, words] of DIARY_RULES) if (words.some(w => n.includes(norm(w)))) return cat;
   return "d_other";
@@ -1238,7 +1289,7 @@ document.addEventListener("click", e => {
     case "adm-dismiss": { fb.del(`reports/${v}`).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); }); break; }
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
-    case "set-lang": { try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { S.lang = v; save(); } closeSheet(); render(); break; }
+    case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
     case "reset-msgs": { const T = msgsTarget(); T.msgs = T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
