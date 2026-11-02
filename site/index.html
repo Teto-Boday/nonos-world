@@ -167,10 +167,11 @@ html.boy .btn{box-shadow:0 4px 0 #1f4f8f}
 html.boy .chipbtn.solid{box-shadow:0 3px 0 #1f4f8f}
 html.boy .blobs i:nth-child(1){background:#cfe0fb}
 html.boy .blobs i:nth-child(3){background:#dbe6f5}
-.reviews{position:relative;max-width:640px;margin:0 auto;min-height:180px}
-.review{position:absolute;inset:0;background:var(--surface);border-radius:26px;padding:22px;box-shadow:0 4px 0 #f6cddb;display:flex;flex-direction:column;gap:8px;justify-content:center;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s,transform .6s}
-.review.on{opacity:1;transform:none}
-.review .st{font-size:20px;letter-spacing:2px}
+.reviews{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.review{background:var(--surface);border-radius:22px;padding:18px;box-shadow:0 4px 0 #f6cddb;display:flex;flex-direction:column;gap:6px;justify-content:center;text-align:center}
+.review.new{animation:rvin .7s ease both}
+@keyframes rvin{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.review .st{font-size:22px;letter-spacing:3px;color:#f5b301}
 .review p{margin:0;font-size:18px;font-weight:600}
 .review .who{color:var(--muted);font-weight:700}
 
@@ -477,23 +478,24 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   document.querySelectorAll(".gpick button").forEach(function(b){ b.onclick = function(){ setGender(b.getAttribute("data-g")); }; });
   setGender(g0);
 
-  // reviews from inside the app (newest first, rotating)
+  // reviews from inside the app: the newest 5 show up on their own
+  var seen = {};
   function loadReviews(){
-    var url = "https://firestore.googleapis.com/v1/projects/nonos-world/databases/(default)/documents/publicReviews?pageSize=30&orderBy=at%20desc&key=AIzaSyD8G36U_KYYVulOFJze12m9gmXczjhgt-Y";
-    fetch(url).then(function(r){ return r.json(); }).then(function(d){
-      var docs = (d.documents || []).map(function(x){ var f = x.fields || {}; return {name:(f.name||{}).stringValue||"", text:(f.text||{}).stringValue||"", stars:+((f.stars||{}).integerValue||5)}; }).filter(function(r){ return r.text; });
+    var url = "https://firestore.googleapis.com/v1/projects/nonos-world/databases/(default)/documents/publicReviews?pageSize=5&orderBy=at%20desc&key=AIzaSyD8G36U_KYYVulOFJze12m9gmXczjhgt-Y";
+    fetch(url, {cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
+      var docs = (d.documents || []).map(function(x){ var f = x.fields || {}; return {id:x.name, at:+((f.at||{}).integerValue||0), name:(f.name||{}).stringValue||"", text:(f.text||{}).stringValue||"", stars:+((f.stars||{}).integerValue||5)}; }).slice(0, 5);
       var box = document.getElementById("rv"), sec = document.getElementById("reviews");
       if (!docs.length){ sec.hidden = true; return; }
       sec.hidden = false; box.innerHTML = "";
-      docs.forEach(function(r, i){ var c = document.createElement("div"); c.className = "review" + (i ? "" : " on");
-        var st = document.createElement("div"); st.className = "st"; st.textContent = "⭐".repeat(Math.max(1, Math.min(5, r.stars)));
-        var p = document.createElement("p"); p.textContent = "“" + r.text + "”"; p.dir = "auto";
-        var w = document.createElement("div"); w.className = "who"; w.textContent = r.name; w.dir = "auto";
-        c.appendChild(st); c.appendChild(p); c.appendChild(w); box.appendChild(c); });
+      docs.forEach(function(r){ var c = document.createElement("div"), key = r.id + r.at; c.className = "review" + (seen[key] ? "" : " new"); seen[key] = 1;
+        var st = document.createElement("div"); st.className = "st"; st.setAttribute("aria-label", r.stars + " / 5"); st.textContent = "★★★★★".slice(0, Math.max(1, Math.min(5, r.stars))) + "☆☆☆☆☆".slice(0, 5 - Math.max(1, Math.min(5, r.stars)));
+        c.appendChild(st);
+        if (r.text){ var p = document.createElement("p"); p.textContent = "“" + r.text + "”"; p.dir = "auto"; c.appendChild(p); }
+        var w = document.createElement("div"); w.className = "who"; w.textContent = r.name; w.dir = "auto"; c.appendChild(w);
+        box.appendChild(c); });
     }).catch(function(){});
   }
-  var rvI = 0; setInterval(function(){ var cs = document.querySelectorAll("#rv .review"); if (cs.length < 2) return; cs[rvI % cs.length].classList.remove("on"); rvI++; cs[rvI % cs.length].classList.add("on"); }, 4500);
-  loadReviews(); setInterval(loadReviews, 60000);
+  loadReviews(); setInterval(loadReviews, 30000);
 
   // hero carousel
   var imgs = document.querySelectorAll("#carousel img"), i = 0;

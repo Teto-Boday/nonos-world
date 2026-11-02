@@ -902,10 +902,11 @@ function feedbackSheet(){
   U.fb = U.fb || {stars:5, kind:"review"};
   const f = U.fb;
   sheet(`<h2>قيّمي التطبيق ⭐</h2>
+  <p class="muted small center" style="margin:-4px 0 6px">${f.kind==="review" ? "اختاري عدد النجوم، والكلام اختياري" : ""}</p>
   <div class="stars big-stars" style="justify-content:center;margin-bottom:10px">${[1,2,3,4,5].map(i=>`<button data-act="fb-star" data-v="${i}" class="${i<=f.stars?"f":""}" aria-label="${i}">⭐</button>`).join("")}</div>
   <div class="seg" style="margin-bottom:10px"><button data-act="fb-kind" data-v="review" aria-pressed="${f.kind==="review"}">رأيي</button><button data-act="fb-kind" data-v="idea" aria-pressed="${f.kind==="idea"}">اقتراح</button><button data-act="fb-kind" data-v="complaint" aria-pressed="${f.kind==="complaint"}">شكوى</button></div>
   <form class="form" data-form="feedback">
-    <textarea class="in" id="fb-text" maxlength="300" placeholder="${f.kind==="complaint"?"إيه اللي مضايقك؟":f.kind==="idea"?"نفسك نزوّد إيه؟":"قولي رأيك في التطبيق"}" required></textarea>
+    <textarea class="in" id="fb-text" maxlength="300" placeholder="${f.kind==="complaint"?"إيه اللي مضايقك؟":f.kind==="idea"?"نفسك نزوّد إيه؟":"اكتبي رأيك لو حابة (مش لازم)"}" ${f.kind==="review" ? "" : "required"}></textarea>
     ${f.kind==="review" ? `<label class="item" style="cursor:pointer"><input type="checkbox" id="fb-public" checked style="width:20px;height:20px;accent-color:var(--accent)"><div class="grow"><div class="t">اعرضي رأيي على موقع التطبيق</div><div class="s">باسمك الأول بس</div></div></label>` : `<p class="muted small" style="margin:0">ده بيوصل لصاحب التطبيق بس.</p>`}
     <button class="btn" type="submit" id="fb-btn">ابعتي</button>
   </form>`);
@@ -1693,7 +1694,7 @@ document.addEventListener("submit", e => {
       break;
     }
     case "feedback": {
-      const text = val("fb-text"); if (!text) return;
+      const text = val("fb-text"); if (!text && U.fb.kind !== "review") return;
       const f = U.fb, pub = f.kind === "review" && $("#fb-public") && $("#fb-public").checked;
       const btn = $("#fb-btn"); if (btn){ btn.disabled = true; btn.textContent = "لحظة…"; }
       const first = String(ME.name || "").split(/\s+/)[0].slice(0, 20);
