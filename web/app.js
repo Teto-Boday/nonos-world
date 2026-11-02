@@ -1062,8 +1062,8 @@ function settingsView(){
   </div>
   ${CLOUD ? `<div class="card"><h3>🔑 غيّري الباسورد</h3>
     <form class="form" data-form="pass" style="margin-top:10px">
-      <label class="f">الباسورد الحالي<input class="in" id="pw-cur" type="password" required autocomplete="current-password" dir="ltr"></label>
-      <label class="f">الباسورد الجديد<input class="in" id="pw-new" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+      <label class="f">الباسورد الحالي<span class="pwwrap"><input class="in" id="pw-cur" type="password" required autocomplete="current-password" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">👁️</button></span></label>
+      <label class="f">الباسورد الجديد<span class="pwwrap"><input class="in" id="pw-new" type="password" required minlength="6" autocomplete="new-password" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">👁️</button></span></label>
       <div class="notice" id="pw-err" style="display:none;color:var(--bad);font-weight:700"></div>
       <button class="btn" type="submit">غيّري</button>
     </form></div>` : ""}
@@ -1081,7 +1081,7 @@ function authView(){
     <form class="card form" data-form="auth">
       ${login?"":`<label class="f">اسمك (هنناديكي بيه)<input class="in" id="a-name" required placeholder="${U.ag==="m"?"محمد":"نونو"}"></label>`}
       <label class="f">اسم المستخدم (إنجليزي وأرقام)<input class="in" id="a-user" required autocomplete="username" dir="ltr" placeholder="nono" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي أو رقم"></label>
-      <label class="f">الباسورد<input class="in" id="a-pass" type="password" required minlength="6" autocomplete="${login?"current-password":"new-password"}" dir="ltr"></label>
+      <label class="f">الباسورد<span class="pwwrap"><input class="in" id="a-pass" type="password" required minlength="6" autocomplete="${login?"current-password":"new-password"}" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">👁️</button></span></label>
       ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>
       <div class="seg" role="group" aria-label="الديانة"><button type="button" data-act="arel" data-v="muslim" aria-pressed="${U.rel!=="christian"}">مسلمة</button><button type="button" data-act="arel" data-v="christian" aria-pressed="${U.rel==="christian"}">مسيحية</button></div>`}
       <div class="notice" id="a-err" style="display:none;color:var(--bad);font-weight:700"></div>
@@ -1448,6 +1448,7 @@ document.addEventListener("click", e => {
       <button class="btn ghost block" style="margin-top:14px" data-act="g-leave" data-v="${esc(g.id)}">اخرجي من الجروب</button>`); break; }
     case "g-leave": { fb.leaveArray(`groups/${v}`, "members", UID).then(()=>{ closeSheet(); openGroup(null); toast("خرجتي من الجروب"); }).catch(()=>toast("مقدرتش أخرجك، جرّبي تاني")); break; }
     case "g-report": { const m = GR.msgs.find(x=>x.id===v); if (!m) break; fb.add("reports", {kind:"report", path:`groups/${GR.open}/msgs/${v}`, owner:null, author:m.from, by:UID, text:m.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
+    case "showpw": { const t = b, i = t.parentNode.querySelector("input"); const show = i.type === "password"; i.type = show ? "text" : "password"; t.textContent = show ? "🙈" : "👁️"; t.setAttribute("aria-label", show ? "إخفاء الباسورد" : "إظهار الباسورد"); i.focus(); break; }
     case "feedback": U.fb = {stars:5, kind:"review"}; feedbackSheet(); break;
     case "fb-star": { const t = ($("#fb-text")||{}).value || ""; U.fb.stars = +v; feedbackSheet(); $("#fb-text").value = t; break; }
     case "fb-kind": { const t = ($("#fb-text")||{}).value || ""; U.fb.kind = v; feedbackSheet(); $("#fb-text").value = t; break; }
