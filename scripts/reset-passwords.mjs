@@ -22,3 +22,33 @@ for (const d of snap.docs) {
 // clean up finished requests older than 3 days
 const old = await db.collection("resetRequests").where("status", "in", ["done", "notfound", "error"]).get();
 for (const d of old.docs) if ((d.data().doneAt || 0) < Date.now() - 3 * 864e5 && d.data().status === "done") await d.ref.delete();
+
+// accounts the owner deleted from the admin panel: remove the login and every piece of data
+const dels = await db.collection("deleteRequests").where("status", "==", "new").get();
+console.log(`delete requests: ${dels.size}`);
+for (const d of dels.docs) {
+  const uid = d.id;
+  try {
+    const me = (await db.doc(`users/${uid}`).get()).data() || {};
+    if (me.partner) { const p = db.doc(`users/${me.partner}`); const pd = (await p.get()).data(); if (pd && pd.partner === uid) await p.update({ partner: null }); }
+    const groups = await db.collection("groups").where("members", "array-contains", uid).get();
+    for (const g of groups.docs) {
+      const left = (g.data().members || []).filter(m => m !== uid);
+      const names = { ...(g.data().names || {}) }; delete names[uid];
+      const topics = { ...(g.data().topics || {}) }; delete topics[uid];
+      await g.ref.update({ members: left, names, topics });
+    }
+    if (me.invite) await db.doc(`invites/${me.invite}`).delete().catch(() => {});
+    for (const path of [`linkRequests/${uid}`, `publicReviews/${uid}`, `admins/${uid}`]) await db.doc(path).delete().catch(() => {});
+    const fbk = await db.collection("feedback").where("uid", "==", uid).get(); for (const f of fbk.docs) await f.ref.delete();
+    await db.recursiveDelete(db.doc(`u/${uid}`));
+    await db.recursiveDelete(db.collection(`u/${uid}/chat`)).catch(() => {});
+    await db.doc(`users/${uid}`).delete();
+    await auth.deleteUser(uid).catch(e => { if (e.code !== "auth/user-not-found") throw e; });
+    await d.ref.delete();
+    console.log(`deleted: ${me.username || uid}`);
+  } catch (e) {
+    await d.ref.update({ status: "error", error: String(e && e.message || e).slice(0, 200) });
+    console.log(`delete failed: ${uid}: ${e && e.message}`);
+  }
+}

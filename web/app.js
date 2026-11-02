@@ -1009,12 +1009,13 @@ function adminView(){
       <div class="card" style="margin-bottom:10px"><h3>💌 رسالة خاصة تظهرله في شاشة الفتح</h3>
         <textarea class="in" id="adm-special" style="margin-top:8px" placeholder="إنتي أغلى وأجمل حاجة حصلتلي في الدنيا، أنا بجد آسف على كل اللي عملته">${escP(u.special||"")}</textarea>
         <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
-      <div class="row wrap"><button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
+      <div class="row wrap">${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
   if (A.gsel){
     const g = (A.groups||[]).find(x=>x.id===A.gsel) || {};
     const msgs = (A.gmsgs||[]).slice().sort((a,b)=>a.ts-b.ts);
     return `<div class="banner"><span>👑 جروب: ${esc(g.name||"")} · ${(g.members||[]).length} أعضاء</span><button class="btn small" data-act="adm-gback">رجوع</button></div>
+    <button class="btn danger small" style="margin-bottom:10px" data-act="adm-delgroup">🗑️ امسح الجروب نهائي</button>
     <div class="card"><div class="muted small" style="margin-bottom:8px">${(g.members||[]).map(m=>esc((A.users.find(x=>x.id===m)||{}).name || (g.names||{})[m] || "?")).join("، ")}</div>
     ${A.gmsgs === null ? `<p class="empty">بنحمّل…</p>` : msgs.length ? `<ul class="list">${msgs.map(m=>`<li class="item"><span class="ic">💬</span><div class="grow"><div class="t">${esc(m.text||"")}</div><div class="s">${esc(m.name||"")} · ${new Date(m.ts).toLocaleString("ar-EG")}</div></div><button class="x" data-act="adm-gdel" data-v="${esc(m.id)}" aria-label="امسح">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">مفيش رسايل</p>`}</div>`;
   }
@@ -1039,7 +1040,7 @@ function adminView(){
 async function loadAdmin(){
   const A = U.admin;
   try {
-    A.users = (await fb.list("users", 1000)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    A.users = (await fb.list("users", 1000)).filter(u=>!u.deleting).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     A.reports = await fb.list("reports", 200);
     A.feedback = await fb.list("feedback", 100, "at").catch(()=>[]);
     A.resets = await fb.list("resetRequests", 100).catch(()=>[]);
@@ -1492,6 +1493,20 @@ document.addEventListener("click", e => {
     case "adm-gback": U.admin.gsel = null; U.admin.gmsgs = null; render(); break;
     case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`groups/${gid}/msgs/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
     case "adm-export": adminExport(); break;
+    case "adm-deluser": { const u = (U.admin.users||[]).find(x=>x.id===v); if (!u || v === UID) break;
+      sheet(`<h2>🗑️ تمسح حساب ${esc(u.name||"")}؟</h2><p class="muted">@${esc(u.username||"")}</p><p>الحساب وكل بياناته هيتمسحوا <b>نهائي</b> ومش هيرجعوا: الفلوس والمهام والمذاكرة والمود ودفتر حكاياتي والرسايل. وهيتفك الربط مع شريكه ويخرج من الجروبات.</p><p class="muted small">هيتقفل على طول، ويتمسح خالص خلال 5 دقايق.</p><div class="form"><button class="btn danger" data-act="adm-deluser-ok" data-v="${esc(u.id)}">أيوه امسحه نهائي</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
+    case "adm-deluser-ok": { const A = U.admin, u = (A.users||[]).find(x=>x.id===v); if (!u) break;
+      Promise.all([fb.set(`users/${v}`, {banned:true, deleting:true}), fb.set(`deleteRequests/${v}`, {username:u.username||"", name:u.name||"", at:Date.now(), status:"new"}, false)])
+        .then(() => { A.users = A.users.filter(x=>x.id!==v); A.sel = null; A.st = null; closeSheet(); render(); toast("اتقفل، وهيتمسح خالص خلال 5 دقايق 🗑️"); })
+        .catch(() => toast("مقدرتش، اتأكد إنك نشرت قواعد Firebase الجديدة")); break; }
+    case "adm-delgroup": { const g = (U.admin.groups||[]).find(x=>x.id===U.admin.gsel); if (!g) break;
+      sheet(`<h2>🗑️ تمسح جروب ${esc(g.name||"")}؟</h2><p>الجروب وكل رسايله هيتمسحوا نهائي، والأعضاء مش هيشوفوه تاني.</p><div class="form"><button class="btn danger" data-act="adm-delgroup-ok">أيوه امسحه</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
+    case "adm-delgroup-ok": { const A = U.admin, g = (A.groups||[]).find(x=>x.id===A.gsel); if (!g) break; closeSheet(); toast("بنمسح…");
+      fb.list(`groups/${g.id}/msgs`, 5000).then(ms => Promise.all(ms.map(m => fb.del(`groups/${g.id}/msgs/${m.id}`))))
+        .then(() => g.code ? fb.del(`groupCodes/${g.code}`).catch(()=>{}) : null)
+        .then(() => fb.del(`groups/${g.id}`))
+        .then(() => { A.groups = A.groups.filter(x=>x.id!==g.id); A.gsel = null; A.gmsgs = null; render(); toast("اتمسح الجروب 🗑️"); })
+        .catch(() => toast("مقدرتش أمسح الجروب")); break; }
     case "adm-reset": {
       const r = U.admin.resets.find(x=>x.id===v); if (!r) break;
       const temp = "nw" + Math.random().toString(36).slice(2,8);

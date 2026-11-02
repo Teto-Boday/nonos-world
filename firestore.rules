@@ -85,6 +85,12 @@ service cloud.firestore {
     match /groupCodes/{code} {
       allow read: if signed();
       allow create: if signed() && request.resource.data.keys().hasOnly(['gid', 'name']);
+      allow delete: if admin();
+    }
+
+    // the owner asks for an account to be deleted; a GitHub Action removes it for good
+    match /deleteRequests/{uid} {
+      allow read, write: if admin();
     }
 
     match /feedback/{id} {
