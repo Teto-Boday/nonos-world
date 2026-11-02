@@ -258,3 +258,8 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .actb.on .x{color:#fff;font-size:12px;padding:0 2px}
 .actb.add{background:transparent;border:2px dashed color-mix(in srgb, var(--accent) 45%, transparent)}
 .acts .actb{width:auto;flex:none;margin:0}
+.admtbl{width:100%;border-collapse:collapse;font-size:13px;text-align:center}
+.admtbl th,.admtbl td{padding:6px 4px;border-bottom:1px solid color-mix(in srgb, var(--ink) 10%, transparent);white-space:nowrap}
+.admtbl th{color:var(--mu);font-weight:700}
+.item .check{border:0;background:transparent;font-size:20px;cursor:pointer;padding:0 4px}
+.item.done .t{text-decoration:line-through;opacity:.6}
