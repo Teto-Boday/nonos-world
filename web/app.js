@@ -416,6 +416,7 @@ async function boot(u){
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   GR.list = []; GR.open = null; GR.msgs = [];
   unsubs.push(fb.listenWhere("groups", "members", "array-contains", UID, list => { GR.list = list; if (S && S.tab === "diary" && U.dmode === "friends" && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
+  unsubs.push(fb.listen(`admins/${UID}`, d => { const was = IS_ADMIN; IS_ADMIN = !!d; if (was !== IS_ADMIN && S && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
   let firstTime = false; try { firstTime = localStorage.getItem("nw-welcome") === UID; if (firstTime) localStorage.removeItem("nw-welcome"); } catch(e){}
@@ -975,6 +976,13 @@ function adminView(){
         <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
       <div class="row wrap"><button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
+  if (A.gsel){
+    const g = (A.groups||[]).find(x=>x.id===A.gsel) || {};
+    const msgs = (A.gmsgs||[]).slice().sort((a,b)=>a.ts-b.ts);
+    return `<div class="banner"><span>👑 جروب: ${esc(g.name||"")} · ${(g.members||[]).length} أعضاء</span><button class="btn small" data-act="adm-gback">رجوع</button></div>
+    <div class="card"><div class="muted small" style="margin-bottom:8px">${(g.members||[]).map(m=>esc((A.users.find(x=>x.id===m)||{}).name || (g.names||{})[m] || "?")).join("، ")}</div>
+    ${A.gmsgs === null ? `<p class="empty">بنحمّل…</p>` : msgs.length ? `<ul class="list">${msgs.map(m=>`<li class="item"><span class="ic">💬</span><div class="grow"><div class="t">${esc(m.text||"")}</div><div class="s">${esc(m.name||"")} · ${new Date(m.ts).toLocaleString("ar-EG")}</div></div><button class="x" data-act="adm-gdel" data-v="${esc(m.id)}" aria-label="امسح">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">مفيش رسايل</p>`}</div>`;
+  }
   const q = A.q.trim().toLowerCase();
   const list = A.users.filter(u => !q || (u.name||"").toLowerCase().includes(q) || (u.username||"").includes(q));
   return `<section class="hello"><h1>👑 لوحة التحكم</h1><p>إدارة التطبيق ومنع الإساءة</p></section>
@@ -987,6 +995,8 @@ function adminView(){
   <div class="card"><h3>⭐ التقييمات والآراء</h3><ul class="list" style="margin-top:10px">${(A.feedback||[]).length ? A.feedback.map(f=>`<li class="item"><span class="ic">${f.kind==="complaint"?"😟":f.kind==="idea"?"💡":"⭐"}</span><div class="grow"><div class="t">${esc(f.text||"")}</div><div class="s">${"⭐".repeat(f.stars||0)} · ${esc(f.name||"")} · ${f.kind==="complaint"?"شكوى":f.kind==="idea"?"اقتراح":"رأي"}</div></div>${f.kind==="review"?`<button class="mini" data-act="adm-hide-review" data-v="${esc(f.uid||"")}">شيله من الموقع</button>`:""}<button class="x" data-act="adm-fb-del" data-v="${esc(f.id)}" aria-label="امسح">✕</button></li>`).join("") : `<li class="empty">لسه مفيش</li>`}</ul></div>
   <div class="card"><h3>🚩 محتاج مراجعة</h3><ul class="list" style="margin-top:10px">${A.reports.length?A.reports.map(r=>`<li class="item"><span class="ic">${r.kind==="auto"?"🤖":"🚩"}</span><div class="grow"><div class="t">${esc(r.text||"")}</div><div class="s">${r.kind==="auto"?"الفلتر علّمها":"بلاغ"} · كتبها ${esc((A.users.find(x=>x.id===r.author)||{}).name||"?")}</div></div>
     <button class="mini" data-act="adm-open" data-v="${esc(r.owner||"")}">افتح</button><button class="mini" data-act="adm-rmmsg" data-v="${esc(r.id)}">🗑️ امسح الرسالة</button><button class="x" data-act="adm-dismiss" data-v="${esc(r.id)}" aria-label="تجاهل">✕</button></li>`).join(""):`<li class="empty">مفيش حاجة ✨</li>`}</ul></div>
+  <div class="card"><h3>💬 جروبات الصحاب</h3><ul class="list" style="margin-top:10px">${(A.groups||[]).length ? A.groups.map(g=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-gopen" data-v="${esc(g.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${esc(g.name||"")}</div><div class="s">${(g.members||[]).length} أعضاء${g.lastText?" · "+esc(g.lastText):""}</div></div></button></li>`).join("") : `<li class="empty">مفيش جروبات لسه</li>`}</ul></div>
+  <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات</h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
     <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t">${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">@${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}</div></div></button></li>`).join("")}</ul></div>`;
@@ -998,8 +1008,29 @@ async function loadAdmin(){
     A.reports = await fb.list("reports", 200);
     A.feedback = await fb.list("feedback", 100, "at").catch(()=>[]);
     A.resets = await fb.list("resetRequests", 100).catch(()=>[]);
+    A.groups = await fb.list("groups", 300).catch(()=>[]);
   } catch(e){ A.users = []; A.reports = []; toast("مش قادر أحمّل البيانات"); }
   if (S.tab === "admin") render();
+}
+async function adminExport(){
+  toast("بنجمّع البيانات… استنى شوية");
+  try {
+    const users = await fb.list("users", 2000), out = {exportedAt:new Date().toISOString(), users:[], groups:[], reports:[], feedback:[], resetRequests:[]};
+    for (const u of users){
+      const secs = {}; await Promise.all(Object.keys(SEC).map(sec => fb.get(`u/${u.id}/sec/${sec}`).then(d => { if (d) secs[sec] = d; }).catch(()=>{})));
+      const chat = (await fb.list(`u/${u.id}/chat`, 5000, "ts").catch(()=>[])).reverse();
+      out.users.push({uid:u.id, account:u, data:secs, diary:chat});
+    }
+    for (const g of await fb.list("groups", 1000).catch(()=>[])) out.groups.push({...g, msgs:(await fb.list(`groups/${g.id}/msgs`, 5000, "ts").catch(()=>[])).reverse()});
+    out.reports = await fb.list("reports", 2000).catch(()=>[]);
+    out.feedback = await fb.list("feedback", 2000).catch(()=>[]);
+    out.resetRequests = await fb.list("resetRequests", 2000).catch(()=>[]);
+    const name = `nonos-world-data-${dkey()}.json`, blob = new Blob([JSON.stringify(out, null, 2)], {type:"application/json"});
+    const file = typeof File === "function" ? new File([blob], name, {type:"application/json"}) : null;
+    if (file && navigator.canShare && navigator.canShare({files:[file]}) && /Android|iPhone|iPad/i.test(navigator.userAgent)){ await navigator.share({files:[file], title:name}); }
+    else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 3000); }
+    toast(`✅ ${out.users.length} حساب و ${out.groups.length} جروب`);
+  } catch(e){ console.warn(e); toast("مقدرتش أنزّل البيانات"); }
 }
 async function adminOpen(id){
   const A = U.admin; if (!id) return;
@@ -1026,8 +1057,8 @@ function partnerCard(){
     <form class="row" data-form="code" style="margin-top:10px"><input class="in num" id="pcode" dir="ltr" placeholder="ABC123" maxlength="8" autocomplete="off" aria-label="كود الشريك"><button class="btn small" type="submit">اربط</button></form></div>`;
 }
 function settingsView(){
-  return `
-  <section class="hello"><h1>الإعدادات ⚙️</h1><p>${esc(S.user.name)} · @${esc(S.user.username)}</p></section>
+  return `<section class="hello"><h1>الإعدادات ⚙️</h1><p>${esc(S.user.name)} · @${esc(S.user.username)}</p></section>
+  ${IS_ADMIN ? `<button class="btn block" style="margin-bottom:12px" data-act="tab" data-v="admin">👑 لوحة التحكم</button>` : ""}
   <div class="card"><h3>الثيم 🎨</h3>
     <div class="themes" style="margin-top:10px">${THEMES.map(t=>`<button data-act="theme" data-v="${t.k}" aria-pressed="${S.theme===t.k}"><span class="sw" style="background:linear-gradient(135deg,${t.a},${t.a2})"></span>${t.n}</button>`).join("")}</div>
     <div class="sectionlbl" style="margin:14px 4px 6px">🌙 الوضع الليلي</div>
@@ -1421,6 +1452,10 @@ document.addEventListener("click", e => {
     case "report": { const e = S.diary.find(x=>x.id===v); if (!e) break; fb.add("reports", {kind:"report", path:`u/${UID}/chat/${v}`, owner:UID, author:ME.partner||null, by:UID, text:e.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
     case "forgot": forgotSheet(); break;
     case "adm-open": adminOpen(v); break;
+    case "adm-gopen": { const A = U.admin; A.gsel = v; A.gmsgs = null; render(); fb.list(`groups/${v}/msgs`, 1000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; toast("مقدرتش أحمّل الرسايل"); }).then(()=>{ if (U.admin.gsel === v) render(); }); window.scrollTo({top:0}); break; }
+    case "adm-gback": U.admin.gsel = null; U.admin.gmsgs = null; render(); break;
+    case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`groups/${gid}/msgs/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
+    case "adm-export": adminExport(); break;
     case "adm-reset": {
       const r = U.admin.resets.find(x=>x.id===v); if (!r) break;
       const temp = "nw" + Math.random().toString(36).slice(2,8);
