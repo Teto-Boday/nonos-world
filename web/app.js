@@ -2,7 +2,9 @@
 "use strict";
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* esc() marks what people wrote (names, diary, messages) so the masculine rewrite below never touches it */
+const esc = s => "\uE000" + escP(s) + "\uE001";
 const uid = () => Math.random().toString(36).slice(2, 9);
 const dkey = (d = new Date()) => { const z = new Date(d); return z.getFullYear()+"-"+String(z.getMonth()+1).padStart(2,"0")+"-"+String(z.getDate()).padStart(2,"0"); };
 const addDays = (d, n) => { const z = new Date(d); z.setDate(z.getDate()+n); return z; };
@@ -66,6 +68,29 @@ const DEFAULT_MSGS = {
   love:["جيتي في بالي و قلت اقولك ان حبي ليكي زاد","انتي بجد احلى حاجه في الدنيا","انتي اجمل حاجه حصلت لي","انا اسف على كل حاجه زعلتك","حقك عليا يا نور عيوني في كل مره زعلتك فيها","اسفلك على كل مره زعلتك فيها"],
   morning:["صباح الفل على أحلى نونو ☀️ قومي يلا، الدنيا مستنياكي","اصحي يا بسبوسة، النهارده هيبقى يوم حلو","يلا قومي… وأول حاجة اشربي مية وابتسمي 😁","صباح الخير يا بنوتي","صباح الخير يا اشطر بنوته في الدنيا","ابعتيلي عشان وحشاني اوي","كنت مستنيكي بفارغ الصبر"]
 };
+const DEFAULT_MSGS_M = {
+  happy:["يا بخت اليوم اللي إنت مبسوط فيه 😍","الضحكة دي لازم تتحط في متحف يا وحش","خليك كده على طول يا بطل","ببقى مبسوطة طول ما إنت مبسوط 🤍"],
+  good:["كويس؟ يبقى ناويين نبقى أحلى 💪","يوم هادي، كمّل كده يا بطل","حلو أوي، كمّل يا وحش 🔥"],
+  meh:["عادي إيه بس، إنت مفيش فيك حاجة عادية 🙄","قوم اعمل حاجة بتحبها وتعالى قولّي بقيت أحسن 😉","لعله خير إن شاء الله","اليوم ده محتاج كوباية شاي وأغنية حلوة ☕"],
+  sad:["مالك يا وحش؟ قولّي بس 🤍","الزعل ده ضيف وهيمشي، وأنا جنبك","مسموحلك تزعل، بس متنساش إن في حد بيحبك جدًا","حقك عليا لو أنا السبب 😟"],
+  stressed:["خد نفس… الدنيا هتعدّي يا بطل 💪","مش لازم تخلّص كل حاجة النهارده، حاجة واحدة تكفي","إنت أقوى من الضغط ده بكتير","أنا جنبك، كل حاجة هتبقى كويسة ❤️"],
+  d_study:["إنت قدها يا بطل 💪","كل صفحة بتذاكرها بتقرّبك من الإفراج 🎉","فخورة بيك إنك قاعد تذاكر أصلًا","يلا يا وحش، فاضل شوية 🔥"],
+  d_tired:["كفاية كده النهارده، نام بدري وده أمر 😤","جسمك بيقولك ارتاح، اسمع كلامه","تعبك ده في ميزان حسناتك ❤️","إنت قد التعب يا بطل"],
+  d_sad:["مش هسيبك زعلان لوحدك أبدًا 🤍","مهما حصل، إنت مش لوحدك","أنا معاك وجنبك ❤️","مالك يا وحش؟ احكيلي"],
+  d_happy:["قولّي تاني! 😍 أنا فرحانة أكتر منك","شوفت بقى؟ قولتلك إنك جامد","ده يستاهل احتفال 🎉","كنت متأكدة إنك أشطر واحد في الدنيا 💪"],
+  d_greet:["أحسن منك 😂😂","أكيد كويسة عشان إنت معايا","كويسة طول ما إنت معايا"],
+  d_ghor:["للجنة معاك نيهاهاها 😂","يارب لبيتنا","وأسيبك؟ تؤ تؤ مقدرش"],
+  d_story:["احكيلي يا حبيبي ❤️","سامعاك يا وحش 👂🏽","أنا معاك، احكي"],
+  d_other:["شكرًا إنك حكيت 🤍","حكاياتك أحلى حاجة في يومي","مستنية الحكاية الجاية يا بطل 📔"],
+  g_high:["إيه الشطارة دي يا وحش 🔥","كنت عارفة! بطل زي العادة 💪","الدرجة دي تتبروز 🖼️"],
+  g_mid:["حلو، والجاية أحلى إن شاء الله 💪","مش بطالة خالص، نزوّد شوية المرة الجاية"],
+  g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنت مين، إنت أشطر منها","الجاية نعوّضها يا بطل 💪"],
+  done:["عاش يا بطل 💪","إيه الشغل ده يا وحش 🔥"],
+  lazy:["كسلت؟ عادي، بكرة نعوّضها 😌","ماشي يا كسول، بس بكرة مفيش هزار 😂"],
+  love:["على فكرة، أنا فاكراك دلوقتي 💌","اشرب مية، دي مش نصيحة دي رسالة حب 💧","إنت أحلى حاجة حصلتلي","لو مضايق من حاجة كلّمني على طول"],
+  morning:["صباح الفل يا وحش ☀️ قوم يلا، الدنيا مستنياك","اصحى يا بطل، النهارده يوم حلو","صباح الخير، اشرب مية وابتسم 😁"]
+};
+const defMsgs = g => JSON.parse(JSON.stringify(g === "m" ? DEFAULT_MSGS_M : DEFAULT_MSGS));
 /* keyword → reply group for the diary (checked in order) */
 const DIARY_RULES = [
   ["d_sad",   ["زعلان","مخنوق","مضايق","عيطت","بعيط","حزين","زهقان","مقهور","وحش اوي","مكتئب"]],
@@ -76,6 +101,32 @@ const DIARY_RULES = [
   ["d_greet", ["ازيك","عامل ايه","اخبارك","عامله ايه"]],
   ["d_story", ["عايزه احكي","عايزة احكي","هحكيلك","احكيلك","هقولك حاجه"]]
 ];
+
+
+/* ================= masculine wording (when the user is a guy) ================= */
+const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","ابدئي":"ابدأ","وابدئي":"وابدأ","تبدئي":"تبدأ","ابعتي":"ابعت","ابعتيلي":"ابعتلي","ابعتيها":"ابعتها",
+"اتأكدي":"اتأكد","اتبسطي":"اتبسط","احفظي":"احفظ","واحفظي":"واحفظ","واحفظيه":"واحفظه","اختاري":"اختار","تختاري":"تختار","بتختاري":"بتختار","ادخلي":"ادخل","تدخلي":"تدخل",
+"اربطي":"اربط","ارتاحي":"ارتاح","استخدمي":"استخدم","استمتعي":"استمتع","اشربي":"اشرب","اصرفي":"اصرف","اعملي":"اعمل","اكتبي":"اكتب","اكتبيه":"اكتبه","تكتبي":"تكتب",
+"الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
+"بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
+"تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
+"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
+"خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
+"شغّليها":"شغّلها","شوفي":"شوف","صاحبة":"صاحب","ضيفي":"ضيف","عارفة":"عارف","عايزة":"عايز","عايزه":"عايز","عدّيتي":"عدّيت","عليكي":"عليك","علّمي":"علّم","عملتي":"عملت",
+"عملتيها":"عملتها","عيّطي":"عيّط","فاكرة":"فاكر","فرحانة":"فرحان","قاعدة":"قاعد","قوليلي":"قولّي","قومي":"قوم","كسلتي":"كسلت","كسولة":"كسول","كلّمي":"كلّم","كمّلي":"كمّل",
+"كويسة":"كويس","ليكي":"ليك","مبسوطة":"مبسوط","مبسوطه":"مبسوط","متأكدة":"متأكد","مختارتيش":"مختارتش","مصرفتيش":"مصرفتش","مضايقة":"مضايق","مضغوطة":"مضغوط",
+"معاكي":"معاك","موافقة":"موافق","مستعدة":"مستعد","مستنيكي":"مستنيك","نامي":"نام","نسيتي":"نسيت","نمتي":"نمت","هتعوضي":"هتعوض","هصحّيكي":"هصحّيك","هنناديكي":"هنناديك",
+"وابتسمي":"وابتسم","وافقتي":"وافقت","شغالة":"شغال","بطلة":"بطل","بسبوسة":"وحش","بسبوسه":"وحش","نونو":"بطل","بنوتي":"بطل","حبيبتي":"حبيبي",
+"هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
+const MASC_RE = new RegExp("(^|[^\\u0600-\\u06FF])(" + Object.keys(MASC).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0600-\\u06FF])", "g");
+const mascRaw = str => String(str).replace(MASC_RE, (m, pre, w) => pre + MASC[w]);
+const stripMarks = h => String(h).replace(/[]/g, "");
+const mascProtected = h => String(h).split(/([^]*)/).map(x => x[0] === "" ? x.slice(1, -1) : mascRaw(x)).join("");
+const isMale = () => !!(S && S.user && S.user.gender === "m");
+/* gx: final pass on any HTML before it hits the page */
+const gx = (html, on = isMale()) => String(html).split(/(<!--k-->[\s\S]*?<!--\/k-->)/).map(x => x.startsWith("<!--k-->") ? x : (on ? mascProtected(x) : stripMarks(x))).join("");
+/* keep(): a block about another person, worded by THEIR gender, left alone by gx */
+const keep = (html, gender) => `<!--k-->${gender === "m" ? mascProtected(html) : stripMarks(html)}<!--/k-->`;
 
 /* ================= themes ================= */
 const THEMES = [
@@ -163,7 +214,7 @@ function seed(){
     moods:{[y]:"good",[y2]:"stressed",[y3]:"happy"},
     care:{[k]:{water:3,sleep:7}},
     diary:[{id:uid(),ts:addDays(t,-1).getTime(),text:"النهارده الدكتور شرح حتة صعبة أوي في المحاضرة بس فهمتها لوحدي 🥹",cat:"d_study",reply:"انا فخور بيكي يا بنوتي 🤏🏽"}],
-    msgs:JSON.parse(JSON.stringify(DEFAULT_MSGS)),
+    msgs:defMsgs("f"),
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null
   };
@@ -171,14 +222,14 @@ function seed(){
 function blank(){
   return { v:1, theme:"basbousa", dark:"auto", lang:"ar", pin:null, tab:"home", sample:false,
     money:{allowance:0, period:"month", expenses:[]}, schedule:[], tasks:[], subjects:[], sessions:[], exams:[], grades:[],
-    moods:{}, care:{}, diary:[], msgs:JSON.parse(JSON.stringify(DEFAULT_MSGS)), rules:[], share:{},
+    moods:{}, care:{}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false} };
 }
-function normalize(s){
+function normalize(s, gender){
   const b = blank();
   for (const k in b) if (s[k] === undefined || s[k] === null && k !== "pin" && k !== "lastMorning" && k !== "timer") s[k] = b[k];
-  for (const k in DEFAULT_MSGS) if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = DEFAULT_MSGS[k].slice();
+  const dm = defMsgs(gender); for (const k in dm) if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
   s.diary.forEach(e => { if (!e.chat) e.chat = "c0"; if (!e.reply && e.from !== "him" && e.pending) { e.reply = e.pending; delete e.pending; } });
   return s;
 }
@@ -238,7 +289,7 @@ async function boot(u){
   const secs = await Promise.all(Object.keys(SEC).map(sec => fb.get(`u/${UID}/sec/${sec}`).catch(()=>null)));
   const st = S && S.v ? S : blank();
   Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d){ Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); } });
-  S = normalize(st); S.tab = S.tab || "home";
+  S = normalize(st, ME.gender); S.tab = S.tab || "home";
   S.user = {name:ME.name, username:ME.username, gender:ME.gender}; S.share = Object.assign({}, ME.share || {});
   IS_ADMIN = !!(await fb.get(`admins/${UID}`).catch(()=>null));
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
@@ -296,8 +347,10 @@ async function signUp(name, username, pass, gender){
     const code = genCode(), topic = "nw-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     await fb.set(`users/${uidNew}`, {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, createdAt:Date.now()}, false);
     await fb.set(`invites/${code}`, {uid:uidNew, name}, false);
-    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa";
+    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender);
+    if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
     await fb.set(`u/${uidNew}/sec/prefs`, secData(st, "prefs"), false);
+    await fb.set(`u/${uidNew}/sec/msgs`, secData(st, "msgs"), false);
     resolveSU();
   } catch(e){ rejectSU(e); throw e; } finally { setTimeout(()=>signingUp=null, 0); }
 }
@@ -378,8 +431,8 @@ function render(){
   applyTheme();
   const app = $("#app");
   if (CLOUD && UID && !S){ app.innerHTML = `<div class="auth"><div class="logo">🌍</div><p class="center muted">بنجهّز دنيتك… 🌸</p></div>`; $("#tabs")?.remove(); return; }
-  if (!S || !S.user){ app.innerHTML = authView(); $("#tabs")?.remove(); return; }
-  if (ME && ME.banned){ app.innerHTML = `<div class="auth"><div class="logo">⛔</div><h1>الحساب موقوف</h1><p class="center muted">الحساب ده اتوقف من إدارة التطبيق. لو فاكرة إن ده غلط، كلّمي صاحب التطبيق.</p><button class="btn ghost" data-act="logout">خروج</button></div>`; $("#tabs")?.remove(); return; }
+  if (!S || !S.user){ app.innerHTML = gx(authView(), U.ag === "m" && U.authMode !== "login"); $("#tabs")?.remove(); return; }
+  if (ME && ME.banned){ app.innerHTML = `<div class="auth"><div class="logo">⛔</div><h1>الحساب موقوف</h1><p class="center muted">الحساب ده اتوقف من إدارة التطبيق. لو فاكرة إن ده غلط، كلّمي صاحب التطبيق.</p><button class="btn ghost" data-act="logout">خروج</button></div>`; app.innerHTML = gx(app.innerHTML); $("#tabs")?.remove(); return; }
   const v = {home:homeView, money:moneyView, day:dayView, study:studyView, diary:diaryView, settings:settingsView, partner:partnerView, mate:mateView, admin:adminView}[S.tab] || homeView;
   app.innerHTML = `
     <header class="top">
@@ -387,25 +440,26 @@ function render(){
       <button class="iconbtn" data-act="tab" data-v="settings" aria-label="الإعدادات">⚙️</button>
     </header>
     <main class="view">${v()}</main>`;
+  app.innerHTML = gx(app.innerHTML);
   let nav = $("#tabs");
   if (!nav){ nav = document.createElement("nav"); nav.id="tabs"; nav.className="tabs"; document.body.appendChild(nav); }
   const tabs = [["home","🏠","الرئيسية"],["money","💸","الفلوس"],["day","🗓️","يومنا"],["study","📚","المذاكرة"],["diary","📔","حكاياتي"]];
   if (P && P.linked) tabs.push(["mate","💞", P.user && P.user.gender === "m" ? "شريكي" : "شريكتي"]);
-  nav.innerHTML = `<div class="in">${tabs.map(([k,e,t])=>`<button data-act="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':""}><span class="e">${e}</span>${t}</button>`).join("")}</div>`;
+  nav.innerHTML = gx(`<div class="in">${tabs.map(([k,e,t])=>`<button data-act="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':""}><span class="e">${e}</span>${t}</button>`).join("")}</div>`);
   tickTimer();
 }
 function go(tab){ S.tab = tab; save(); render(); if (tab==="diary") window.scrollTo({top:document.body.scrollHeight}); else window.scrollTo({top:0}); }
-function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
+function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent = isMale() ? mascRaw(t) : String(t); document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
 function sheet(html, onMount){
   const layer = $("#layer");
-  layer.innerHTML = `<div class="scrim" data-act="close-scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
+  layer.innerHTML = `<div class="scrim" data-act="close-scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${gx(html, isMale() && U.edit !== "mate")}</div></div>`;
   const first = layer.querySelector("input,textarea,select"); if (first && !matchMedia("(pointer:coarse)").matches) setTimeout(()=>first.focus(),60);
   onMount && onMount(layer.querySelector(".sheet"));
 }
 let sheetLocked = false;
 function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; }
 function message(emoji, text, from = "منه 💌"){
-  sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p><small>${esc(from)}</small></div>
+  sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p><small>${escP(from)}</small></div>
     <button class="btn block" data-act="close" style="margin-top:14px">تسلم 🤍</button>`);
 }
 
@@ -617,7 +671,7 @@ function dashboard(o){
   const grades = S.grades.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,3);
   const ex = S.exams.filter(e=>e.date>=k).sort((a,b)=>a.date<b.date?-1:1)[0];
   const send = o.canReply ? `data-act="p-send"` : "disabled";
-  return `
+  return keep(`
   ${o.banner||""}
   <section class="hello"><h1>${o.title}</h1><p>${prettyDate(new Date())}</p></section>
   ${upset?`<div class="card alert"><h3>🚨 ${name} ${fem?"مضايقة":"مضايق"}</h3><p class="small" style="margin:4px 0 10px">${m&&(mood==="sad"||mood==="stressed")?`${fem?"اختارت":"اختار"} ${m.e} ${m.t} النهارده`:(fem?"كتبت":"كتب")+" حكاية زعلانة"}، ${fem?"كلّمها":"كلّمه"} 🤍</p><button class="btn small" ${send}>💌 ابعت كلمة</button></div>`:""}
@@ -636,7 +690,7 @@ function dashboard(o){
     ${sh("day")?`<div class="card"><h3>${L.day}</h3><ul class="list" style="margin-top:8px">${tasks.length?tasks.map(x=>`<li class="item ${x.status||""}"><div class="grow t">${esc(x.title)}</div><span class="small">${x.status==="done"?"✅":x.status==="lazy"?"🙈":"⏳"}</span></li>`).join(""):`<li class="empty">مفيش مهمات النهارده</li>`}</ul></div>`:lock(L.day)}
     ${sh("money")?`<div class="card"><div class="row between"><h3>الفلوس</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div><div class="big num" style="margin-top:8px">${fmt(mi.left)} <small>جنيه فاضلين</small></div></div>`:lock("الفلوس")}
   </div>
-  ${o.footer||""}`;
+  ${o.footer||""}`, o.gender);
 }
 function partnerView(){
   return dashboard({name:S.user.name, gender:S.user.gender, title:`${S.user.gender==="m"?"شريكي":"شريكتي"} 💞 ${esc(S.user.name)}`, canReply:false,
@@ -1094,7 +1148,7 @@ document.addEventListener("click", e => {
     case "adm-dismiss": { fb.del(`reports/${v}`).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); }); break; }
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
     case "agender": U.ag = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
-    case "reset-msgs": { const T = msgsTarget(); T.msgs = JSON.parse(JSON.stringify(DEFAULT_MSGS)); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
+    case "reset-msgs": { const T = msgsTarget(); T.msgs = defMsgs(msgsTarget() === P && P && P.user ? P.user.gender : (S && S.user && S.user.gender)); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
     case "change-pin": S.pin = null; save(); pinSheet(); break;
   }
 });
@@ -1171,7 +1225,7 @@ document.addEventListener("submit", e => {
     }
     case "msgs": {
       const T = msgsTarget();
-      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : DEFAULT_MSGS[t.dataset.msg].slice(); });
+      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : defMsgs(T === P && P.user ? P.user.gender : S.user.gender)[t.dataset.msg]; });
       S._love = null; saveMsgs(); closeSheet(); render(); toast("اتحفظت الرسايل 💌"); break;
     }
     case "restore": {
