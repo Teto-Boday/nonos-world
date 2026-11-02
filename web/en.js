@@ -27,7 +27,7 @@ export const EN = {
 "اشربي حاجة دافية زي ينسون أو قرفة":"Have something warm, like anise or cinnamon","قربة مية سخنة على بطنك بتريّح جدًا":"A hot water bottle on your tummy helps a lot",
 "نامي بدري واديله راحة":"Sleep early and rest","كُلي حاجة فيها حديد زي العدس والسبانخ":"Eat something with iron, like lentils or spinach",
 "مشي بسيط أو حركة خفيفة بيفرق":"A short walk or light movement helps","اشربي مية كتير النهارده":"Drink lots of water today","اتفرجي على حاجة بتحبيها وانسي المذاكرة شوية":"Watch something you love and forget studying for a bit",
-"البريود":"Period","بنجهّز دنيتك…":"Getting your world ready…","الحساب موقوف":"Account suspended",
+"إحنا 💞":"Us 💞","شاتكم إنتوا الاتنين بس، بعيد عن دفتر حكاياتي":"Just the two of you, separate from the diary","الدفتر ده ليكي إنتي بس 🔒":"This diary is just for you 🔒","البريود":"Period","بنجهّز دنيتك…":"Getting your world ready…","الحساب موقوف":"Account suspended",
 "الحساب ده اتوقف من إدارة التطبيق. لو فاكرة إن ده غلط، كلّمي صاحب التطبيق":"This account was suspended by the app admin. If you think this is a mistake, contact the app owner",
 "خروج":"Log out","الإعدادات":"Settings","الرئيسية":"Home","يومنا":"My day","المذاكرة":"Study","حكاياتي":"Diary","شريكي":"My partner","شريكتي":"My partner",
 "منه":"from him","تسلم":"Thanks","إزيك":"Hi","مساء الخير":"Good evening","يا":"","رسالة تانية":"Another message","النهارده":"today",

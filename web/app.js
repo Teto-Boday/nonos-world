@@ -327,6 +327,9 @@ const CLOUD = !!window.fb;
 const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
+const CP = {msgs:[], cid:null};
+const PSUB = {};
+const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
 const secData = (st, sec) => { const o = {}; SEC[sec].forEach(k => o[k] = st[k] === undefined ? null : st[k]); return o; };
@@ -414,7 +417,7 @@ async function boot(u){
     const local = new Map(S.diary.filter(e=>e.pending).map(e=>[e.id,e]));
     S.diary = list.map(e => { const {at, ...rest} = e; lastDiary.set(e.id, JSON.stringify(rest)); return rest; });
     local.forEach((e,id) => { if (!S.diary.some(x=>x.id===id)) S.diary.push(e); });
-    if (S.tab === "diary" && !$("#layer").innerHTML){ const typing = document.activeElement && document.activeElement.id === "diarytext" ? $("#diarytext").value : null; render(); if (typing !== null){ $("#diarytext").value = typing; $("#diarytext").focus(); } scrollChat(); }
+    if (S.tab === "diary" && U.dmode === "me" && !$("#layer").innerHTML){ keepTyping(render); scrollChat(); }
   }));
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
   unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
@@ -432,7 +435,7 @@ async function boot(u){
   try { if (!LN() && "Notification" in window && Notification.permission === "default") document.addEventListener("click", () => Notification.requestPermission().catch(()=>{}), {once:true}); } catch(e){}
 }
 function setupPartner(){
-  stopAll(punsubs); P = null;
+  stopAll(punsubs); Object.values(PSUB).forEach(u => { try { u(); } catch(e){} }); for (const k in PSUB) delete PSUB[k]; P = null; CP.msgs = []; CP.cid = null; if (U.dmode === "us") U.dmode = "me";
   const pid = ME && ME.partner; if (!pid) { if (S && S.tab === "partner") S.tab = "home"; render(); return; }
   P = Object.assign(blank(), {uid:pid, linked:false, user:null, loaded:{}});
   const sub = (path, cb) => punsubs.push(fb.listen(path, cb, () => {}));
@@ -440,11 +443,29 @@ function setupPartner(){
     if (!d){ return; }
     P.user = d; const wasLinked = P.linked; P.linked = d.partner === UID; P.share = d.share || {};
     if (P.linked && !wasLinked){
-      ["prefs","msgs"].concat(SHARE.map(x=>x[0]).filter(k=>k!=="diary")).forEach(sec => sub(`u/${pid}/sec/${sec}`, v => { if (v){ Object.assign(P, v); P.loaded[sec] = true; } if (S.tab === "partner") render(); }));
-      if (P.share.diary !== false) punsubs.push(fb.listenCol(`u/${pid}/chat`, list => { const own = list.filter(e => e.from !== "him");
-        if (SEEN.mate) own.filter(e => !SEEN.mate.has(e.id)).forEach(e => { if (!(S.tab === "mate" && document.visibilityState === "visible")) notice(`📔 ${P.user ? P.user.name : ""}`, e.text || ""); });
-        SEEN.mate = new Set(own.map(e => e.id)); P.diary = list; if (S.tab === "partner") render(); }, () => {}));
+      sub(`u/${pid}/sec/prefs`, v => { if (v){ Object.assign(P, v); P.loaded.prefs = true; } if (S.tab === "partner") render(); });
+      sub(`u/${pid}/sec/msgs`, v => { if (v){ Object.assign(P, v); P.loaded.msgs = true; } if (S.tab === "partner") render(); });
+      CP.cid = coupleId(UID, pid); CP.msgs = []; let cpFirst = true;
+      punsubs.push(fb.listenCol(`couples/${CP.cid}/msgs`, list => {
+        if (!cpFirst) list.filter(m => m.from !== UID && !CP.msgs.some(x => x.id === m.id)).forEach(m => { if (!(S.tab === "diary" && U.dmode === "us" && document.visibilityState === "visible")) notice(`💞 ${P.user ? P.user.name : ""}`, m.text || ""); });
+        cpFirst = false; CP.msgs = list;
+        if (S.tab === "diary" && U.dmode === "us" && !$("#layer").innerHTML){ keepTyping(render); scrollChat(); }
+      }, () => {}, 500));
     }
+    // follow what the partner chose to share: start a section when it's turned on, stop and forget it when it's hidden
+    if (P.linked) SHARE.map(x=>x[0]).forEach(sec => {
+      const on = P.share[sec] !== false, has = !!PSUB[sec];
+      if (on && !has){
+        PSUB[sec] = sec === "diary"
+          ? fb.listenCol(`u/${pid}/chat`, list => { const own = list.filter(e => e.from !== "him");
+              if (SEEN.mate) own.filter(e => !SEEN.mate.has(e.id)).forEach(e => { if (!(S.tab === "mate" && document.visibilityState === "visible")) notice(`📔 ${P.user ? P.user.name : ""}`, e.text || ""); });
+              SEEN.mate = new Set(own.map(e => e.id)); P.diary = list; if (S.tab === "partner" || S.tab === "mate") render(); }, () => {})
+          : fb.listen(`u/${pid}/sec/${sec}`, v => { if (v){ Object.assign(P, v); P.loaded[sec] = true; } if (S.tab === "partner" || S.tab === "mate") render(); }, () => {});
+      } else if (!on && has){
+        try { PSUB[sec](); } catch(e){} delete PSUB[sec]; P.loaded[sec] = false;
+        if (sec === "diary"){ P.diary = []; SEEN.mate = null; }
+      }
+    });
     render();
   }, () => { P.linked = false; render(); }));
 }
@@ -835,7 +856,7 @@ function studyView(){
 }
 
 function diarySwitch(){
-  return `<div class="seg" style="margin-top:4px"><button data-act="dmode" data-v="me" aria-pressed="${U.dmode !== "friends"}">حكاياتي</button><button data-act="dmode" data-v="friends" aria-pressed="${U.dmode === "friends"}">الصحاب 👯</button></div>`;
+  return `<div class="seg" style="margin-top:4px"><button data-act="dmode" data-v="me" aria-pressed="${U.dmode === "me"}">حكاياتي</button>${P && P.linked ? `<button data-act="dmode" data-v="us" aria-pressed="${U.dmode === "us"}">إحنا 💞</button>` : ""}<button data-act="dmode" data-v="friends" aria-pressed="${U.dmode === "friends"}">الصحاب 👯</button></div>`;
 }
 function friendsView(){
   const g = GR.open && GR.list.find(x => x.id === GR.open);
@@ -855,6 +876,20 @@ function friendsView(){
     <section class="hello"><h1>${esc(g.name)}</h1><p>${names}</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">قولوا أهلًا لبعض 👋</div>`}</div>
     <form class="composer" data-form="gmsg"><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+}
+function coupleView(){
+  let last = "", out = "";
+  CP.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    const d = new Date(m.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5);
+    if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
+    out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
+      : `<div class="msg him"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`;
+  });
+  const pn = esc(P.user ? P.user.name : "");
+  return `${diarySwitch()}
+    <section class="hello"><h1>${esc(S.user.name)} 💞 ${pn}</h1><p>شاتكم إنتوا الاتنين بس، بعيد عن دفتر حكاياتي</p></section>
+    <div class="chat" id="chat">${out || `<div class="empty">ابدئي إنتي وقولي ${P.user && P.user.gender==="f" ? "لها" : "له"} حاجة حلوة 💌</div>`}</div>
+    <form class="composer" data-form="cmsg"><textarea class="in" id="ctext" rows="1" placeholder="اكتبي لـ ${pn}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function keepTyping(fn){ const a = document.activeElement, id = a && a.id, val = id && a.value; fn(); if (id){ const el = document.getElementById(id); if (el){ el.value = val; el.focus(); } } }
 function openGroup(gid){
@@ -892,9 +927,11 @@ function diaryView(){
       : `<div class="msg him"><div class="bub typing" aria-label="بيكتب"><i></i><i></i><i></i></div></div>`;
   });
   if (CLOUD && U.dmode === "friends") return friendsView();
+  if (CLOUD && U.dmode === "us" && P && P.linked) return coupleView();
+  const priv = CLOUD && P && P.linked && P.user ? `<button class="chip-priv" data-act="share" data-v="diary" aria-pressed="${S.share.diary === false}">${S.share.diary === false ? `🔒 مخفي عن ${esc(P.user.name)}` : `👁️ ${esc(P.user.name)} ${P.user.gender === "f" ? "تقدر تشوفه" : "يقدر يشوفه"}`}</button>` : "";
   return `
   ${CLOUD ? diarySwitch() : ""}
-  <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user?esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك"):"هو سامعك"} 🤍</p></section>
+  <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user ? (S.share.diary === false ? "الدفتر ده ليكي إنتي بس 🔒" : esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك")+" 🤍") : "هو سامعك 🤍"}</p>${priv}</section>
   <div class="row"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button></div>
   <div class="chat" id="chat">${out || `<div class="empty">لسه مفيش حكايات… ابدئي إنتي 📔</div>`}</div>
   <form class="composer" data-form="diary">
@@ -1009,15 +1046,15 @@ function adminView(){
       <div class="card" style="margin-bottom:10px"><h3>💌 رسالة خاصة تظهرله في شاشة الفتح</h3>
         <textarea class="in" id="adm-special" style="margin-top:8px" placeholder="إنتي أغلى وأجمل حاجة حصلتلي في الدنيا، أنا بجد آسف على كل اللي عملته">${escP(u.special||"")}</textarea>
         <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
-      <div class="row wrap">${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
+      <div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
   if (A.gsel){
-    const g = (A.groups||[]).find(x=>x.id===A.gsel) || {};
+    const g = A.gsel.startsWith("c:") ? A.gcouple : ((A.groups||[]).find(x=>x.id===A.gsel) || {});
     const msgs = (A.gmsgs||[]).slice().sort((a,b)=>a.ts-b.ts);
     return `<div class="banner"><span>👑 جروب: ${esc(g.name||"")} · ${(g.members||[]).length} أعضاء</span><button class="btn small" data-act="adm-gback">رجوع</button></div>
-    <button class="btn danger small" style="margin-bottom:10px" data-act="adm-delgroup">🗑️ امسح الجروب نهائي</button>
+    ${A.gsel.startsWith("c:") ? "" : `<button class="btn danger small" style="margin-bottom:10px" data-act="adm-delgroup">🗑️ امسح الجروب نهائي</button>`}
     <div class="card"><div class="muted small" style="margin-bottom:8px">${(g.members||[]).map(m=>esc((A.users.find(x=>x.id===m)||{}).name || (g.names||{})[m] || "?")).join("، ")}</div>
-    ${A.gmsgs === null ? `<p class="empty">بنحمّل…</p>` : msgs.length ? `<ul class="list">${msgs.map(m=>`<li class="item"><span class="ic">💬</span><div class="grow"><div class="t">${esc(m.text||"")}</div><div class="s">${esc(m.name||"")} · ${new Date(m.ts).toLocaleString("ar-EG")}</div></div><button class="x" data-act="adm-gdel" data-v="${esc(m.id)}" aria-label="امسح">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">مفيش رسايل</p>`}</div>`;
+    ${A.gmsgs === null ? `<p class="empty">بنحمّل…</p>` : msgs.length ? `<ul class="list">${msgs.map(m=>`<li class="item"><span class="ic">💬</span><div class="grow"><div class="t">${esc(m.text||"")}</div><div class="s">${esc(m.name || (A.users.find(x=>x.id===m.from)||{}).name || "")} · ${new Date(m.ts).toLocaleString("ar-EG")}</div></div><button class="x" data-act="adm-gdel" data-v="${esc(m.id)}" aria-label="امسح">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">مفيش رسايل</p>`}</div>`;
   }
   const q = A.q.trim().toLowerCase();
   const list = A.users.filter(u => !q || (u.name||"").toLowerCase().includes(q) || (u.username||"").includes(q));
@@ -1058,6 +1095,8 @@ async function adminExport(){
       out.users.push({uid:u.id, account:u, data:secs, diary:chat});
     }
     for (const g of await fb.list("groups", 1000).catch(()=>[])) out.groups.push({...g, msgs:(await fb.list(`groups/${g.id}/msgs`, 5000, "ts").catch(()=>[])).reverse()});
+    out.couples = [];
+    for (const u of users) if (u.partner && u.id < u.partner) out.couples.push({between:[u.id, u.partner], msgs:(await fb.list(`couples/${coupleId(u.id, u.partner)}/msgs`, 5000, "ts").catch(()=>[])).reverse()});
     out.reports = await fb.list("reports", 2000).catch(()=>[]);
     out.feedback = await fb.list("feedback", 2000).catch(()=>[]);
     out.resetRequests = await fb.list("resetRequests", 2000).catch(()=>[]);
@@ -1489,9 +1528,12 @@ document.addEventListener("click", e => {
     case "report": { const e = S.diary.find(x=>x.id===v); if (!e) break; fb.add("reports", {kind:"report", path:`u/${UID}/chat/${v}`, owner:UID, author:ME.partner||null, by:UID, text:e.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
     case "forgot": forgotSheet(); break;
     case "adm-open": adminOpen(v); break;
-    case "adm-gopen": { const A = U.admin; A.gsel = v; A.gmsgs = null; render(); fb.list(`groups/${v}/msgs`, 1000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; toast("مقدرتش أحمّل الرسايل"); }).then(()=>{ if (U.admin.gsel === v) render(); }); window.scrollTo({top:0}); break; }
-    case "adm-gback": U.admin.gsel = null; U.admin.gmsgs = null; render(); break;
-    case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`groups/${gid}/msgs/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
+    case "adm-copen": { const A = U.admin, u = A.users.find(x=>x.id===v); if (!u || !u.partner) break; const cid = coupleId(u.id, u.partner), o = A.users.find(x=>x.id===u.partner) || {};
+      A.gcouple = {name:`💞 ${u.name||""} و ${o.name||"?"}`, members:[u.id, u.partner]}; A.gback = v; A.gsel = "c:" + cid; A.gpath = `couples/${cid}/msgs`; A.gmsgs = null; render();
+      fb.list(A.gpath, 2000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; toast("مقدرتش أحمّل الرسايل"); }).then(()=>{ if (A.gsel === "c:" + cid) render(); }); window.scrollTo({top:0}); break; }
+    case "adm-gopen": { const A = U.admin; A.gsel = v; A.gpath = `groups/${v}/msgs`; A.gback = null; A.gmsgs = null; render(); fb.list(`groups/${v}/msgs`, 1000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; toast("مقدرتش أحمّل الرسايل"); }).then(()=>{ if (U.admin.gsel === v) render(); }); window.scrollTo({top:0}); break; }
+    case "adm-gback": { const A = U.admin, back = A.gback; A.gsel = null; A.gmsgs = null; A.gback = null; if (back) adminOpen(back); else render(); break; }
+    case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`${A.gpath}/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
     case "adm-export": adminExport(); break;
     case "adm-deluser": { const u = (U.admin.users||[]).find(x=>x.id===v); if (!u || v === UID) break;
       sheet(`<h2>🗑️ تمسح حساب ${esc(u.name||"")}؟</h2><p class="muted">@${esc(u.username||"")}</p><p>الحساب وكل بياناته هيتمسحوا <b>نهائي</b> ومش هيرجعوا: الفلوس والمهام والمذاكرة والمود ودفتر حكاياتي والرسايل. وهيتفك الربط مع شريكه ويخرج من الجروبات.</p><p class="muted small">هيتقفل على طول، ويتمسح خالص خلال 5 دقايق.</p><div class="form"><button class="btn danger" data-act="adm-deluser-ok" data-v="${esc(u.id)}">أيوه امسحه نهائي</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
@@ -1525,7 +1567,7 @@ document.addEventListener("click", e => {
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
     case "welcome-go": $("#layer").innerHTML = ""; startupChecks(); break;
-    case "dmode": U.dmode = v; if (v !== "friends") openGroup(null); else render(); break;
+    case "dmode": U.dmode = v; if (v !== "friends") openGroup(null); else render(); if (v === "us") scrollChat(); break;
     case "g-new": sheet(`<h2>جروب جديد 👯</h2><form class="form" data-form="gnew"><label class="f">اسم الجروب<input class="in" id="g-name" maxlength="40" required placeholder="البنات 💗"></label><button class="btn" type="submit">اعملي الجروب</button></form>`); break;
     case "g-join": sheet(`<h2>ادخلي جروب</h2><form class="form" data-form="gjoin"><label class="f">كود الجروب<input class="in num" id="g-code" dir="ltr" maxlength="8" required placeholder="ABC123"></label><button class="btn" type="submit">ادخلي</button></form>`); break;
     case "g-open": openGroup(v); break;
@@ -1636,6 +1678,13 @@ document.addEventListener("submit", e => {
       }).catch(() => toast("مقدرتش أدخلك، جرّبي تاني"));
       break;
     }
+    case "cmsg": {
+      const t = val("ctext"); if (!t || !P || !P.linked || !CP.cid) return;
+      const id = uid() + uid(), m = {id, from:UID, text:t, ts:Date.now()}, path = `couples/${CP.cid}/msgs/${id}`;
+      CP.msgs = CP.msgs.concat(m); keepTyping(render); $("#ctext").value = ""; $("#ctext").focus(); scrollChat();
+      fb.set(path, m, false).then(() => { moderate(m, path, UID); pushTo(P.user && P.user.ntfy, `💞 ${S.user.name}`, t); }).catch(() => { CP.msgs = CP.msgs.filter(x=>x.id!==id); render(); toast("مقدرتش أبعت، اتأكدي من النت"); });
+      break;
+    }
     case "gmsg": {
       const t = val("gtext"); if (!t || !GR.open) return;
       const id = uid() + uid(), m = {id, from:UID, name:ME.name, text:t, ts:Date.now()}, path = `groups/${GR.open}/msgs/${id}`;
@@ -1715,9 +1764,9 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !sheetLocked) closeSheet();
-  if ((e.target.id === "diarytext" || e.target.id === "gtext") && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches){ e.preventDefault(); e.target.form.requestSubmit(); }
+  if ((e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext") && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches){ e.preventDefault(); e.target.form.requestSubmit(); }
 });
-document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.target.id === "gtext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
+document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
 
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;

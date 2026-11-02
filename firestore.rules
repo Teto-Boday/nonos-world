@@ -49,6 +49,18 @@ service cloud.firestore {
       allow delete: if signed() && (me() == uid || admin() || (linked(uid) && resource.data.from == 'him'));
     }
 
+    // private chat between two linked partners: couples/{uidA_uidB}/msgs (uids sorted)
+    function couple(cid) {
+      let p = userDoc(me()).get('partner', '');
+      return signed() && p != '' && p != null && (cid == me() + '_' + p || cid == p + '_' + me()) && linked(p);
+    }
+    match /couples/{cid}/msgs/{mid} {
+      allow read: if couple(cid) || admin();
+      allow create: if couple(cid) && !banned() && request.resource.data.from == me()
+        && request.resource.data.text is string && request.resource.data.text.size() <= 2000;
+      allow delete: if (couple(cid) && resource.data.from == me()) || admin();
+    }
+
     match /resetRequests/{id} {
       allow create: if request.resource.data.keys().hasOnly(['username', 'contact', 'note', 'status', 'at'])
         && request.resource.data.status == 'new'

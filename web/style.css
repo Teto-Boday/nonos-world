@@ -245,3 +245,5 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .howto li{margin-bottom:8px}
 .howto li::marker{color:var(--accent);font-weight:800}
 .howto-ex{background:var(--a2, #ffe3ec);background:color-mix(in srgb, var(--accent) 12%, transparent);border-radius:12px;padding:8px 12px;margin:6px 0;font-size:14px;line-height:1.8}
+.chip-priv{margin-top:10px;border:0;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:color-mix(in srgb, var(--accent) 14%, transparent);color:var(--ink)}
+.chip-priv[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
