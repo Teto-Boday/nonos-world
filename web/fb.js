@@ -1,6 +1,6 @@
 // Thin wrapper around Firebase so the app code stays small. Bundled by esbuild in CI.
 import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, updatePassword } from "firebase/auth";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, orderBy, limit as qlimit, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -19,7 +19,11 @@ export const fb = {
   signUp: (u, p) => createUserWithEmailAndPassword(auth, emailOf(u), p).then(c => c.user.uid),
   signIn: (u, p) => signInWithEmailAndPassword(auth, emailOf(u), p).then(c => c.user.uid),
   signOut: () => fbSignOut(auth),
-  changePassword: p => updatePassword(auth.currentUser, p),
+  changePassword: async (current, next) => {
+    const u = auth.currentUser;
+    await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, current));
+    await updatePassword(u, next);
+  },
   get: async p => { const s = await getDoc(ref(p)); return s.exists() ? s.data() : null; },
   set: (p, data, merge = true) => setDoc(ref(p), data, { merge }),
   del: p => deleteDoc(ref(p)),

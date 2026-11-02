@@ -229,8 +229,12 @@ async function boot(u){
   UID = u.uid;
   if (signingUp) { try { await signingUp; } catch(e){} }
   try { const c = localStorage.getItem(KEY + ":" + UID); if (c){ S = normalize(JSON.parse(c)); } } catch(e){}
-  ME = await fb.get(`users/${UID}`);
-  if (!ME){ await fb.signOut(); toast("الحساب مش كامل، اعملي حساب تاني 🙏"); return; }
+  try { ME = await fb.get(`users/${UID}`); if (ME) localStorage.setItem(KEY + ":me:" + UID, JSON.stringify(ME)); }
+  catch(e){ try { ME = JSON.parse(localStorage.getItem(KEY + ":me:" + UID)); } catch(_){} }
+  if (!ME){
+    if (navigator.onLine){ await fb.signOut(); toast("الحساب مش كامل، اعملي حساب تاني 🙏"); return; }
+    S = null; UID = null; render(); toast("محتاجين نت أول مرة تدخلي 📶"); return;
+  }
   const secs = await Promise.all(Object.keys(SEC).map(sec => fb.get(`u/${UID}/sec/${sec}`).catch(()=>null)));
   const st = S && S.v ? S : blank();
   Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d){ Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); } });
@@ -657,6 +661,11 @@ function adminView(){
   const list = A.users.filter(u => !q || (u.name||"").toLowerCase().includes(q) || (u.username||"").includes(q));
   return `<section class="hello"><h1>👑 لوحة التحكم</h1><p>إدارة التطبيق ومنع الإساءة</p></section>
   <div class="stats"><div class="stat"><b class="num">${A.users.length}</b><span>حساب</span></div><div class="stat"><b class="num">${A.users.filter(u=>u.partner).length}</b><span>مربوطين</span></div><div class="stat"><b class="num">${A.reports.length}</b><span>محتاج مراجعة</span></div></div>
+  <div class="card"><h3>🔑 طلبات الباسورد</h3>
+    <ul class="list" style="margin-top:10px">${(A.resets||[]).length?A.resets.map(r=>{const u=A.users.find(x=>x.username===r.username); return `<li class="item" style="flex-wrap:wrap"><span class="ic">🔑</span><div class="grow"><div class="t">@${esc(r.username)} ${u?"· "+esc(u.name):"· ❓ مش موجود"}</div><div class="s" dir="auto">📞 ${esc(r.contact)}${r.note?" · "+esc(r.note):""}</div>
+      ${r.status==="approved"?`<div class="s">⏳ هيتغيّر خلال 5 لـ 15 دقيقة لـ: <b class="num" dir="ltr">${esc(r.temp||"")}</b></div>`:r.status==="done"?`<div class="s">✅ اتغيّر: <b class="num" dir="ltr">${esc(r.temp||"")}</b> ابعتهولها</div>`:r.status==="notfound"?`<div class="s">❓ اليوزر ده مش موجود</div>`:""}</div>
+      ${r.status==="new"&&u?`<button class="mini" data-act="adm-reset" data-v="${esc(r.id)}">اعمل باسورد مؤقت</button>`:""}<button class="x" data-act="adm-rdel" data-v="${esc(r.id)}" aria-label="امسح">✕</button></li>`}).join(""):`<li class="empty">مفيش طلبات</li>`}</ul>
+    <p class="muted small" style="margin:8px 0 0">⚠️ اتأكد إن اللي طالب هو صاحب الحساب فعلًا قبل ما تعمل الباسورد.</p></div>
   <div class="card"><h3>🚩 محتاج مراجعة</h3><ul class="list" style="margin-top:10px">${A.reports.length?A.reports.map(r=>`<li class="item"><span class="ic">${r.kind==="auto"?"🤖":"🚩"}</span><div class="grow"><div class="t">${esc(r.text||"")}</div><div class="s">${r.kind==="auto"?"الفلتر علّمها":"بلاغ"} · كتبها ${esc((A.users.find(x=>x.id===r.author)||{}).name||"?")}</div></div>
     <button class="mini" data-act="adm-open" data-v="${esc(r.owner||"")}">افتح</button><button class="mini" data-act="adm-rmmsg" data-v="${esc(r.id)}">🗑️ امسح الرسالة</button><button class="x" data-act="adm-dismiss" data-v="${esc(r.id)}" aria-label="تجاهل">✕</button></li>`).join(""):`<li class="empty">مفيش حاجة ✨</li>`}</ul></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات</h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
@@ -668,6 +677,7 @@ async function loadAdmin(){
   try {
     A.users = (await fb.list("users", 1000)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     A.reports = await fb.list("reports", 200);
+    A.resets = await fb.list("resetRequests", 100).catch(()=>[]);
   } catch(e){ A.users = []; A.reports = []; toast("مش قادر أحمّل البيانات"); }
   if (S.tab === "admin") render();
 }
@@ -725,6 +735,13 @@ function settingsView(){
     <p class="muted small" style="margin:6px 0 10px">انسخي كل بياناتك في ملف نصي، أو رجّعيها من نسخة قديمة.</p>
     <div class="row wrap"><button class="btn ghost small" data-act="backup">انسخي نسخة</button><button class="btn ghost small" data-act="restore">رجّعي نسخة</button>${S.sample?`<button class="btn ghost small" data-act="clear-sample">امسحي البيانات التجريبية</button>`:""}</div>
   </div>
+  ${CLOUD ? `<div class="card"><h3>🔑 غيّري الباسورد</h3>
+    <form class="form" data-form="pass" style="margin-top:10px">
+      <label class="f">الباسورد الحالي<input class="in" id="pw-cur" type="password" required autocomplete="current-password" dir="ltr"></label>
+      <label class="f">الباسورد الجديد<input class="in" id="pw-new" type="password" required minlength="6" autocomplete="new-password" dir="ltr"></label>
+      <div class="notice" id="pw-err" style="display:none;color:var(--bad);font-weight:700"></div>
+      <button class="btn" type="submit">غيّري</button>
+    </form></div>` : ""}
   <div class="card row between"><span class="muted small">دوسي 5 مرات على اسم التطبيق فوق… 🤫</span><button class="btn ghost small" data-act="logout">خروج</button></div>`;
 }
 
@@ -745,6 +762,7 @@ function authView(){
       ${login?"":`<div class="notice">🔒 بتسجيلك، إنتي موافقة إن بياناتك محفوظة أونلاين، وإن صاحب التطبيق يقدر يوصلها لأغراض الإدارة ومنع الإساءة.</div>`}
     </form>
     <button class="btn ghost" data-act="authmode">${login?"معنديش حساب، أعمل واحد":"عندي حساب، أدخل"}</button>
+    ${CLOUD && login ? `<button class="btn ghost" data-act="forgot" style="background:none">نسيتي الباسورد؟ 🔑</button>` : ""}
   </div>`;
 }
 
@@ -797,6 +815,16 @@ function vacationSheet(){
     <div class="seg" role="group" aria-label="نوع الإجازة"><button type="button" data-act="vtype" data-v="mid" aria-pressed="true">نص السنة</button><button type="button" data-act="vtype" data-v="end" aria-pressed="false">آخر السنة</button></div>
     <label class="f">لحد إمتى؟ (لو مش عارفة سيبيها فاضية)<input class="in num" id="v-until" type="date"></label>
     <button class="btn" type="submit">ابدئي الإجازة 🏖️</button>
+  </form>`);
+}
+function forgotSheet(){
+  sheet(`<h2>🔑 نسيتي الباسورد؟</h2>
+  <p class="muted small" style="margin:-6px 0 12px">ابعتي طلب لصاحب التطبيق، وهيتأكد إنه حسابك ويبعتلك باسورد مؤقت.</p>
+  <form class="form" data-form="forgot">
+    <label class="f">اسم المستخدم<input class="in" id="fg-user" required dir="ltr" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}"></label>
+    <label class="f">نوصلك إزاي؟ (رقم واتساب مثلًا)<input class="in" id="fg-contact" required maxlength="80" dir="ltr"></label>
+    <label class="f">حاجة تأكد إنه حسابك (اختياري)<input class="in" id="fg-note" maxlength="140" placeholder="اسمك في التطبيق، اسم شريكك…"></label>
+    <button class="btn" type="submit">ابعتي الطلب</button>
   </form>`);
 }
 function expSheet(){
@@ -1048,7 +1076,15 @@ document.addEventListener("click", e => {
     case "link-accept": { saveMe({partner:v}); fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); setupPartner(); toast("اتربطتوا 💞"); break; }
     case "link-decline": { fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); break; }
     case "report": { const e = S.diary.find(x=>x.id===v); if (!e) break; fb.add("reports", {kind:"report", path:`u/${UID}/chat/${v}`, owner:UID, author:ME.partner||null, by:UID, text:e.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
+    case "forgot": forgotSheet(); break;
     case "adm-open": adminOpen(v); break;
+    case "adm-reset": {
+      const r = U.admin.resets.find(x=>x.id===v); if (!r) break;
+      const temp = "nw" + Math.random().toString(36).slice(2,8);
+      fb.set(`resetRequests/${v}`, {status:"approved", temp}).then(()=>{ r.status = "approved"; r.temp = temp; render(); });
+      break;
+    }
+    case "adm-rdel": fb.del(`resetRequests/${v}`).then(()=>{ U.admin.resets = U.admin.resets.filter(x=>x.id!==v); render(); }); break;
     case "adm-back": U.admin.sel = null; U.admin.st = null; render(); break;
     case "adm-reload": U.admin.users = null; render(); break;
     case "adm-ban": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; u.banned = !u.banned; fb.set(`users/${v}`, {banned:u.banned}).then(()=>toast(u.banned?"اتوقف ⛔":"اتفك الإيقاف ✅")); render(); break; }
@@ -1158,6 +1194,16 @@ document.addEventListener("submit", e => {
       break;
     }
     case "code": { const c = val("pcode"); if (c) sendCode(c); break; }
+    case "forgot": {
+      const u = val("fg-user").toLowerCase(), c = val("fg-contact"); if (!u || !c) return;
+      fb.add("resetRequests", {username:u, contact:c, note:val("fg-note"), status:"new"}).then(()=>{ closeSheet(); message("💌", "الطلب وصل، هيكلّمك قريب ويبعتلك باسورد مؤقت", "🔑"); }).catch(()=>toast("مقدرتش أبعت الطلب، اتأكدي من النت"));
+      break;
+    }
+    case "pass": {
+      const cur = (document.getElementById("pw-cur")||{}).value || "", nw = (document.getElementById("pw-new")||{}).value || "", er = $("#pw-err");
+      fb.changePassword(cur, nw).then(()=>{ toast("اتغيّر الباسورد ✅"); render(); }).catch(err => { er.textContent = (err && String(err.code).includes("invalid")) ? "الباسورد الحالي غلط" : authError(err); er.style.display = "block"; });
+      break;
+    }
   }
 });
 document.addEventListener("input", e => { if (e.target.id === "adm-q"){ U.admin.q = e.target.value; const pos = e.target.selectionStart; render(); const i = $("#adm-q"); i.focus(); i.setSelectionRange(pos,pos); } });
@@ -1206,6 +1252,7 @@ setInterval(scheduleNative, 15000);
 
 /* ================= start ================= */
 if (CLOUD){
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
   S = null; render();
   fb.onUser(u => boot(u).catch(e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); }));
 } else {

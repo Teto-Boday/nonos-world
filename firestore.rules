@@ -49,6 +49,15 @@ service cloud.firestore {
       allow delete: if signed() && (me() == uid || admin() || (linked(uid) && resource.data.from == 'him'));
     }
 
+    match /resetRequests/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['username', 'contact', 'note', 'status', 'at'])
+        && request.resource.data.status == 'new'
+        && request.resource.data.username is string && request.resource.data.username.size() <= 20
+        && request.resource.data.contact is string && request.resource.data.contact.size() <= 80
+        && request.resource.data.note is string && request.resource.data.note.size() <= 140;
+      allow read, update, delete: if admin();
+    }
+
     match /reports/{id} {
       allow create: if signed();
       allow read, update, delete: if admin();

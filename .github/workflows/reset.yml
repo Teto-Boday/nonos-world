@@ -1,0 +1,22 @@
+name: Password resets
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: resets
+  cancel-in-progress: false
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save --no-audit --no-fund firebase-admin@12
+      - run: node scripts/reset-passwords.mjs
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
