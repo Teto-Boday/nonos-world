@@ -6,3 +6,5 @@ electron/dist/
 web/test.html
 web/fb-mock.js
 web/main-mock.js
+web/preview.html
+web/main-preview.js
