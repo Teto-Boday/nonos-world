@@ -29,7 +29,7 @@ const L_BASE = {
 };
 /* no partner: no nicknames, no romance in the labels */
 const L_SOLO = { money:"اصرفي براحتك 💸", done:"عملتيها 👏", love:"💪 كلمة حلوة" };
-const L = new Proxy(L_BASE, { get: (t, k) => (typeof hasMate === "function" && !hasMate() && k in L_SOLO) ? L_SOLO[k] : t[k] });
+const L = new Proxy(L_BASE, { get: (t, k) => (typeof loveOn === "function" && !loveOn() && k in L_SOLO) ? L_SOLO[k] : t[k] });
 const MOODS = [
   {k:"happy", e:"😍", t:"مبسوطة"}, {k:"good", e:"🙂", t:"كويسة"}, {k:"meh", e:"😐", t:"عادي"},
   {k:"sad", e:"😔", t:"زعلانة"}, {k:"stressed", e:"😫", t:"مضغوطة"}
@@ -422,7 +422,7 @@ const SOLO_EN = {
   period:["Feel better, rest and take it easy 🤍","Something warm and a cozy blanket 😌"]
 };
 /* the message pool to use: the partner's words when linked, encouragement otherwise */
-const MS = k => { if (hasMate()) return S.msgs[k] || []; const set = isEN() ? SOLO_EN : (S.user && S.user.gender === "m" ? SOLO_M : SOLO_F); return (set[k] && set[k].length ? set[k] : cheerPool()); };
+const MS = k => { if (loveOn()) return S.msgs[k] || []; const set = isEN() ? SOLO_EN : (S.user && S.user.gender === "m" ? SOLO_M : SOLO_F); return (set[k] && set[k].length ? set[k] : cheerPool()); };
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
@@ -787,7 +787,7 @@ function sheet(html, onMount){
 let sheetLocked = false;
 function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; }
 function message(emoji, text, from){
-  if (from === undefined) from = hasMate() ? (P && P.user && P.user.gender === "f" ? "منها 💌" : "منه 💌") : "";
+  if (from === undefined) from = loveOn() ? (P && P.user && P.user.gender === "f" ? "منها 💌" : "منه 💌") : "";
   sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p>${from ? `<small>${escP(from)}</small>` : ""}</div>
     <button class="btn block" data-act="close" style="margin-top:14px">تسلم 🤍</button>`);
 }
@@ -1581,7 +1581,7 @@ function restoreSheet(){
 /* ================= actions ================= */
 function diaryReply(text){
   const n = norm(String(text).toLowerCase() + " ");
-  if (hasMate()) for (const r of (S.rules||[])) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
+  if (loveOn()) for (const r of (S.rules||[])) if (r.keys.some(w => w && n.includes(norm(w)))) return "rule:" + r.id;
   for (const [cat, words] of DIARY_RULES) if (words.some(w => n.includes(norm(w)))) return cat;
   return "d_other";
 }
@@ -1631,7 +1631,7 @@ document.addEventListener("click", e => {
     case "close": closeSheet(); break;
     case "tab": go(v); break;
     case "new-love": S._love = pick(loveOn() ? lovePool() : cheerPool()); render(); break;
-    case "love-toggle": S.loveOff = !S.loveOff; S._love = null; save(); render(); toast(S.loveOff ? "تمام، هيظهرلك كلام تشجيع بس 💪" : "رجعت رسايل الحب 💌"); break;
+    case "love-toggle": S.loveOff = !S.loveOff; S._love = null; save(); render(); toast(S.loveOff ? "تمام، مفيش كلام حب في أي حتة، تشجيع بس 💪" : "رجع كلام الحب 💌"); break;
     case "mood": {
       S.moods[k] = v; save(); render();
       const m = MOODS.find(x=>x.k===v); message(m.e, pick(MS(v)));
@@ -1834,7 +1834,7 @@ document.addEventListener("submit", e => {
       const amt = parseFloat(val("e-amt")); if (!(amt > 0)) return;
       S.money.expenses.push({id:uid(), amt, cat:S._cat||"food", note:val("e-note"), date:k}); save(); closeSheet(); render();
       const mi = moneyInfo();
-      if (mi.state === "out") message("🙆🏽‍♀️", L.left.out + (hasMate() ? " … خلّي بالك يا بسبوسة" : " … خلّي بالك"), "الفلوس");
+      if (mi.state === "out") message("🙆🏽‍♀️", L.left.out + (loveOn() ? " … خلّي بالك يا بسبوسة" : " … خلّي بالك"), "الفلوس");
       else if (mi.todaySpent > mi.daily) toast("عدّيتي المسموح النهارده 😬");
       else toast("اتسجلت ✅ فاضلّك " + fmt(mi.left));
       break;
@@ -1847,7 +1847,7 @@ document.addEventListener("submit", e => {
       const before = examGood();
       S.grades.push({id:uid(), subject:val("g-subj"), type:val("g-type"), score:sc, total:tot, date:k}); save(); closeSheet(); render();
       const p = sc/tot*100, grp = p >= 75 ? "g_high" : p >= 50 ? "g_mid" : "g_low";
-      message(p>=75?"🌟":p>=50?"🙂":"🫂", pick(MS(grp)), (!before && examGood()) ? L.examsGood + (hasMate() ? " يا نونو!" : "!") : Math.round(p) + "٪");
+      message(p>=75?"🌟":p>=50?"🙂":"🫂", pick(MS(grp)), (!before && examGood()) ? L.examsGood + (loveOn() ? " يا نونو!" : "!") : Math.round(p) + "٪");
       break;
     }
     case "diary": {
@@ -1883,7 +1883,7 @@ document.addEventListener("submit", e => {
       const tell = $("#cy-tell") && $("#cy-tell").checked;
       S.cycle = Object.assign({}, S.cycle, {on:true, start:st, days}); S._pmsg = null; save(); closeSheet(); render();
       if (tell) notifyPartner(`${S.user.name} محتاجة اهتمام ودلع زيادة الأيام دي 🤍 اهتم بيها أكتر`, true);
-      message("🤍", pick(MS("period")) || "ألف سلامة عليكي", hasMate() ? "منه 💌" : "🤍");
+      message("🤍", pick(MS("period")) || "ألف سلامة عليكي", loveOn() ? "منه 💌" : "🤍");
       break;
     }
     case "gnew": {
