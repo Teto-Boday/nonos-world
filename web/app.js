@@ -359,23 +359,47 @@ async function boot(u){
   if (!u){ UID = null; S = null; render(); return; }
   UID = u.uid;
   if (signingUp) { try { await signingUp; } catch(e){} }
-  try { const c = localStorage.getItem(KEY + ":" + UID); if (c){ S = normalize(JSON.parse(c)); } } catch(e){}
-  try { ME = await fb.get(`users/${UID}`); if (ME) localStorage.setItem(KEY + ":me:" + UID, JSON.stringify(ME)); }
-  catch(e){ try { ME = JSON.parse(localStorage.getItem(KEY + ":me:" + UID)); } catch(_){} }
-  if (!ME){
-    if (navigator.onLine){ await fb.signOut(); toast("الحساب مش كامل، اعملي حساب تاني 🙏"); return; }
-    S = null; UID = null; render(); toast("محتاجين نت أول مرة تدخلي 📶"); return;
+  const meKey = KEY + ":me:" + UID;
+  let cachedS = null, cachedME = null;
+  try { const c = localStorage.getItem(KEY + ":" + UID); if (c) cachedS = JSON.parse(c); cachedME = JSON.parse(localStorage.getItem(meKey) || "null"); } catch(e){}
+  const apply = (meDoc, st, secsLoaded) => {
+    ME = meDoc;
+    st.religionHint = ME.religion || "muslim";
+    S = normalize(st, ME.gender); S.tab = S.tab || "home";
+    if (secsLoaded) Object.keys(SEC).forEach(sec => lastPushed[sec] = JSON.stringify(secData(S, sec)));
+    try { localStorage.setItem("nw-lang", S.lang || "ar"); localStorage.setItem("nw-g", ME.gender || "f"); localStorage.setItem("nw-name", ME.name || ""); localStorage.setItem(meKey, JSON.stringify(ME)); } catch(e){}
+    if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; }
+    S.user = {name:ME.name, username:ME.username, gender:ME.gender, religion:ME.religion || "muslim"}; S.share = Object.assign({}, ME.share || {});
+  };
+  const fetchAll = () => Promise.all([
+    fb.get(`users/${UID}`),
+    Promise.all(Object.keys(SEC).map(sec => fb.get(`u/${UID}/sec/${sec}`).catch(()=>null))),
+    fb.get(`admins/${UID}`).catch(()=>null)
+  ]);
+  if (U.fresh && U.fresh.uid === UID){
+    // just signed up: everything is already here, no need to download it again
+    apply(U.fresh.me, U.fresh.st, true); U.fresh = null; save();
+  } else if (cachedS && cachedME){
+    // same device as before: open instantly from what's saved, refresh from the cloud in the background
+    apply(cachedME, normalize(cachedS, cachedME.gender), true);
+    fetchAll().then(([meDoc, secs, adm]) => {
+      if (UID !== u.uid) return;
+      if (!meDoc){ return; }
+      IS_ADMIN = !!adm; const st = S;
+      Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (!d) return; if (JSON.stringify(secData(st, sec)) !== lastPushed[sec]) return; Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); });
+      apply(meDoc, st, false); save(); if (!$("#layer").innerHTML && !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) render();
+    }).catch(e => console.warn("refresh", e));
+  } else {
+    let meDoc = null, secs = [], adm = null;
+    try { [meDoc, secs, adm] = await fetchAll(); } catch(e){ console.warn(e); }
+    if (!meDoc){
+      if (navigator.onLine){ await fb.signOut(); toast("الحساب مش كامل، اعملي حساب تاني 🙏"); return; }
+      S = null; UID = null; render(); toast("محتاجين نت أول مرة تدخلي 📶"); return;
+    }
+    IS_ADMIN = !!adm; const st = blank();
+    Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d) Object.assign(st, d); });
+    apply(meDoc, st, true);
   }
-  const secs = await Promise.all(Object.keys(SEC).map(sec => fb.get(`u/${UID}/sec/${sec}`).catch(()=>null)));
-  const st = S && S.v ? S : blank();
-  Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d){ Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); } });
-  st.religionHint = ME.religion || "muslim";
-  S = normalize(st, ME.gender); S.tab = S.tab || "home";
-  try { localStorage.setItem("nw-lang", S.lang || "ar"); } catch(e){}
-  if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; save(); }
-  try { localStorage.setItem("nw-g", ME.gender || "f"); localStorage.setItem("nw-name", ME.name || ""); } catch(e){}
-  S.user = {name:ME.name, username:ME.username, gender:ME.gender, religion:ME.religion || "muslim"}; S.share = Object.assign({}, ME.share || {});
-  IS_ADMIN = !!(await fb.get(`admins/${UID}`).catch(()=>null));
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
     const local = new Map(S.diary.filter(e=>e.pending).map(e=>[e.id,e]));
     S.diary = list.map(e => { const {at, ...rest} = e; lastDiary.set(e.id, JSON.stringify(rest)); return rest; });
@@ -383,7 +407,7 @@ async function boot(u){
     if (S.tab === "diary" && !$("#layer").innerHTML){ const typing = document.activeElement && document.activeElement.id === "diarytext" ? $("#diarytext").value : null; render(); if (typing !== null){ $("#diarytext").value = typing; $("#diarytext").focus(); } scrollChat(); }
   }));
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
-  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
+  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
@@ -429,13 +453,13 @@ async function signUp(name, username, pass, gender, religion = "muslim"){
   try {
     const uidNew = await fb.signUp(username, pass);
     const code = genCode(), topic = "nw-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    await fb.set(`users/${uidNew}`, {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, religion, createdAt:Date.now()}, false);
-    await fb.set(`invites/${code}`, {uid:uidNew, name}, false);
+    const me = {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, religion, createdAt:Date.now()};
+    await fb.set(`users/${uidNew}`, me, false);
     const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion);
     if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
-    await fb.set(`u/${uidNew}/sec/prefs`, secData(st, "prefs"), false);
-    await fb.set(`u/${uidNew}/sec/msgs`, secData(st, "msgs"), false);
+    U.fresh = {uid:uidNew, me, st};
     resolveSU();
+    Promise.all([fb.set(`invites/${code}`, {uid:uidNew, name}, false), fb.set(`u/${uidNew}/sec/prefs`, secData(st, "prefs"), false), fb.set(`u/${uidNew}/sec/msgs`, secData(st, "msgs"), false)]).catch(e => console.warn("signup extras", e));
   } catch(e){ rejectSU(e); throw e; } finally { setTimeout(()=>signingUp=null, 0); }
 }
 function authError(e){
@@ -1485,7 +1509,7 @@ if (CLOUD){
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
   S = null; render();
   const t0 = Date.now();
-  fb.onUser(u => { const wait = u ? Math.max(0, 900 - (Date.now() - t0)) : 0; setTimeout(() => { U.booting = false; boot(u).catch(e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); }); }, wait); });
+  fb.onUser(u => { const wait = u ? Math.max(0, 700 - (Date.now() - t0)) : 0; setTimeout(() => { U.booting = false; boot(u).catch(e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); }); }, wait); });
 } else {
   S = normalize(load());
   if (S.vacation.on && S.vacation.until && dkey() > S.vacation.until) S.vacation = {on:false};
