@@ -53,3 +53,23 @@ for (const d of dels.docs) {
     console.log(`delete failed: ${uid}: ${e && e.message}`);
   }
 }
+
+// username changes asked from the app's settings
+const unames = await db.collection("usernameRequests").where("status", "==", "new").get();
+console.log(`username requests: ${unames.size}`);
+for (const d of unames.docs) {
+  const uid = d.id, name = String(d.data().username || "").toLowerCase();
+  try {
+    if (!/^[a-z0-9_.]{3,20}$/.test(name)) { await d.ref.update({ status: "bad" }); continue; }
+    const email = `${name}@users.nonosworld.app`;
+    const taken = await auth.getUserByEmail(email).then(u => u.uid !== uid).catch(e => { if (e.code === "auth/user-not-found") return false; throw e; });
+    if (taken) { await d.ref.update({ status: "taken" }); console.log(`username taken: ${name}`); continue; }
+    await auth.updateUser(uid, { email });
+    await db.doc(`users/${uid}`).update({ username: name });
+    await d.ref.update({ status: "done", doneAt: Date.now() });
+    console.log(`username changed: ${name}`);
+  } catch (e) {
+    await d.ref.update({ status: "error" }).catch(() => {});
+    console.log(`username failed: ${name}: ${e && e.message}`);
+  }
+}

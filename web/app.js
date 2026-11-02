@@ -67,7 +67,8 @@ const DEFAULT_MSGS = {
   g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنتي مين، إنتي أشطر منها","انتي اشطر بنوته واثق انك هتعوضي"],
   done:["انت اشطر بنوته في الدنيا 🤏🏽","انا فخور بيكي يا بنوتي 🤏🏽"],
   lazy:["كسلتي؟ عادي، بكرة نعوّضها 😌","ماشي يا كسولة، بس بكرة مفيش هزار 😂"],
-  love:["جيتي في بالي و قلت اقولك ان حبي ليكي زاد","انتي بجد احلى حاجه في الدنيا","انتي اجمل حاجه حصلت لي","انا اسف على كل حاجه زعلتك","حقك عليا يا نور عيوني في كل مره زعلتك فيها","اسفلك على كل مره زعلتك فيها"],
+  love:["جيتي في بالي و قلت اقولك ان حبي ليكي زاد","انتي بجد احلى حاجه في الدنيا","انتي اجمل حاجه حصلت لي","انا اسف على كل حاجه زعلتك","حقك عليا يا نور عيوني في كل مره زعلتك فيها","اسفلك على كل مره زعلتك فيها",
+    "بحبك أكتر من امبارح وأقل من بكرة ❤️","إنتي الحاجة الوحيدة اللي مبزهقش منها أبدًا","لو رجع بيا الزمن هختارك تاني وتالت ومليون مرة","ضحكتك بتصلّح يومي كله مهما كان وحش","إنتي بيتي وأماني وراحتي","كل حاجة حلوة في حياتي بدأت من عندك","وجودك في حياتي نعمة بحمد ربنا عليها كل يوم","نفسي أفضل جنبك العمر كله","إنتي مش بس حبيبتي، إنتي صاحبتي وأقرب حد ليا","قلبي بيدق أسرع لما اسمك يظهر قدامي","أنا محظوظ إنك اخترتيني","عيونك دي أحلى مكان في الدنيا","بحبك في كل حالاتك، وإنتي زعلانة قبل وإنتي فرحانة","مفيش يوم بيعدي من غير ما أفتكرك وأبتسم","إنتي الحلم اللي اتحقق"],
   period:["ألف سلامة عليكي يا قلبي، ارتاحي ومتشيليش هم حاجة 🤍","اعملي لنفسك حاجة دافية واتغطي كويس، وأنا معاكي","لو تعبانة سيبي المذاكرة شوية، صحتك أهم من أي حاجة","إنتي أحلى حاجة في الدنيا حتى وإنتي تعبانة ❤️","عايزة شوكولاتة؟ قوليلي وأنا أجيبهالك 🍫","قربة مية سخنة وفيلم حلو والبطانية، ده أمر 😤","أي حاجة مضايقاكي قوليلي، أنا هنا يا نونو","مسموحلك تتدلّعي على الآخر الأيام دي 🎀"],
   morning:["صباح الفل على أحلى نونو ☀️ قومي يلا، الدنيا مستنياكي","اصحي يا بسبوسة، النهارده هيبقى يوم حلو","يلا قومي… وأول حاجة اشربي مية وابتسمي 😁","صباح الخير يا بنوتي","صباح الخير يا اشطر بنوته في الدنيا","ابعتيلي عشان وحشاني اوي","كنت مستنيكي بفارغ الصبر"]
 };
@@ -91,11 +92,13 @@ const DEFAULT_MSGS_M = {
   g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنت مين، إنت أشطر منها","إنت أشطر راجل، واثقة إنك هتعوّض"],
   done:["إنت أشطر راجل في الدنيا 💪","أنا فخورة بيك يا راجلي 🤏🏽"],
   lazy:["كسلت؟ عادي، بكرة نعوّضها 😌","ماشي يا كسول، بس بكرة مفيش هزار 😂"],
-  love:["جيت في بالي وقلت أقولك إن حبي ليك زاد","إنت بجد أحلى حاجة في الدنيا","إنت أجمل حاجة حصلتلي يا جوزي","أنا آسفة على كل حاجة زعلتك","حقك عليا يا نور عيوني في كل مرة زعلتك فيها","آسفة على كل مرة زعلتك فيها يا حبيبي"],
+  love:["جيت في بالي وقلت أقولك إن حبي ليك زاد","إنت بجد أحلى حاجة في الدنيا","إنت أجمل حاجة حصلتلي يا جوزي",
+    "بحبك أكتر من امبارح وأقل من بكرة ❤️","إنت ضهري وسندي وأماني يا راجلي","لو رجع بيا الزمن هختارك تاني وتالت ومليون مرة","صوتك بيطمّني أكتر من أي حاجة في الدنيا","إنت بيتي اللي بحس فيه بالأمان","كل حاجة حلوة في حياتي بدأت من عندك يا حبيبي","وجودك في حياتي نعمة بحمد ربنا عليها كل يوم","نفسي أفضل جنبك العمر كله يا جوزي","إنت مش بس حبيبي، إنت صاحبي وأقرب حد ليا","قلبي بيدق أسرع لما اسمك يظهر قدامي","أنا محظوظة إنك اخترتني","حضنك أحلى مكان في الدنيا","بحبك في كل حالاتك، وإنت زعلان قبل وإنت فرحان","مفيش يوم بيعدي من غير ما أفتكرك وأبتسم","إنت الراجل اللي كنت بدعي ربنا بيه","فخورة إنك راجلي قدام الدنيا كلها 💪"],
   morning:["صباح الفل على أحلى راجل ☀️ قوم يلا، الدنيا مستنياك","اصحى يا حبيبي، النهارده هيبقى يوم حلو","يلا قوم… وأول حاجة اشرب مية وابتسم 😁","صباح الخير يا راجلي","صباح الخير يا أشطر واحد في الدنيا","ابعتلي عشان وحشتني أوي","كنت مستنياك بفارغ الصبر يا جوزي"],
   period:[]
 };
 
+const LOVE_OLD = ["أنا آسفة على كل حاجة زعلتك","حقك عليا يا نور عيوني في كل مرة زعلتك فيها","آسفة على كل مرة زعلتك فيها يا حبيبي","جيت في بالي وقلت أقولك إن حبي ليك زاد","إنت بجد أحلى حاجة في الدنيا","إنت أجمل حاجة حصلتلي يا جوزي","جيتي في بالي و قلت اقولك ان حبي ليكي زاد","انتي بجد احلى حاجه في الدنيا","انتي اجمل حاجه حصلت لي","انا اسف على كل حاجه زعلتك","اسفلك على كل مره زعلتك فيها"];
 const ISLAMIC = /ميزان حسنات|اللهم|ما شاء الله|الحمد لله|ربنا يتقبل|بإذن الله|سبحان/;
 const NEUTRAL_FALLBACK = "أنا جنبك على طول 🤍";
 const DEFAULT_MSGS_EN = {
@@ -176,7 +179,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
 "بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
 "تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
-"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
+"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
 "خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
 "شغّليها":"شغّلها","شوفي":"شوف","صاحبة":"صاحب","ضيفي":"ضيف","عارفة":"عارف","عايزة":"عايز","عايزه":"عايز","عدّيتي":"عدّيت","عليكي":"عليك","علّمي":"علّم","عملتي":"عملت",
 "عملتيها":"عملتها","عيّطي":"عيّط","فاكرة":"فاكر","فرحانة":"فرحان","قاعدة":"قاعد","قوليلي":"قولّي","قومي":"قوم","كسلتي":"كسلت","كسولة":"كسول","كلّمي":"كلّم","كمّلي":"كمّل",
@@ -313,6 +316,9 @@ function normalize(s, gender){
   const b = blank();
   for (const k in b) if (s[k] === undefined || s[k] === null && k !== "pin" && k !== "lastMorning" && k !== "timer") s[k] = b[k];
   const dm = defMsgs(gender, s.religionHint); for (const k in dm) if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
+  // love messages: lists nobody edited (only old default lines) move to the new, longer default list
+  if (Array.isArray(s.msgs.love)){ const known = new Set(LOVE_OLD.concat(dm.love || [], DEFAULT_MSGS.love, DEFAULT_MSGS_M.love));
+    if (s.msgs.love.every(t => known.has(t)) && JSON.stringify(s.msgs.love) !== JSON.stringify(dm.love)) s.msgs.love = (dm.love || []).slice(); }
   s.diary.forEach(e => { if (!e.chat) e.chat = "c0"; if (!e.reply && e.from !== "him" && e.pending) { e.reply = e.pending; delete e.pending; } });
   return s;
 }
@@ -328,6 +334,8 @@ const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","al
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
 const CP = {msgs:[], cid:null};
+const CFG = {love:{}};
+const lovePool = () => { const extra = ((CFG.love || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []; return (S.msgs.love || []).concat(isEN() ? [] : extra); };
 const PSUB = {};
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
@@ -427,6 +435,12 @@ async function boot(u){
     if (SEEN.groups) list.forEach(g => { const before = SEEN.groups[g.id] || 0; if ((g.last||0) > before && !SEEN.mine.has(g.last) && !(GR.open === g.id && S.tab === "diary" && document.visibilityState === "visible")) notice(`👭 ${g.name || ""}`, g.lastText || ""); });
     SEEN.groups = {}; list.forEach(g => { SEEN.groups[g.id] = g.last || 0; if (ME && ME.ntfy && (g.topics||{})[UID] !== ME.ntfy && !SEEN.tried.has(g.id)){ SEEN.tried.add(g.id); fb.set(`groups/${g.id}`, {topics:{[UID]:ME.ntfy}}).catch(()=>{}); } });
     GR.list = list; if (S && S.tab === "diary" && U.dmode === "friends" && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
+  unsubs.push(fb.listen(`usernameRequests/${UID}`, d => {
+    const before = U.unReq; U.unReq = d;
+    if (d && d.status === "done"){ U.unReq = null; fb.del(`usernameRequests/${UID}`).catch(()=>{}); if (ME) ME.username = d.username; if (S && S.user) S.user.username = d.username; render(); message("✅", "اليوزر نيم اتغيّر لـ @" + d.username + (isMale() ? "، ادخل بيه المرة الجاية" : "، ادخلي بيه المرة الجاية"), "👤"); }
+    if (S && S.tab === "settings" && JSON.stringify(before) !== JSON.stringify(U.unReq) && !$("#layer").innerHTML) keepTyping(render);
+  }, () => {}));
+  unsubs.push(fb.listen("config/love", d => { CFG.love = d || {}; }, () => {}));
   unsubs.push(fb.listen(`admins/${UID}`, d => { const was = IS_ADMIN; IS_ADMIN = !!d; if (was !== IS_ADMIN && S && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
@@ -686,7 +700,7 @@ function homeView(){
   const care = S.care[k] || {water:0,sleep:0};
   const st = streak(), good = examGood();
   const upcoming = S.exams.filter(e=>e.date>=k).sort((a,b)=>a.date<b.date?-1:1)[0];
-  const love = S._love || (S._love = pick(S.msgs.love));
+  const love = S._love || (S._love = pick(lovePool()));
   return `
   ${ME && ME.special ? `<div class="card special"><div class="lbl">${isEN() ? "Just for you" : "ليكي مخصوص"}</div><p>${esc(ME.special)}</p></div>` : ""}
   <section class="hello">
@@ -1070,6 +1084,10 @@ function adminView(){
   <div class="card"><h3>🚩 محتاج مراجعة</h3><ul class="list" style="margin-top:10px">${A.reports.length?A.reports.map(r=>`<li class="item"><span class="ic">${r.kind==="auto"?"🤖":"🚩"}</span><div class="grow"><div class="t">${esc(r.text||"")}</div><div class="s">${r.kind==="auto"?"الفلتر علّمها":"بلاغ"} · كتبها ${esc((A.users.find(x=>x.id===r.author)||{}).name||"?")}</div></div>
     <button class="mini" data-act="adm-open" data-v="${esc(r.owner||"")}">افتح</button><button class="mini" data-act="adm-rmmsg" data-v="${esc(r.id)}">🗑️ امسح الرسالة</button><button class="x" data-act="adm-dismiss" data-v="${esc(r.id)}" aria-label="تجاهل">✕</button></li>`).join(""):`<li class="empty">مفيش حاجة ✨</li>`}</ul></div>
   <div class="card"><h3>💬 جروبات الصحاب</h3><ul class="list" style="margin-top:10px">${(A.groups||[]).length ? A.groups.map(g=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-gopen" data-v="${esc(g.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${esc(g.name||"")}</div><div class="s">${(g.members||[]).length} أعضاء${g.lastText?" · "+esc(g.lastText):""}</div></div></button></li>`).join("") : `<li class="empty">مفيش جروبات لسه</li>`}</ul></div>
+  <div class="card"><h3>💌 رسايل "فاكرك علطول" للكل</h3><p class="muted small" style="margin:6px 0 10px">الرسايل دي بتتضاف لرسايل كل الناس وبتظهرلهم في الرئيسية. كل سطر رسالة لوحدها.</p>
+    <label class="f">🎀 للبنات (بصوت الولد)<textarea class="in" id="cfg-love-f" rows="5" placeholder="بحبك أكتر من امبارح">${escP(((CFG.love||{}).f||[]).join("\n"))}</textarea></label>
+    <label class="f" style="margin-top:8px">🧢 للولاد (بصوت البنت)<textarea class="in" id="cfg-love-m" rows="5" placeholder="إنت ضهري وسندي">${escP(((CFG.love||{}).m||[]).join("\n"))}</textarea></label>
+    <button class="btn block" style="margin-top:10px" data-act="adm-love">حفظ الرسايل للكل</button></div>
   <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات</h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
@@ -1169,6 +1187,12 @@ function settingsView(){
     <p class="muted small" style="margin:6px 0 10px">انسخي كل بياناتك في ملف نصي، أو رجّعيها من نسخة قديمة.</p>
     <div class="row wrap"><button class="btn ghost small" data-act="backup">انسخي نسخة</button><button class="btn ghost small" data-act="restore">رجّعي نسخة</button>${S.sample?`<button class="btn ghost small" data-act="clear-sample">امسحي البيانات التجريبية</button>`:""}</div>
   </div>
+  ${CLOUD && ME ? `<div class="card"><h3>👤 غيّري اليوزر نيم</h3>
+    <p class="muted small" style="margin:6px 0 10px">اليوزر الحالي: <b dir="ltr">@${esc(ME.username||"")}</b></p>
+    ${U.unReq && U.unReq.status === "new" ? `<div class="notice">⏳ بيتغيّر لـ <b dir="ltr">@${esc(U.unReq.username)}</b> خلال دقايق. بعدها هتدخلي بيه المرة الجاية.</div>`
+      : `${U.unReq && U.unReq.status === "taken" ? `<div class="notice" style="color:var(--bad)">❌ <b dir="ltr">@${esc(U.unReq.username)}</b> متاخد، جرّبي اسم تاني</div>` : ""}
+    <form class="row" data-form="uname"><input class="in" id="un-new" dir="ltr" required placeholder="newname" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي" autocomplete="off" aria-label="اليوزر الجديد"><button class="btn small" type="submit">غيّري</button></form>`}
+  </div>` : ""}
   ${CLOUD ? `<div class="card"><h3>🔑 غيّري الباسورد</h3>
     <form class="form" data-form="pass" style="margin-top:10px">
       <label class="f">الباسورد الحالي<span class="pwwrap"><input class="in" id="pw-cur" type="password" required autocomplete="current-password" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">${EYE_SHUT}</button></span></label>
@@ -1189,7 +1213,7 @@ function authView(){
     <p class="center muted" style="margin:-8px 0 0">${login?"وحشتينا! ادخلي 💗":"اعملي حسابك وابدئي دنيتك 🌸"}</p>
     <form class="card form" data-form="auth">
       ${login?"":`<label class="f">اسمك (هنناديكي بيه)<input class="in" id="a-name" required placeholder="${U.ag==="m"?"محمد":"نونو"}"></label>`}
-      <label class="f">اسم المستخدم (إنجليزي وأرقام)<input class="in" id="a-user" required autocomplete="username" dir="ltr" placeholder="nono" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي أو رقم"></label>
+      <label class="f">اسم المستخدم (بالإنجليزي)<input class="in" id="a-user" required autocomplete="username" dir="ltr" placeholder="nono" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي"></label>
       <label class="f">الباسورد<span class="pwwrap"><input class="in" id="a-pass" type="password" required minlength="6" autocomplete="${login?"current-password":"new-password"}" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">${EYE_SHUT}</button></span></label>
       ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>
       <div class="seg" role="group" aria-label="الديانة"><button type="button" data-act="arel" data-v="muslim" aria-pressed="${U.rel!=="christian"}">مسلمة</button><button type="button" data-act="arel" data-v="christian" aria-pressed="${U.rel==="christian"}">مسيحية</button></div>`}
@@ -1445,7 +1469,7 @@ document.addEventListener("click", e => {
   switch(act){
     case "close": closeSheet(); break;
     case "tab": go(v); break;
-    case "new-love": S._love = pick(S.msgs.love); render(); break;
+    case "new-love": S._love = pick(lovePool()); render(); break;
     case "mood": {
       S.moods[k] = v; save(); render();
       const m = MOODS.find(x=>x.k===v); message(m.e, pick(S.msgs[v]));
@@ -1536,6 +1560,9 @@ document.addEventListener("click", e => {
     case "adm-gback": { const A = U.admin, back = A.gback; A.gsel = null; A.gmsgs = null; A.gback = null; if (back) adminOpen(back); else render(); break; }
     case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`${A.gpath}/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
     case "adm-export": adminExport(); break;
+    case "adm-love": { const lines = id => (($("#" + id)||{}).value || "").split("\n").map(x=>x.trim()).filter(Boolean).slice(0, 200);
+      const d = {f:lines("cfg-love-f"), m:lines("cfg-love-m"), at:Date.now()};
+      fb.set("config/love", d, false).then(()=>{ CFG.love = d; toast("اتحفظت، وهتظهر للكل 💌"); }).catch(()=>toast("مقدرتش أحفظ، اتأكد إنك نشرت القواعد الجديدة")); break; }
     case "adm-deluser": { const u = (U.admin.users||[]).find(x=>x.id===v); if (!u || v === UID) break;
       sheet(`<h2>🗑️ تمسح حساب ${esc(u.name||"")}؟</h2><p class="muted">@${esc(u.username||"")}</p><p>الحساب وكل بياناته هيتمسحوا <b>نهائي</b> ومش هيرجعوا: الفلوس والمهام والمذاكرة والمود ودفتر حكاياتي والرسايل. وهيتفك الربط مع شريكه ويخرج من الجروبات.</p><p class="muted small">هيتقفل على طول، ويتمسح خالص خلال 5 دقايق.</p><div class="form"><button class="btn danger" data-act="adm-deluser-ok" data-v="${esc(u.id)}">أيوه امسحه نهائي</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
     case "adm-deluser-ok": { const A = U.admin, u = (A.users||[]).find(x=>x.id===v); if (!u) break;
@@ -1750,6 +1777,15 @@ document.addEventListener("submit", e => {
       const u = val("fg-user").toLowerCase(), c = val("fg-contact"); if (!u || !c) return;
       const fbtn = $("#fg-btn"); if (fbtn){ fbtn.disabled = true; fbtn.textContent = isEN() ? "One sec…" : "لحظة…"; }
       fb.add("resetRequests", {username:u, contact:c, note:val("fg-note"), status:"new"}).then(()=>{ closeSheet(); message("💌", "الطلب وصل، هيكلّمك قريب ويبعتلك باسورد مؤقت", "🔑"); }).catch(()=>{ toast("مقدرتش أبعت الطلب، اتأكدي من النت"); const fb2 = $("#fg-btn"); if (fb2){ fb2.disabled = false; fb2.textContent = isEN() ? "Send request" : "ابعتي الطلب"; } });
+      break;
+    }
+    case "uname": {
+      const n = val("un-new").toLowerCase();
+      if (!/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
+      if (n === ME.username) return toast("ده اليوزر بتاعك أصلًا 😅");
+      fb.set(`usernameRequests/${UID}`, {username:n, status:"new", at:Date.now()}, false)
+        .then(() => { U.unReq = {username:n, status:"new"}; render(); toast("تمام، هيتغيّر خلال دقايق ⏳"); })
+        .catch(() => toast("مقدرتش، جرّبي تاني"));
       break;
     }
     case "pass": {

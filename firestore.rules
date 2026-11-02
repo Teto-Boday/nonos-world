@@ -61,6 +61,22 @@ service cloud.firestore {
       allow delete: if (couple(cid) && resource.data.from == me()) || admin();
     }
 
+    // app-wide settings the owner edits from the admin panel
+    match /config/{id} {
+      allow read: if signed();
+      allow write: if admin();
+    }
+
+    // a user asks to change their username; the GitHub Action checks it's free and applies it
+    match /usernameRequests/{uid} {
+      allow read, delete: if signed() && (me() == uid || admin());
+      allow create, update: if signed() && me() == uid && !banned()
+        && request.resource.data.keys().hasOnly(['username', 'status', 'at'])
+        && request.resource.data.status == 'new'
+        && request.resource.data.username is string
+        && request.resource.data.username.matches('^[a-z0-9_.]{3,20}$');
+    }
+
     match /resetRequests/{id} {
       allow create: if request.resource.data.keys().hasOnly(['username', 'contact', 'note', 'status', 'at'])
         && request.resource.data.status == 'new'
