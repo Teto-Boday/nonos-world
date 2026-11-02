@@ -1,7 +1,7 @@
 // Thin wrapper around Firebase so the app code stays small. Bundled by esbuild in CI.
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, orderBy, limit as qlimit, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, where, arrayUnion, arrayRemove, updateDoc, doc, getDoc, setDoc, deleteDoc, onSnapshot, collection, query, orderBy, limit as qlimit, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
 import { firebaseConfig } from "./firebase-config.js";
 
 const app = initializeApp(firebaseConfig);
@@ -31,6 +31,10 @@ export const fb = {
   listen: (p, cb, onErr) => onSnapshot(ref(p), s => cb(s.exists() ? s.data() : null), e => onErr && onErr(e)),
   listenCol: (p, cb, onErr, max = 500, order = "ts") =>
     onSnapshot(query(cref(p), orderBy(order, "desc"), qlimit(max)), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), e => onErr && onErr(e)),
+  listenWhere: (p, field, op, value, cb, onErr) =>
+    onSnapshot(query(cref(p), where(field, op, value)), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), e => onErr && onErr(e)),
+  joinArray: (p, field, value, extra = {}) => updateDoc(ref(p), { [field]: arrayUnion(value), ...extra }),
+  leaveArray: (p, field, value) => updateDoc(ref(p), { [field]: arrayRemove(value) }),
   list: async (p, max = 500, order) => {
     const q = order ? query(cref(p), orderBy(order, "desc"), qlimit(max)) : query(cref(p), qlimit(max));
     const s = await getDocs(q); return s.docs.map(d => ({ id: d.id, ...d.data() }));

@@ -224,3 +224,12 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 @keyframes splashPulse{50%{transform:scale(1.06)}}
 .splash-go{margin-top:18px;border:0;border-radius:18px;padding:13px 34px;font:inherit;font-weight:800;font-size:17px;background:#fff;color:#e85d8a;box-shadow:0 10px 24px -10px rgba(0,0,0,.35);cursor:pointer}
 .splash.boy .splash-go{color:#283a73}
+.together{margin-top:6px;text-align:center;padding:18px 14px;border-radius:var(--r);background:linear-gradient(135deg,var(--soft),var(--soft2))}
+.together .names{font-family:var(--display);font-weight:800;font-size:20px}
+.together .always{color:var(--accent);font-weight:700;letter-spacing:.3px}
+.card.special{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;text-align:center}
+.card.special .lbl{font-size:12px;font-weight:700;opacity:.9}
+.card.special p{margin:6px 0 0;font-family:var(--display);font-size:19px;font-weight:700;line-height:1.5}
+.splash-ded{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-weight:700;font-size:14px;opacity:.85;letter-spacing:.3px}
+.splash-special{margin:4px 0 2px;font-family:var(--display);font-size:20px;font-weight:700;line-height:1.5;max-width:360px}
+.big-stars button{width:52px;height:52px;font-size:28px}

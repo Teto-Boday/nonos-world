@@ -156,6 +156,23 @@ section.block{padding:70px 0}
 .note{margin-top:20px;background:var(--surface);border-radius:20px;padding:16px 18px;color:var(--muted)}
 .note b{color:var(--ink)}
 
+.ded{text-align:center;font-weight:700;color:var(--pink);font-size:14px;padding:6px 0 0;letter-spacing:.3px}
+.ded-foot{font-family:var(--display);font-weight:700;color:var(--pink);font-size:18px;margin-bottom:6px}
+#gender .g-m{display:none}
+html.boy #gender .g-f{display:none}
+html.boy #gender .g-m{display:inline}
+html.boy{--pink:#2f6fc0;--pink2:#7fb0ea;--mauve:#5b7bd6;--soft:#e3edfb;--bg:#f3f7fd}
+html.boy .btn{box-shadow:0 4px 0 #1f4f8f}
+html.boy .chipbtn.solid{box-shadow:0 3px 0 #1f4f8f}
+html.boy .blobs i:nth-child(1){background:#cfe0fb}
+html.boy .blobs i:nth-child(3){background:#dbe6f5}
+.reviews{position:relative;max-width:640px;margin:0 auto;min-height:180px}
+.review{position:absolute;inset:0;background:var(--surface);border-radius:26px;padding:22px;box-shadow:0 4px 0 #f6cddb;display:flex;flex-direction:column;gap:8px;justify-content:center;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s,transform .6s}
+.review.on{opacity:1;transform:none}
+.review .st{font-size:20px;letter-spacing:2px}
+.review p{margin:0;font-size:18px;font-weight:600}
+.review .who{color:var(--muted);font-weight:700}
+
 /* faq */
 .faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 .faq details{background:var(--surface);border-radius:20px;padding:14px 18px;box-shadow:0 3px 0 #f6cddb}
@@ -186,12 +203,14 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   <div class="wrap">
     <a class="logo" href="#top"><img src="app/icon-192.png" alt="">Nono's World</a>
     <div class="hbtns">
+      <button class="chipbtn" id="gender" aria-label="بنت أو ولد"><span class="g-f">🎀 <span data-l="ar">بنت</span><span data-l="en">Girl</span></span><span class="g-m">🧢 <span data-l="ar">ولد</span><span data-l="en">Guy</span></span></button>
       <button class="chipbtn" id="lang">English</button>
       <a class="chipbtn solid" href="#download"><span data-l="ar">حمّلي</span><span data-l="en">Download</span></a>
     </div>
   </div>
 </header>
 
+<div class="ded"><span data-l="ar">إهداء إلى حبيبتي</span><span data-l="en">Dedicated to my love</span> 🤍</div>
 <main id="top">
   <div class="wrap">
     <section class="hero">
@@ -202,7 +221,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
           <a class="btn" href="#download" id="cta-main">⬇️ <span data-l="ar">حمّلي مجانًا</span><span data-l="en">Download free</span></a>
           <a class="btn ghost" href="app/">✨ <span data-l="ar">جرّبيه من المتصفح</span><span data-l="en">Try it in the browser</span></a>
         </div>
-        <div class="badges"><span>🤖 Android</span><span>🍎 iPhone</span><span>💻 Windows</span><span>💗 <span data-l="ar">مجاني</span><span data-l="en">Free</span></span><span>📴 <span data-l="ar">بيشتغل من غير نت</span><span data-l="en">Works offline</span></span></div>
+        <div class="badges"><span>🎀 <span data-l="ar">للبنات</span><span data-l="en">For girls</span></span><span>🧢 <span data-l="ar">وللولاد</span><span data-l="en">and guys</span></span><span>🤖 Android</span><span>🍎 iPhone</span><span>💻 Windows</span><span>💗 <span data-l="ar">مجاني</span><span data-l="en">Free</span></span><span>📴 <span data-l="ar">بيشتغل من غير نت</span><span data-l="en">Works offline</span></span></div>
       </div>
       <div class="hero-phone">
         <div class="phone float"><div class="screen" id="carousel">
@@ -273,6 +292,27 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
 
   <section class="block">
     <div class="wrap">
+      <div class="feature reveal">
+        <div class="f-media"><div class="phone sm"><div class="screen"><img data-boy="boy-home" class="on" alt="" loading="lazy"></div></div></div>
+        <div><div class="em">🧢</div>
+          <h3><span data-l="ar">وللولاد كمان</span><span data-l="en">For guys too</span></h3>
+          <p><span data-l="ar">لو إنت ولد، التطبيق كله بيكلّمك بصيغة الولد: "اصرف براحتك يا وحش" و"عملتها يا بطل". ورسايل التشجيع بتجيلك بصوت شريكة حياتك: "إيه الشطارة دي يا بطلي"، "إنت قدها يا راجلي".</span><span data-l="en">If you're a guy, the whole app talks to you as one: "Spend freely, champ" and "Did it, hero". Encouragement comes in your partner's voice: "On fire, my hero", "You've got this".</span></p>
+          <ul><li><span data-l="ar">🌊 ثيمات هادية: ليل، بحر، رملي، رمادي</span><span data-l="en">🌊 Calm themes: Night, Sea, Sand, Grey</span></li><li><span data-l="ar">💞 تشوف يوم شريكة حياتك وتطمّن عليها</span><span data-l="en">💞 See your partner's day and check on her</span></li></ul>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-media"><div class="phone sm"><div class="screen"><img data-src="diary" class="on" alt="" loading="lazy"></div></div></div>
+        <div><div class="em">👯</div>
+          <h3><span data-l="ar">جروبات مع صحابك</span><span data-l="en">Groups with your friends</span></h3>
+          <p><span data-l="ar">اعملي جروب وابعتي الكود لصحابك، وادردشوا مع بعض في شات منفصل عن حكاياتك.</span><span data-l="en">Make a group, send the code to your friends, and chat together, separate from your diary.</span></p>
+          <ul><li><span data-l="ar">🔗 كود واحد والكل يدخل</span><span data-l="en">🔗 One code and everyone's in</span></li><li><span data-l="ar">🚩 بلاغ وفلتر للشتايم في الجروبات كمان</span><span data-l="en">🚩 Report button and bad-word filter in groups too</span></li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
       <div class="sec-title reveal"><h2><span data-l="ar">12 ثيم… اختاري اللي يريّح عينك 🎨</span><span data-l="en">12 themes, pick what's easy on your eyes 🎨</span></h2>
         <p><span data-l="ar">بينك، موف، خوخي، نعناعي… ووضع ليلي بيشتغل لوحده بالليل.</span><span data-l="en">Pink, mauve, peach, mint… and a dark mode that turns on by itself at night.</span></p></div>
       <div class="duo reveal">
@@ -291,6 +331,13 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
         <div><b>🚩 <span data-l="ar">مفيش إساءة</span><span data-l="en">No abuse</span></b><p><span data-l="ar">زرار بلاغ، وفلتر للشتايم، وإدارة بتراجع وتوقف أي حد بيضايق.</span><span data-l="en">A report button, a bad-word filter, and admins who review and block anyone abusive.</span></p></div>
         <div><b>📴 <span data-l="ar">من غير نت</span><span data-l="en">Offline</span></b><p><span data-l="ar">بعد أول مرة بيفتح من غير نت، وكل حاجة بتترفع لما النت يرجع.</span><span data-l="en">After the first time it opens offline, and syncs when you're back online.</span></p></div>
       </div>
+    </div>
+  </section>
+
+  <section class="block" id="reviews" hidden>
+    <div class="wrap">
+      <div class="sec-title reveal"><h2><span data-l="ar">الناس بتقول إيه؟ 💬</span><span data-l="en">What people say 💬</span></h2><p><span data-l="ar">آراء حقيقية من جوه التطبيق</span><span data-l="en">Real reviews from inside the app</span></p></div>
+      <div class="reviews" id="rv"></div>
     </div>
   </section>
 
@@ -367,13 +414,17 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   </section>
 </main>
 
-<footer>Nono's World · <span data-l="ar">معمول بحب 💗</span><span data-l="en">Made with love 💗</span></footer>
+<footer><div class="ded-foot"><span data-l="ar">إهداء إلى حبيبتي</span><span data-l="en">Dedicated to my love</span> 🤍</div>Nono's World · <span data-l="ar">معمول بحب 💗</span><span data-l="en">Made with love 💗</span></footer>
 
 <script>
 (function(){
   document.documentElement.classList.add("js");
   var root = document.documentElement;
-  function setImgs(l){ document.querySelectorAll("img[data-src]").forEach(function(im){ im.src = "img/" + im.getAttribute("data-src") + "-" + l + ".jpg"; im.alt = ""; }); }
+  function setImgs(l){
+    var boy = root.classList.contains("boy");
+    document.querySelectorAll("img[data-src]").forEach(function(im){ var n = im.getAttribute("data-src"); if (boy && (n === "home" || n === "study") && (im.closest("#carousel") || n === "home")) n = "boy-" + n; im.src = "img/" + n + "-" + l + ".jpg"; im.alt = ""; });
+    document.querySelectorAll("img[data-boy]").forEach(function(im){ im.src = "img/" + im.getAttribute("data-boy") + "-" + l + ".jpg"; im.alt = ""; });
+  }
   function setLang(l){
     root.lang = l; root.dir = l === "en" ? "ltr" : "rtl";
     document.getElementById("lang").textContent = l === "en" ? "عربي" : "English";
@@ -391,6 +442,51 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   var saved; try { saved = localStorage.getItem("nw-lang"); } catch(e){}
   setLang(saved === "en" ? "en" : "ar");
   document.getElementById("lang").onclick = function(){ setLang(root.lang === "en" ? "ar" : "en"); };
+
+  // girl / guy wording
+  var MASC = {"حمّلي":"حمّل","حمّليه":"حمّله","جرّبيه":"جرّبه","اختاري":"اختار","واختاري":"واختار","اصرفي":"اصرف","يا بسبوسه":"يا وحش","بسبوسه":"وحش","اظبطي":"اظبط","افتحي":"افتح","وافتحيه":"وافتحه","انزلي":"انزل","إنتي":"إنت","وإنتي":"وإنت","بتختاري":"بتختار","بتذاكري":"بتذاكر","بتقرري":"بتقرر","بيكي":"بيك","تبقي":"تبقى","تسجّليها":"تسجّلها","تشوفيه":"تشوفه","تصرفي":"تصرف","تقدري":"تقدر","تقفلي":"تقفل","تقلبيه":"تقلبه","تكتبي":"تكتب","جنبك":"جنبك","دوسي":"دوس","ودوسي":"ودوس","سامحة":"سامح","عليكي":"عليك","مضايقة":"مضايق","نسيتي":"نسيت","وأضيفي":"وأضيف","وارجعي":"وارجع","واعملي":"واعمل","وامشي":"وامشي","وتفكّي":"وتفكّ","وحطي":"وحط","وشوفي":"وشوف","وفعّلي":"وفعّل","ومعاكي":"ومعاك","وابعتي":"وابعت","اعملي":"اعمل","شريك حياتك":"شريكة حياتك","وشريك حياتك":"وشريكة حياتك","شريكك":"شريكتك","لشريكك":"لشريكتك","وشريكك":"وشريكتك","يطمّن":"تطمّن","ويرد":"وترد","ويفتكرك":"وتفتكرك","يدلّعك":"يدلّعك","بيدلّعك":"بيدلّعك","يهتم":"تهتم","يشوف":"تشوف","هو يشوف":"هي تشوف","يجيله":"يجيلها","يكون":"تكون","يرد":"ترد","هيرد":"هترد","وادردشوا":"وادردشوا"};
+  var keys = Object.keys(MASC).sort(function(a,b){ return b.length - a.length; });
+  var RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + keys.map(function(k){ return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
+  var orig = new Map();
+  function walk(on){
+    document.querySelectorAll('[data-l="ar"]').forEach(function(el){
+      if (el.closest("#gender") || el.closest(".ded") || el.closest(".ded-foot") || el.closest("#rv")) return;
+      var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+      while ((n = tw.nextNode())){ if (!orig.has(n)) orig.set(n, n.nodeValue); var o = orig.get(n); n.nodeValue = on ? o.replace(RE, function(m, pre, w){ return pre + MASC[w]; }) : o; }
+    });
+    document.querySelectorAll("[data-l='en']").forEach(function(el){
+      var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+      while ((n = tw.nextNode())){ if (!orig.has(n)) orig.set(n, n.nodeValue); var o = orig.get(n); n.nodeValue = on ? o.replace(/cupcake/g, "champ") : o; }
+    });
+  }
+  function setGender(g){
+    root.classList.toggle("boy", g === "m");
+    walk(g === "m");
+    document.querySelectorAll("#carousel img[data-src='home'], .features img[data-src='home']").forEach(function(im){ im.src = "img/" + (g === "m" ? "boy-home" : "home") + "-" + (root.lang || "ar") + ".jpg"; });
+    document.querySelectorAll("#carousel img[data-src='study']").forEach(function(im){ im.src = "img/" + (g === "m" ? "boy-study" : "study") + "-" + (root.lang || "ar") + ".jpg"; });
+    try { localStorage.setItem("nw-site-g", g); } catch(e){}
+  }
+  var g0 = "f"; try { g0 = localStorage.getItem("nw-site-g") || "f"; } catch(e){}
+  document.getElementById("gender").onclick = function(){ setGender(root.classList.contains("boy") ? "f" : "m"); };
+  setGender(g0);
+
+  // reviews from inside the app (newest first, rotating)
+  function loadReviews(){
+    var url = "https://firestore.googleapis.com/v1/projects/nonos-world/databases/(default)/documents/publicReviews?pageSize=30&orderBy=at%20desc&key=AIzaSyD8G36U_KYYVulOFJze12m9gmXczjhgt-Y";
+    fetch(url).then(function(r){ return r.json(); }).then(function(d){
+      var docs = (d.documents || []).map(function(x){ var f = x.fields || {}; return {name:(f.name||{}).stringValue||"", text:(f.text||{}).stringValue||"", stars:+((f.stars||{}).integerValue||5)}; }).filter(function(r){ return r.text; });
+      var box = document.getElementById("rv"), sec = document.getElementById("reviews");
+      if (!docs.length){ sec.hidden = true; return; }
+      sec.hidden = false; box.innerHTML = "";
+      docs.forEach(function(r, i){ var c = document.createElement("div"); c.className = "review" + (i ? "" : " on");
+        var st = document.createElement("div"); st.className = "st"; st.textContent = "⭐".repeat(Math.max(1, Math.min(5, r.stars)));
+        var p = document.createElement("p"); p.textContent = "“" + r.text + "”"; p.dir = "auto";
+        var w = document.createElement("div"); w.className = "who"; w.textContent = r.name; w.dir = "auto";
+        c.appendChild(st); c.appendChild(p); c.appendChild(w); box.appendChild(c); });
+    }).catch(function(){});
+  }
+  var rvI = 0; setInterval(function(){ var cs = document.querySelectorAll("#rv .review"); if (cs.length < 2) return; cs[rvI % cs.length].classList.remove("on"); rvI++; cs[rvI % cs.length].classList.add("on"); }, 4500);
+  loadReviews(); setInterval(loadReviews, 60000);
 
   // hero carousel
   var imgs = document.querySelectorAll("#carousel img"), i = 0;

@@ -182,8 +182,8 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "كويسة":"كويس","ليكي":"ليك","مبسوطة":"مبسوط","مبسوطه":"مبسوط","متأكدة":"متأكد","مختارتيش":"مختارتش","مصرفتيش":"مصرفتش","مضايقة":"مضايق","مضغوطة":"مضغوط",
 "معاكي":"معاك","موافقة":"موافق","مستعدة":"مستعد","مستنيكي":"مستنيك","نامي":"نام","نسيتي":"نسيت","نمتي":"نمت","هتعوضي":"هتعوض","هصحّيكي":"هصحّيك","هنناديكي":"هنناديك",
 "وابتسمي":"وابتسم","وافقتي":"وافقت","شغالة":"شغال","بطلة":"بطل","بسبوسة":"وحش","بسبوسه":"وحش","نونو":"بطل","بنوتي":"بطل","حبيبتي":"حبيبي",
-"مسلمة":"مسلم","مسيحية":"مسيحي","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
-const MASC_RE = new RegExp("(^|[^\\u0600-\\u06FF])(" + Object.keys(MASC).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0600-\\u06FF])", "g");
+"مسلمة":"مسلم","مسيحية":"مسيحي","خرجتي":"خرجت","قيّمي":"قيّم","اعرضي":"اعرض","فرّحتينا":"فرّحتنا","اكتبيلي":"اكتبلي","اعملي الجروب":"اعمل الجروب","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
+const MASC_RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + Object.keys(MASC).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
 const mascRaw = str => String(str).replace(MASC_RE, (m, pre, w) => pre + MASC[w]);
 const stripMarks = h => String(h).replace(/[]/g, "");
 const mascProtected = h => String(h).split(/([^]*)/).map(x => x[0] === "" ? x.slice(1, -1) : mascRaw(x)).join("");
@@ -192,7 +192,7 @@ const isMale = () => !!(S && S.user && S.user.gender === "m");
 /* ================= language (Arabic / English) ================= */
 const LANG = () => (S && S.lang) || (() => { try { return localStorage.getItem("nw-lang") || "ar"; } catch(e){ return "ar"; } })();
 const isEN = () => LANG() === "en";
-const TR_RE = new RegExp("(^|[^\\u0600-\\u06FF])(" + Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0600-\\u06FF])", "g");
+const TR_RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
 const EN_M = [[/\bcupcake\b/g,"champ"],[/Did it, Nono/g,"Did it, hero"],[/^Nono!$/g,"hero!"]];
 const trRaw = (str, male) => { let o = String(str).replace(TR_RE, (m, pre, w) => pre + EN[w]); if (male) EN_M.forEach(([r,v]) => o = o.replace(r, v)); return o; };
 const splitMarks = h => String(h).split(/([^]*)/);
@@ -323,6 +323,7 @@ function load(){
 const CLOUD = !!window.fb;
 const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
+const GR = {list:[], open:null, msgs:[], unsub:null};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
 const secData = (st, sec) => { const o = {}; SEC[sec].forEach(k => o[k] = st[k] === undefined ? null : st[k]); return o; };
 function save(){
@@ -368,7 +369,7 @@ async function boot(u){
     st.religionHint = ME.religion || "muslim";
     S = normalize(st, ME.gender); S.tab = S.tab || "home";
     if (secsLoaded) Object.keys(SEC).forEach(sec => lastPushed[sec] = JSON.stringify(secData(S, sec)));
-    try { localStorage.setItem("nw-lang", S.lang || "ar"); localStorage.setItem("nw-g", ME.gender || "f"); localStorage.setItem("nw-name", ME.name || ""); localStorage.setItem(meKey, JSON.stringify(ME)); } catch(e){}
+    try { localStorage.setItem("nw-lang", S.lang || "ar"); localStorage.setItem("nw-g", ME.gender || "f"); localStorage.setItem("nw-name", ME.name || ""); if (ME.special) localStorage.setItem("nw-special", ME.special); else localStorage.removeItem("nw-special"); localStorage.setItem(meKey, JSON.stringify(ME)); } catch(e){}
     if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; }
     S.user = {name:ME.name, username:ME.username, gender:ME.gender, religion:ME.religion || "muslim"}; S.share = Object.assign({}, ME.share || {});
   };
@@ -410,6 +411,8 @@ async function boot(u){
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
   unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
+  GR.list = []; GR.open = null; GR.msgs = [];
+  unsubs.push(fb.listenWhere("groups", "members", "array-contains", UID, list => { GR.list = list; if (S && S.tab === "diary" && U.dmode === "friends" && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
   let firstTime = false; try { firstTime = localStorage.getItem("nw-welcome") === UID; if (firstTime) localStorage.removeItem("nw-welcome"); } catch(e){}
@@ -562,7 +565,7 @@ const hm = m => isEN() ? (m >= 60 ? Math.floor(m/60) + "h" + (m%60 ? " " + (m%60
 /* ================= UI shell ================= */
 let tapCount = 0, tapTimer = null;
 function CLOUD_BOOT(){ return !!window.fb; }
-const U = {booting:CLOUD_BOOT(), authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
+const U = {dmode:"me", booting:CLOUD_BOOT(), authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
 function welcomeScreen(){
   const boy = S.user.gender === "m", en = isEN(), name = escP(S.user.name);
   const title = en ? "Welcome, " + name : "أهلًا يا " + name;
@@ -572,7 +575,7 @@ function welcomeScreen(){
   const sub = en ? "Take your time and explore." : boy ? "خد راحتك، واكتشفها على مهلك." : "خدي راحتك، واكتشفيها على مهلك.";
   $("#layer").innerHTML = `<div class="splash ${boy ? "boy" : "girl"}" role="dialog" aria-modal="true" aria-label="${title}"><div class="splash-in">
     <img src="icon-192.png" alt="" class="splash-logo"><div class="splash-brand">Nono's World</div>
-    <h1 class="splash-title">${title}</h1><p class="splash-sub">${body}</p><p class="splash-sub" style="opacity:.8">${sub}</p>
+    <h1 class="splash-title">${title}</h1>${ME && ME.special ? `<p class="splash-special">${escP(ME.special)}</p>` : ""}<p class="splash-sub">${body}</p><p class="splash-sub" style="opacity:.8">${sub}</p>
     <button class="splash-go" data-act="welcome-go">${en ? "Let's start" : "يلا نبدأ"}</button></div></div>`;
 }
 function splashView(){
@@ -580,9 +583,11 @@ function splashView(){
   const en = isEN(), boy = g === "m";
   const title = en ? (boy ? (name ? "Welcome back, " + escP(name) : "Welcome, champ") : (name ? "Welcome back, " + escP(name) : "Welcome to your world"))
                    : (boy ? (name ? "أهلًا بيك يا " + escP(name) : "أهلًا بيك يا بطل") : (name ? "أهلًا بيكي يا " + escP(name) : "أهلًا بيكي في دنيتك"));
-  const sub = en ? (boy ? "Your world is ready and waiting for you" : "Everything you love is waiting for you here")
+  let special = ""; try { special = localStorage.getItem("nw-special") || ""; } catch(e){}
+  const sub = special ? escP(special) : en ? (boy ? "Your world is ready and waiting for you" : "Everything you love is waiting for you here")
                  : (boy ? "دنيتك جاهزة ومستنياك" : "كل حاجة بتحبيها مستنياكي هنا");
   return `<div class="splash ${boy ? "boy" : "girl"}" role="status" aria-live="polite">
+    <div class="splash-ded">${en ? "Dedicated to my love" : "إهداء إلى حبيبتي"}</div>
     <div class="splash-in"><img src="icon-192.png" alt="" class="splash-logo">
     <div class="splash-brand">Nono's World</div>
     <h1 class="splash-title">${title}</h1><p class="splash-sub">${sub}</p>
@@ -638,6 +643,7 @@ function homeView(){
   const upcoming = S.exams.filter(e=>e.date>=k).sort((a,b)=>a.date<b.date?-1:1)[0];
   const love = S._love || (S._love = pick(S.msgs.love));
   return `
+  ${ME && ME.special ? `<div class="card special"><div class="lbl">${isEN() ? "Just for you" : "ليكي مخصوص"}</div><p>${esc(ME.special)}</p></div>` : ""}
   <section class="hello">
     <h1>${greet} يا ${esc(S.user.name)} ${hour<18?"☀️":"🌙"}</h1>
     <p>${prettyDate(t)}</p>
@@ -691,6 +697,7 @@ function homeView(){
   </div>
 
   <button class="btn ghost block" data-act="week-summary">${L.week} · ملخص الأسبوع</button>
+  ${togetherStrip()}
   `;
 }
 
@@ -802,6 +809,51 @@ function studyView(){
   </div>`;
 }
 
+function diarySwitch(){
+  return `<div class="seg" style="margin-top:4px"><button data-act="dmode" data-v="me" aria-pressed="${U.dmode !== "friends"}">حكاياتي</button><button data-act="dmode" data-v="friends" aria-pressed="${U.dmode === "friends"}">الصحاب 👯</button></div>`;
+}
+function friendsView(){
+  const g = GR.open && GR.list.find(x => x.id === GR.open);
+  if (!g) return `${diarySwitch()}
+    <section class="hello"><h1>الصحاب 👯</h1><p>جروبات مع صحابك تتكلموا فيها مع بعض</p></section>
+    <div class="row wrap"><button class="btn small" data-act="g-new">＋ جروب جديد</button><button class="btn ghost small" data-act="g-join">ادخلي جروب بكود</button></div>
+    <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button></li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
+  let last = "", out = "";
+  GR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    const d = new Date(m.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5), mine = m.from === UID;
+    if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
+    out += mine ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
+      : `<div class="msg him"><div class="bub"><small class="from">${esc(m.name || "")}</small>${esc(m.text)}<span class="tm num">${tm}</span></div><button class="x small" data-act="g-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
+  });
+  const names = Object.values(g.names || {}).map(esc).join("، ");
+  return `<div class="row between"><button class="btn ghost small" data-act="g-back">رجوع</button><button class="btn ghost small" data-act="g-info">الكود والأعضاء</button></div>
+    <section class="hello"><h1>${esc(g.name)}</h1><p>${names}</p></section>
+    <div class="chat" id="chat">${out || `<div class="empty">قولوا أهلًا لبعض 👋</div>`}</div>
+    <form class="composer" data-form="gmsg"><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+}
+function keepTyping(fn){ const a = document.activeElement, id = a && a.id, val = id && a.value; fn(); if (id){ const el = document.getElementById(id); if (el){ el.value = val; el.focus(); } } }
+function openGroup(gid){
+  if (GR.unsub){ try{GR.unsub();}catch(e){} GR.unsub = null; }
+  GR.open = gid; GR.msgs = [];
+  if (gid) GR.unsub = fb.listenCol(`groups/${gid}/msgs`, list => { GR.msgs = list; if (S.tab === "diary" && U.dmode === "friends" && GR.open === gid){ keepTyping(render); scrollChat(); } }, () => {}, 300);
+  render(); if (gid) scrollChat(); else window.scrollTo({top:0});
+}
+function feedbackSheet(){
+  U.fb = U.fb || {stars:5, kind:"review"};
+  const f = U.fb;
+  sheet(`<h2>قيّمي التطبيق ⭐</h2>
+  <div class="stars big-stars" style="justify-content:center;margin-bottom:10px">${[1,2,3,4,5].map(i=>`<button data-act="fb-star" data-v="${i}" class="${i<=f.stars?"f":""}" aria-label="${i}">⭐</button>`).join("")}</div>
+  <div class="seg" style="margin-bottom:10px"><button data-act="fb-kind" data-v="review" aria-pressed="${f.kind==="review"}">رأيي</button><button data-act="fb-kind" data-v="idea" aria-pressed="${f.kind==="idea"}">اقتراح</button><button data-act="fb-kind" data-v="complaint" aria-pressed="${f.kind==="complaint"}">شكوى</button></div>
+  <form class="form" data-form="feedback">
+    <textarea class="in" id="fb-text" maxlength="300" placeholder="${f.kind==="complaint"?"إيه اللي مضايقك؟":f.kind==="idea"?"نفسك نزوّد إيه؟":"قولي رأيك في التطبيق"}" required></textarea>
+    ${f.kind==="review" ? `<label class="item" style="cursor:pointer"><input type="checkbox" id="fb-public" checked style="width:20px;height:20px;accent-color:var(--accent)"><div class="grow"><div class="t">اعرضي رأيي على موقع التطبيق</div><div class="s">باسمك الأول بس</div></div></label>` : `<p class="muted small" style="margin:0">ده بيوصل لصاحب التطبيق بس.</p>`}
+    <button class="btn" type="submit" id="fb-btn">ابعتي</button>
+  </form>`);
+}
+function togetherStrip(){
+  if (!(P && P.linked && P.user)) return "";
+  return `<div class="together"><div class="names">${esc(S.user.name)} <span aria-hidden="true">💞</span> ${esc(P.user.name)}</div><div class="always">مع بعض دايمًا</div></div>`;
+}
 function diaryView(){
   const list = S.diary.filter(e=>e.chat===S.chatId).sort((a,b)=>a.ts-b.ts);
   let last = "", out = "";
@@ -814,7 +866,9 @@ function diaryView(){
       ? `<div class="msg him"><div class="bub">${esc(e.reply)}<span class="tm num">${tm}</span></div></div>`
       : `<div class="msg him"><div class="bub typing" aria-label="بيكتب"><i></i><i></i><i></i></div></div>`;
   });
+  if (CLOUD && U.dmode === "friends") return friendsView();
   return `
+  ${CLOUD ? diarySwitch() : ""}
   <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user?esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك"):"هو سامعك"} 🤍</p></section>
   <div class="row"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button></div>
   <div class="chat" id="chat">${out || `<div class="empty">لسه مفيش حكايات… ابدئي إنتي 📔</div>`}</div>
@@ -902,6 +956,9 @@ function adminView(){
     const u = A.users.find(x=>x.id===A.sel) || {};
     return withState(A.st, () => dashboard({name:u.name||"", gender:u.gender, title:`👤 ${esc(u.name||"")} <small class="muted">@${esc(u.username||"")}</small>`, all:true, admin:true, fullChat:true, canReply:false,
       banner:`<div class="banner"><span>👑 عرض إداري · ${u.partner?"مربوط بـ "+esc((A.users.find(x=>x.id===u.partner)||{}).name||"?"):"مش مربوط"}</span><button class="btn small" data-act="adm-back">رجوع</button></div>
+      <div class="card" style="margin-bottom:10px"><h3>💌 رسالة خاصة تظهرله في شاشة الفتح</h3>
+        <textarea class="in" id="adm-special" style="margin-top:8px" placeholder="إنتي أغلى وأجمل حاجة حصلتلي في الدنيا، أنا بجد آسف على كل اللي عملته">${escP(u.special||"")}</textarea>
+        <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
       <div class="row wrap"><button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
   const q = A.q.trim().toLowerCase();
@@ -913,6 +970,7 @@ function adminView(){
       ${r.status==="approved"?`<div class="s">⏳ هيتغيّر خلال 5 لـ 15 دقيقة لـ: <b class="num" dir="ltr">${esc(r.temp||"")}</b></div>`:r.status==="done"?`<div class="s">✅ اتغيّر: <b class="num" dir="ltr">${esc(r.temp||"")}</b> ابعتهولها</div>`:r.status==="notfound"?`<div class="s">❓ اليوزر ده مش موجود</div>`:""}</div>
       ${r.status==="new"&&u?`<button class="mini" data-act="adm-reset" data-v="${esc(r.id)}">اعمل باسورد مؤقت</button>`:""}<button class="x" data-act="adm-rdel" data-v="${esc(r.id)}" aria-label="امسح">✕</button></li>`}).join(""):`<li class="empty">مفيش طلبات</li>`}</ul>
     <p class="muted small" style="margin:8px 0 0">⚠️ اتأكد إن اللي طالب هو صاحب الحساب فعلًا قبل ما تعمل الباسورد.</p></div>
+  <div class="card"><h3>⭐ التقييمات والآراء</h3><ul class="list" style="margin-top:10px">${(A.feedback||[]).length ? A.feedback.map(f=>`<li class="item"><span class="ic">${f.kind==="complaint"?"😟":f.kind==="idea"?"💡":"⭐"}</span><div class="grow"><div class="t">${esc(f.text||"")}</div><div class="s">${"⭐".repeat(f.stars||0)} · ${esc(f.name||"")} · ${f.kind==="complaint"?"شكوى":f.kind==="idea"?"اقتراح":"رأي"}</div></div>${f.kind==="review"?`<button class="mini" data-act="adm-hide-review" data-v="${esc(f.uid||"")}">شيله من الموقع</button>`:""}<button class="x" data-act="adm-fb-del" data-v="${esc(f.id)}" aria-label="امسح">✕</button></li>`).join("") : `<li class="empty">لسه مفيش</li>`}</ul></div>
   <div class="card"><h3>🚩 محتاج مراجعة</h3><ul class="list" style="margin-top:10px">${A.reports.length?A.reports.map(r=>`<li class="item"><span class="ic">${r.kind==="auto"?"🤖":"🚩"}</span><div class="grow"><div class="t">${esc(r.text||"")}</div><div class="s">${r.kind==="auto"?"الفلتر علّمها":"بلاغ"} · كتبها ${esc((A.users.find(x=>x.id===r.author)||{}).name||"?")}</div></div>
     <button class="mini" data-act="adm-open" data-v="${esc(r.owner||"")}">افتح</button><button class="mini" data-act="adm-rmmsg" data-v="${esc(r.id)}">🗑️ امسح الرسالة</button><button class="x" data-act="adm-dismiss" data-v="${esc(r.id)}" aria-label="تجاهل">✕</button></li>`).join(""):`<li class="empty">مفيش حاجة ✨</li>`}</ul></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات</h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
@@ -924,6 +982,7 @@ async function loadAdmin(){
   try {
     A.users = (await fb.list("users", 1000)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     A.reports = await fb.list("reports", 200);
+    A.feedback = await fb.list("feedback", 100, "at").catch(()=>[]);
     A.resets = await fb.list("resetRequests", 100).catch(()=>[]);
   } catch(e){ A.users = []; A.reports = []; toast("مش قادر أحمّل البيانات"); }
   if (S.tab === "admin") render();
@@ -974,6 +1033,7 @@ function settingsView(){
   </div>
   <div class="card"><h3>🌐 Language / اللغة</h3>
     <div class="seg" style="margin-top:10px"><button data-act="set-lang" data-v="ar" aria-pressed="${!isEN()}">\uE000عربي\uE001</button><button data-act="set-lang" data-v="en" aria-pressed="${isEN()}">\uE000English\uE001</button></div></div>
+  ${CLOUD ? `<div class="card row between"><div><h3>⭐ قيّمي التطبيق</h3><div class="muted small">رأيك أو اقتراح أو شكوى</div></div><button class="btn small" data-act="feedback">اكتبي</button></div>` : ""}
   <div class="card"><h3>💵 العملة</h3>
     <div class="seg" style="margin-top:10px"><button data-act="set-cur" data-v="egp" aria-pressed="${S.currency!=="usd"}">جنيه مصري</button><button data-act="set-cur" data-v="usd" aria-pressed="${S.currency==="usd"}">دولار</button></div></div>
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
@@ -1355,6 +1415,23 @@ document.addEventListener("click", e => {
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
     case "welcome-go": $("#layer").innerHTML = ""; startupChecks(); break;
+    case "dmode": U.dmode = v; if (v !== "friends") openGroup(null); else render(); break;
+    case "g-new": sheet(`<h2>جروب جديد 👯</h2><form class="form" data-form="gnew"><label class="f">اسم الجروب<input class="in" id="g-name" maxlength="40" required placeholder="البنات 💗"></label><button class="btn" type="submit">اعملي الجروب</button></form>`); break;
+    case "g-join": sheet(`<h2>ادخلي جروب</h2><form class="form" data-form="gjoin"><label class="f">كود الجروب<input class="in num" id="g-code" dir="ltr" maxlength="8" required placeholder="ABC123"></label><button class="btn" type="submit">ادخلي</button></form>`); break;
+    case "g-open": openGroup(v); break;
+    case "g-back": openGroup(null); break;
+    case "g-info": { const g = GR.list.find(x=>x.id===GR.open); if (!g) break; sheet(`<h2>${esc(g.name)}</h2><p class="muted small" style="margin:-6px 0 10px">ابعتي الكود ده لصحابك علشان يدخلوا الجروب</p>
+      <div class="item"><span class="ic">🔗</span><div class="grow"><div class="t num" dir="ltr">${esc(g.code)}</div><div class="s">كود الجروب</div></div><button class="mini" data-act="copy" data-v="${esc(g.code)}">نسخ</button></div>
+      <h3 style="margin:14px 0 8px">الأعضاء</h3><ul class="list">${Object.values(g.names||{}).map(n=>`<li class="item"><span class="ic">👤</span><div class="grow t">${esc(n)}</div></li>`).join("")}</ul>
+      <button class="btn ghost block" style="margin-top:14px" data-act="g-leave" data-v="${esc(g.id)}">اخرجي من الجروب</button>`); break; }
+    case "g-leave": { fb.leaveArray(`groups/${v}`, "members", UID).then(()=>{ closeSheet(); openGroup(null); toast("خرجتي من الجروب"); }).catch(()=>toast("مقدرتش أخرجك، جرّبي تاني")); break; }
+    case "g-report": { const m = GR.msgs.find(x=>x.id===v); if (!m) break; fb.add("reports", {kind:"report", path:`groups/${GR.open}/msgs/${v}`, owner:null, author:m.from, by:UID, text:m.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
+    case "feedback": U.fb = {stars:5, kind:"review"}; feedbackSheet(); break;
+    case "fb-star": { const t = ($("#fb-text")||{}).value || ""; U.fb.stars = +v; feedbackSheet(); $("#fb-text").value = t; break; }
+    case "fb-kind": { const t = ($("#fb-text")||{}).value || ""; U.fb.kind = v; feedbackSheet(); $("#fb-text").value = t; break; }
+    case "adm-special": { const t = ($("#adm-special")||{}).value.trim(); const u = U.admin.users.find(x=>x.id===v); fb.set(`users/${v}`, {special:t}).then(()=>{ if (u) u.special = t; toast("اتحفظت الرسالة 💌"); }).catch(()=>toast("مقدرتش أحفظ")); break; }
+    case "adm-hide-review": if (v) fb.del(`publicReviews/${v}`).then(()=>toast("اتشال من الموقع")).catch(()=>toast("مقدرتش")); break;
+    case "adm-fb-del": fb.del(`feedback/${v}`).then(()=>{ U.admin.feedback = U.admin.feedback.filter(x=>x.id!==v); render(); }); break;
     case "set-cur": S.currency = v; save(); render(); break;
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
@@ -1425,6 +1502,42 @@ document.addEventListener("submit", e => {
       message("🤍", pick(S.msgs.period) || "ألف سلامة عليكي", "منه 💌");
       break;
     }
+    case "gnew": {
+      const name = val("g-name"); if (!name) return;
+      const gid = uid() + uid(), code = genCode();
+      fb.set(`groups/${gid}`, {name, owner:UID, members:[UID], names:{[UID]:ME.name}, code, at:Date.now()}, false)
+        .then(() => fb.set(`groupCodes/${code}`, {gid, name}, false))
+        .then(() => { closeSheet(); U.dmode = "friends"; openGroup(gid); toast("اتعمل الجروب، ابعتي الكود لصحابك 💌"); })
+        .catch(() => toast("مقدرتش أعمل الجروب، جرّبي تاني"));
+      break;
+    }
+    case "gjoin": {
+      const code = val("g-code").toUpperCase(); if (!code) return;
+      fb.get(`groupCodes/${code}`).then(inv => {
+        if (!inv || !inv.gid) return toast("الكود ده مش موجود 🤔");
+        return fb.joinArray(`groups/${inv.gid}`, "members", UID, {["names." + UID]: ME.name}).then(() => { closeSheet(); U.dmode = "friends"; openGroup(inv.gid); toast("أهلًا بيكي في " + inv.name + " 👯"); });
+      }).catch(() => toast("مقدرتش أدخلك، جرّبي تاني"));
+      break;
+    }
+    case "gmsg": {
+      const t = val("gtext"); if (!t || !GR.open) return;
+      const id = uid() + uid(), m = {id, from:UID, name:ME.name, text:t, ts:Date.now()}, path = `groups/${GR.open}/msgs/${id}`;
+      GR.msgs = GR.msgs.concat(m); keepTyping(render); $("#gtext").value = ""; scrollChat();
+      fb.set(path, m, false).then(() => { moderate(m, path, null); fb.set(`groups/${GR.open}`, {last:m.ts, lastText:t.slice(0,60)}).catch(()=>{}); }).catch(() => toast("مقدرتش أبعت"));
+      break;
+    }
+    case "feedback": {
+      const text = val("fb-text"); if (!text) return;
+      const f = U.fb, pub = f.kind === "review" && $("#fb-public") && $("#fb-public").checked;
+      const btn = $("#fb-btn"); if (btn){ btn.disabled = true; btn.textContent = "لحظة…"; }
+      const first = String(ME.name || "").split(/\s+/)[0].slice(0, 20);
+      const clean = !BAD.some(w => norm(text.toLowerCase()).includes(norm(w)));
+      fb.add("feedback", {uid:UID, name:ME.name, stars:f.stars, kind:f.kind, text})
+        .then(() => pub && clean ? fb.set(`publicReviews/${UID}`, {name:first, stars:f.stars, text, g:ME.gender || "f", at:Date.now()}, false) : null)
+        .then(() => { closeSheet(); message("💗", f.kind === "complaint" ? "وصلت شكوتك، وهنحاول نحلها بسرعة" : f.kind === "idea" ? "شكرًا على الاقتراح، هنشوفه" : "شكرًا على رأيك، فرّحتينا", "Nono's World"); })
+        .catch(() => { toast("مقدرتش أبعت، جرّبي تاني"); if (btn){ btn.disabled = false; btn.textContent = "ابعتي"; } });
+      break;
+    }
     case "rule": {
       const keys = val("ru-keys").split(/[,،]/).map(x=>x.trim()).filter(Boolean);
       const replies = val("ru-replies").split("\n").map(x=>x.trim()).filter(Boolean);
@@ -1485,9 +1598,9 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !sheetLocked) closeSheet();
-  if (e.target.id === "diarytext" && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches){ e.preventDefault(); e.target.form.requestSubmit(); }
+  if ((e.target.id === "diarytext" || e.target.id === "gtext") && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches){ e.preventDefault(); e.target.form.requestSubmit(); }
 });
-document.addEventListener("input", e => { if (e.target.id === "diarytext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
+document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.target.id === "gtext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
 
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
