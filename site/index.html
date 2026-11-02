@@ -60,7 +60,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1
 .btn:hover{transform:translateY(-2px)}
 .btn.ghost{background:var(--surface);color:var(--pink);box-shadow:0 4px 0 #f6cddb}
 .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
-.badges span{background:var(--surface);border-radius:99px;padding:4px 14px;font-weight:700;font-size:14px;box-shadow:0 2px 0 #f6cddb}
+.badges > span{background:var(--surface);border-radius:99px;padding:4px 14px;font-weight:700;font-size:14px;box-shadow:0 2px 0 #f6cddb}
 
 /* phone frame */
 .phone{position:relative;width:min(300px,78vw);aspect-ratio:390/844;border-radius:46px;background:#2b1d26;padding:11px;box-shadow:0 30px 60px -25px rgba(184,70,108,.55),0 0 0 2px #4a3442 inset;margin-inline:auto}
@@ -159,6 +159,7 @@ section.block{padding:70px 0}
 .ded{text-align:center;font-weight:700;color:var(--pink);font-size:14px;padding:6px 0 0;letter-spacing:.3px}
 .ded-foot{font-family:var(--display);font-weight:700;color:var(--pink);font-size:18px;margin-bottom:6px}
 #gender .g-m{display:none}
+@media (max-width:600px){#gender{display:none}}
 html.boy #gender .g-f{display:none}
 html.boy #gender .g-m{display:inline}
 html.boy{--pink:#2f6fc0;--pink2:#7fb0ea;--mauve:#5b7bd6;--soft:#e3edfb;--bg:#f3f7fd}
@@ -173,6 +174,9 @@ html.boy .blobs i:nth-child(3){background:#dbe6f5}
 .review p{margin:0;font-size:18px;font-weight:600}
 .review .who{color:var(--muted);font-weight:700}
 
+.gpick{display:inline-flex;gap:6px;background:var(--surface);padding:6px;border-radius:20px;box-shadow:0 3px 0 #f6cddb;margin:0 0 18px}
+.gpick button{border:0;background:none;border-radius:14px;padding:9px 18px;font:inherit;font-weight:700;font-size:16px;color:var(--muted);cursor:pointer}
+.gpick button[aria-pressed="true"]{background:var(--pink);color:#fff}
 /* faq */
 .faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 .faq details{background:var(--surface);border-radius:20px;padding:14px 18px;box-shadow:0 3px 0 #f6cddb}
@@ -217,6 +221,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
       <div>
         <h1><span data-l="ar">دنيتك كلها في <span class="grad">تطبيق واحد كيوت</span> 🌸</span><span data-l="en">Your whole world in <span class="grad">one cute app</span> 🌸</span></h1>
         <p class="lead"><span data-l="ar">فلوسك، جدولك، مذاكرتك، نفسيتك، صلاتك وحكاياتك. ومعاكي شريك حياتك يطمّن عليكي، ويرد عليكي، ويفتكرك على طول.</span><span data-l="en">Your money, schedule, study, mood, prayers and diary. Plus your partner checking in, replying and always thinking of you.</span></p>
+        <div class="gpick" role="group" aria-label="بنت أو ولد"><button data-g="f" aria-pressed="true">🎀 <span data-l="ar">أنا بنت</span><span data-l="en">I'm a girl</span></button><button data-g="m" aria-pressed="false">🧢 <span data-l="ar">أنا ولد</span><span data-l="en">I'm a guy</span></button></div>
         <div class="cta">
           <a class="btn" href="#download" id="cta-main">⬇️ <span data-l="ar">حمّلي مجانًا</span><span data-l="en">Download free</span></a>
           <a class="btn ghost" href="app/">✨ <span data-l="ar">جرّبيه من المتصفح</span><span data-l="en">Try it in the browser</span></a>
@@ -464,10 +469,12 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
     walk(g === "m");
     document.querySelectorAll("#carousel img[data-src='home'], .features img[data-src='home']").forEach(function(im){ im.src = "img/" + (g === "m" ? "boy-home" : "home") + "-" + (root.lang || "ar") + ".jpg"; });
     document.querySelectorAll("#carousel img[data-src='study']").forEach(function(im){ im.src = "img/" + (g === "m" ? "boy-study" : "study") + "-" + (root.lang || "ar") + ".jpg"; });
+    document.querySelectorAll(".gpick button").forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-g") === g); });
     try { localStorage.setItem("nw-site-g", g); } catch(e){}
   }
   var g0 = "f"; try { g0 = localStorage.getItem("nw-site-g") || "f"; } catch(e){}
   document.getElementById("gender").onclick = function(){ setGender(root.classList.contains("boy") ? "f" : "m"); };
+  document.querySelectorAll(".gpick button").forEach(function(b){ b.onclick = function(){ setGender(b.getAttribute("data-g")); }; });
   setGender(g0);
 
   // reviews from inside the app (newest first, rotating)
