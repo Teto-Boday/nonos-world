@@ -31,7 +31,7 @@ export const EN = {
 "الحساب ده اتوقف من إدارة التطبيق. لو فاكرة إن ده غلط، كلّمي صاحب التطبيق":"This account was suspended by the app admin. If you think this is a mistake, contact the app owner",
 "خروج":"Log out","الإعدادات":"Settings","الرئيسية":"Home","يومنا":"My day","المذاكرة":"Study","حكاياتي":"Diary","شريكي":"My partner","شريكتي":"My partner",
 "منه":"from him","تسلم":"Thanks","إزيك":"Hi","مساء الخير":"Good evening","يا":"","رسالة تانية":"Another message","النهارده":"today",
-"جنيه فاضلين":"EGP left","تقدري تصرفي النهارده":"you can spend today","جنيه":"EGP","مفيش محاضرات تانية النهارده":"No more lectures today","بعد":"in","يوم":"days",
+"جنيه فاضلين":"EGP left","تقدري تصرفي النهارده":"you can spend today","جنيه":"EGP","دولار":"USD","دولار فاضلين":"USD left","دولار، بكرة نهدّي شوية":"USD, let's slow down tomorrow","دولار صرفتيهم":"USD spent","العملة":"Currency","جنيه مصري":"Egyptian pound","حكاياتي: لو كتبت وحشتني":"Diary: if she writes \"I miss you\"","مفيش محاضرات تانية النهارده":"No more lectures today","بعد":"in","يوم":"days",
 "مفيش امتحانات جاية":"No upcoming exams","ذاكرتي النهارده":"Studied today","كوبايات المية":"Glasses of water","كوباية":"glasses","اهتميتي بنفسك النهارده":"Self-care today",
 "من":"of","نجوم":"stars","نمتي كام ساعة؟":"Hours slept?","أقل":"Less","أكتر":"More","آخر 7 أيام":"Last 7 days","ملخص الأسبوع":"Weekly summary",
 "الأسبوع ده":"This week","شهر":"","فاضل":"left:","المصروف":"Budget","صرفتي":"Spent","علشان الفلوس تكفّي لآخر":"so the money lasts till the end of the","الأسبوع":"week","الشهر":"month",

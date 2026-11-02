@@ -43,11 +43,12 @@ const SHARE = [["mood","النفسيه 💭"],["diary","دفتر حكاياتي 
 const MSG_GROUPS = [
   ["النفسيه 😍 مبسوطة","happy"],["النفسيه 🙂 كويسة","good"],["النفسيه 😐 عادي","meh"],["النفسيه 😔 زعلانة","sad"],["النفسيه 😫 مضغوطة","stressed"],
   ["حكاياتي: مذاكرة أو امتحان","d_study"],["حكاياتي: تعبانة","d_tired"],["حكاياتي: زعلانة","d_sad"],["حكاياتي: فرحانة أو نجحت","d_happy"],
-  ["حكاياتي: لو كتبت إزيك","d_greet"],["حكاياتي: لو كتبت غور","d_ghor"],["حكاياتي: عايزة أحكي","d_story"],["حكاياتي: أي حاجة تانية","d_other"],
+  ["حكاياتي: لو كتبت وحشتني","d_miss"],["حكاياتي: لو كتبت إزيك","d_greet"],["حكاياتي: لو كتبت غور","d_ghor"],["حكاياتي: عايزة أحكي","d_story"],["حكاياتي: أي حاجة تانية","d_other"],
   ["الدرجات: 75% أو أكتر","g_high"],["الدرجات: من 50% لـ 75%","g_mid"],["الدرجات: أقل من 50%","g_low"],
   ["لما تعمل مهمة ✅","done"],["لما تكسل عن مهمة 🙈","lazy"],["فاكرك علطول 💌","love"],["صحّيني ⏰ صباح الخير","morning"],["أيام العذر (دلع زيادة)","period"]
 ];
 const DEFAULT_MSGS = {
+  d_miss:["وانتي كمان جدًا ❤️","انا كل ثانية بتعدي عليا بتوحشيني أكتر من اللي قبلها","انتي مش بتلحقي توحشيني لأنك دايمًا على بالي","بتوحشيني دايمًا حتى في أكتر وقت مشغول فيه"],
   happy:["يا بخت اليوم اللي إنتي مبسوطة فيه 😍","الضحكة دي لازم تتحط في متحف يا نونو","خليكي كده على طول، الدنيا بتحلو لما إنتي تحلوّي","ببقا مبسوط طول مانت مبسوطه يا نونو 🤏🏽"],
   good:["كويسة؟ مش متطمن 😑","يوم هادي ولطيف، زيك بالظبط","حلو، كمّلي كده يا بسبوسة 🌸"],
   meh:["عادي إيه بس، إنتي مفيش فيكي حاجة عادية 🙄","اليوم ده محتاج كوباية حاجة سخنة وأغنية حلوة ☕","قومي اعملي حاجة بتحبيها و تعالي قوليلي بقيتي أحسن 😉","لعله خير ان شاء الله"],
@@ -71,6 +72,7 @@ const DEFAULT_MSGS = {
   morning:["صباح الفل على أحلى نونو ☀️ قومي يلا، الدنيا مستنياكي","اصحي يا بسبوسة، النهارده هيبقى يوم حلو","يلا قومي… وأول حاجة اشربي مية وابتسمي 😁","صباح الخير يا بنوتي","صباح الخير يا اشطر بنوته في الدنيا","ابعتيلي عشان وحشاني اوي","كنت مستنيكي بفارغ الصبر"]
 };
 const DEFAULT_MSGS_M = {
+  d_miss:["وإنت كمان جدًا يا حبيبي ❤️","كل ثانية بتعدي عليا بتوحشني أكتر من اللي قبلها","إنت مش بتلحق توحشني لأنك دايمًا على بالي","بتوحشني دايمًا حتى في أكتر وقت مشغولة فيه"],
   happy:["يا بخت اليوم اللي إنت مبسوط فيه يا راجلي 😍","ضحكتك دي أحلى حاجة في يومي يا بطلي","خليك مبسوط كده على طول يا حبيبي","ببقى مبسوطة طول ما إنت مبسوط 🤍"],
   good:["كويس؟ يبقى ناويين نبقى أحلى يا بطلي 💪","يوم هادي وحلو زيك يا راجلي","كمّل كده يا حبيبي، أنا فخورة بيك"],
   meh:["عادي إيه بس يا بطلي، إنت مفيش فيك حاجة عادية 🙄","قوم اعمل حاجة بتحبها وتعالى قولّي بقيت أحسن 😉","لعله خير إن شاء الله يا حبيبي","اليوم ده محتاج كوباية شاي وأغنية حلوة، وأنا معاك ☕"],
@@ -96,6 +98,7 @@ const DEFAULT_MSGS_M = {
 const ISLAMIC = /ميزان حسنات|اللهم|ما شاء الله|الحمد لله|ربنا يتقبل|بإذن الله|سبحان/;
 const NEUTRAL_FALLBACK = "أنا جنبك على طول 🤍";
 const DEFAULT_MSGS_EN = {
+  d_miss:["Me too, so much ❤️","Every second that passes, I miss you more than the one before","You never get the chance to be missed, because you're always on my mind","I always miss you, even when I'm at my busiest"],
   happy:["Lucky is the day you're happy 😍","That smile belongs in a museum, Nono","Stay like this forever, the world gets prettier when you do","I'm happy as long as you're happy 🤏🏽"],
   good:["Good? Hmm, I'm not convinced 😑","A calm sweet day, just like you","Nice, keep going cupcake 🌸"],
   meh:["Meh? Nothing about you is ever meh 🙄","This day needs a warm drink and a good song ☕","Go do something you love and tell me you feel better 😉","It'll all be for the best"],
@@ -119,6 +122,7 @@ const DEFAULT_MSGS_EN = {
   period:["Feel better, love. Rest and don't worry about anything 🤍","Make yourself something warm and stay cozy, I'm with you","If you're tired, skip studying for a bit, your health comes first","You're the prettiest thing in the world, even when you're tired ❤️","Want chocolate? Tell me and I'll get it 🍫","Hot water bottle, a nice movie and a blanket. That's an order 😤","Anything bothering you, tell me. I'm here","You're allowed to be spoiled all you want these days 🎀"]
 };
 const DEFAULT_MSGS_EN_M = {
+  d_miss:["Me too, so much, my love ❤️","Every second that passes, I miss you more than the one before","You never get the chance to be missed, because you're always on my mind","I always miss you, even when I'm at my busiest"],
   happy:["Lucky is the day you're happy, my man 😍","Your smile is the best part of my day, my hero","Stay happy like this forever, love","I'm happy as long as you're happy 🤍"],
   good:["Good? Then let's make it even better, my hero 💪","A calm sweet day, just like you","Keep going, love, I'm proud of you"],
   meh:["Meh? Nothing about you is ever meh 🙄","Go do something you love and tell me you feel better 😉","It'll all be for the best, love","This day needs tea and a good song, and I'm with you ☕"],
@@ -153,6 +157,7 @@ function defMsgs(g, rel, lang = (typeof LANG === "function" ? LANG() : "ar")){
 }
 /* keyword → reply group for the diary (checked in order) */
 const DIARY_RULES = [
+  ["d_miss",  ["miss you","missed you","miss u","missing you","وحشتني","وحشتيني","وحشتنى","واحشني","واحشاني","وحشاني","وحشتيني اوي","وحشتني اوي"]],
   ["d_sad",   ["sad","upset","crying","cried","depressed","lonely","hurt","زعلان","مخنوق","مضايق","عيطت","بعيط","حزين","زهقان","مقهور","وحش اوي","مكتئب"]],
   ["d_tired", ["tired","exhausted","sleepy","headache","no energy","تعبان","تعبت","مرهق","مصدع","هلكان","نعسان","مفيش طاقه","تعب"]],
   ["d_study", ["exam","study","studied","quiz","midterm","final","lecture","doctor","مذاكر","ذاكرت","امتحان","كويز","ميدترم","فاينل","محاضر","سكشن","شيت","دكتور","مذاكره"]],
@@ -316,7 +321,7 @@ function load(){
 
 /* ================= cloud sync (Firebase) ================= */
 const CLOUD = !!window.fb;
-const SEC = { prefs:["theme","dark","lang","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
+const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
 const secData = (st, sec) => { const o = {}; SEC[sec].forEach(k => o[k] = st[k] === undefined ? null : st[k]); return o; };
@@ -497,6 +502,7 @@ function cycleOn(day = dkey()){
 }
 function cycleLeft(){ const c = S.cycle; return Math.max(0, Math.round((addDays(fromKey(c.start), (c.days||7) - 1) - fromKey(dkey()))/864e5) + 1); }
 function avgCycleDays(){ const h = (S.cycle && S.cycle.history) || []; if (!h.length) return 7; return Math.round(h.slice(-6).reduce((a,x)=>a+x.days,0) / Math.min(6, h.length)); }
+const CUR = () => (S && S.currency === "usd") ? "دولار" : "جنيه";
 function studyDays(n=7){
   const set = new Set(); const from = dkey(addDays(new Date(),-(n-1)));
   S.sessions.forEach(s => { if (s.date >= from) set.add(s.date); });
@@ -594,8 +600,8 @@ function homeView(){
   <div class="grid2">
     <button class="card" data-act="tab" data-v="money" style="text-align:right;border:0">
       <div class="row between"><h3>${L.money}</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div>
-      <div class="big num" style="margin-top:8px">${fmt(Math.max(0,mi.left))} <small>جنيه فاضلين</small></div>
-      <div class="muted small" style="margin-top:4px">${L.daily}: تقدري تصرفي النهارده <b class="num">${fmt(Math.max(0,mi.todayLeft))}</b> جنيه</div>
+      <div class="big num" style="margin-top:8px">${fmt(Math.max(0,mi.left))} <small>${CUR()} فاضلين</small></div>
+      <div class="muted small" style="margin-top:4px">${L.daily}: تقدري تصرفي النهارده <b class="num">${fmt(Math.max(0,mi.todayLeft))}</b> ${CUR()}</div>
     </button>
 
     <button class="card" data-act="tab" data-v="day" style="text-align:right;border:0">
@@ -642,7 +648,7 @@ function moneyView(){
   <section class="hello"><h1>${L.money}</h1><p>${S.money.period==="week"?"الأسبوع ده":"شهر "+MONTHS[start.getMonth()]} · فاضل <span class="num">${mi.daysLeft}</span> يوم</p></section>
   <div class="card tint">
     <div class="row between"><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span><button class="btn ghost small" data-act="allowance">المصروف: <span class="num">${fmt(S.money.allowance)}</span></button></div>
-    <div class="big num" style="margin-top:10px">${fmt(mi.left)} <small>جنيه فاضلين</small></div>
+    <div class="big num" style="margin-top:10px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div>
     <div class="bar" style="margin:12px 0 6px"><i style="width:${pct}%"></i></div>
     <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(S.money.allowance)}</b></span></div>
   </div>
@@ -652,7 +658,7 @@ function moneyView(){
       <div><div class="big num" style="font-size:30px">${fmt(Math.max(0,mi.todayLeft))}</div><div class="muted small">تقدري تصرفيهم النهارده</div></div>
       <div style="text-align:left"><div class="num" style="font-weight:700">${fmt(mi.todaySpent)} / ${fmt(mi.daily)}</div><div class="muted small">صرفتي النهارده</div></div>
     </div>
-    ${mi.todaySpent > mi.daily && mi.daily>0 ? `<div class="notice" style="margin-top:10px">صرفتي النهارده أكتر من المسموح بـ <b class="num">${fmt(mi.todaySpent-mi.daily)}</b> جنيه، بكرة نهدّي شوية 🙈</div>`:""}
+    ${mi.todaySpent > mi.daily && mi.daily>0 ? `<div class="notice" style="margin-top:10px">صرفتي النهارده أكتر من المسموح بـ <b class="num">${fmt(mi.todaySpent-mi.daily)}</b> ${CUR()}، بكرة نهدّي شوية 🙈</div>`:""}
   </div>
   <button class="btn block" data-act="add-exp">＋ صرفت حاجة</button>
   ${byCat.length?`<div class="card"><h3>صرفتي على إيه؟</h3>
@@ -794,7 +800,7 @@ function dashboard(o){
     <ul class="list" style="margin-top:10px">${grades.map(g=>{const p=g.score/g.total*100;return `<li class="item"><div class="grow t">${esc(g.type)} ${esc(g.subject)}</div><span class="pill ${p>=75?"good":p>=50?"warn":"bad"} num">${g.score} من ${g.total}</span></li>`}).join("")}</ul></div>`:lock(L.study)}
   <div class="grid2">
     ${sh("day")?`<div class="card"><h3>${L.day}</h3><ul class="list" style="margin-top:8px">${tasks.length?tasks.map(x=>`<li class="item ${x.status||""}"><div class="grow t">${esc(x.title)}</div><span class="small">${x.status==="done"?"✅":x.status==="lazy"?"🙈":"⏳"}</span></li>`).join(""):`<li class="empty">مفيش مهمات النهارده</li>`}</ul></div>`:lock(L.day)}
-    ${sh("money")?`<div class="card"><div class="row between"><h3>الفلوس</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div><div class="big num" style="margin-top:8px">${fmt(mi.left)} <small>جنيه فاضلين</small></div></div>`:lock("الفلوس")}
+    ${sh("money")?`<div class="card"><div class="row between"><h3>الفلوس</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div><div class="big num" style="margin-top:8px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div></div>`:lock("الفلوس")}
   </div>
   ${o.footer||""}`, o.gender);
 }
@@ -912,6 +918,8 @@ function settingsView(){
   </div>
   <div class="card"><h3>🌐 Language / اللغة</h3>
     <div class="seg" style="margin-top:10px"><button data-act="set-lang" data-v="ar" aria-pressed="${!isEN()}">\uE000عربي\uE001</button><button data-act="set-lang" data-v="en" aria-pressed="${isEN()}">\uE000English\uE001</button></div></div>
+  <div class="card"><h3>💵 العملة</h3>
+    <div class="seg" style="margin-top:10px"><button data-act="set-cur" data-v="egp" aria-pressed="${S.currency!=="usd"}">جنيه مصري</button><button data-act="set-cur" data-v="usd" aria-pressed="${S.currency==="usd"}">دولار</button></div></div>
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
     <div class="seg"><button data-act="set-rel" data-v="muslim" aria-pressed="${isMuslim()}">مسلمة</button><button data-act="set-rel" data-v="christian" aria-pressed="${!isMuslim()}">مسيحية</button></div></div>
   ${partnerCard()}
@@ -1022,7 +1030,7 @@ function expSheet(){
   S._cat = S._cat || "food";
   sheet(`<h2>صرفتي على إيه؟ 💸</h2>
   <form class="form" data-form="exp">
-    <label class="f">المبلغ (جنيه)<input class="in num" id="e-amt" type="number" inputmode="decimal" min="1" step="any" required placeholder="50"></label>
+    <label class="f">المبلغ (${CUR()})<input class="in num" id="e-amt" type="number" inputmode="decimal" min="1" step="any" required placeholder="50"></label>
     <div class="chips" id="e-cats">${CATS.map(c=>`<button type="button" class="chip" data-act="ecat" data-v="${c.k}" aria-pressed="${S._cat===c.k}">${c.e} ${c.t}</button>`).join("")}</div>
     <label class="f">ملاحظة (لو حابة)<input class="in" id="e-note" placeholder="قهوة مع البنات"></label>
     <button class="btn" type="submit">سجّلي</button>
@@ -1078,7 +1086,7 @@ function weekSheet(){
   sheet(`<h2>${L.week}</h2>
   <p class="muted" style="margin:-6px 0 12px">آخر 7 أيام</p>
   <div class="stats"><div class="stat"><b>${pc(pct)}</b><span>خلّصتي من مهماتك</span></div><div class="stat"><b class="num">${done}</b><span>${L.done}</span></div><div class="stat"><b class="num">${lazy}</b><span>${L.lazy}</span></div>
-  <div class="stat"><b>${hm(mins)}</b><span>مذاكرة</span></div><div class="stat"><b class="num">${fmt(spent)}</b><span>جنيه صرفتيهم</span></div><div class="stat"><b>${top&&top.n?top.e:"·"}</b><span>أكتر مود</span></div></div>
+  <div class="stat"><b>${hm(mins)}</b><span>مذاكرة</span></div><div class="stat"><b class="num">${fmt(spent)}</b><span>${CUR()} صرفتيهم</span></div><div class="stat"><b>${top&&top.n?top.e:"·"}</b><span>أكتر مود</span></div></div>
   <div class="letter" style="margin-top:14px"><span class="lbl">${L.love}</span><p>${esc(pick(pct>=60?S.msgs.g_high:S.msgs.lazy))}</p></div>
   <button class="btn block" data-act="close" style="margin-top:14px">تمام 🫠</button>`);
 }
@@ -1290,6 +1298,7 @@ document.addEventListener("click", e => {
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
+    case "set-cur": S.currency = v; save(); render(); break;
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
     case "reset-msgs": { const T = msgsTarget(); T.msgs = T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
