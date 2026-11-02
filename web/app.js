@@ -1675,3 +1675,26 @@ if (CLOUD){
   render(); startupChecks();
 }
 setInterval(()=>{ if (S && S.dark==="auto") applyTheme(); }, 60000);
+
+/* ================= updates ================= */
+// the installed apps stay open for days, so ask the server now and then if there's a newer version and reload into it
+const BUILD = "__NW_BUILD__";
+let updWaiting = false;
+function busyNow(){ const a = document.activeElement; return !!($("#layer") && $("#layer").innerHTML) || !!(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) || !!(S && S.timer && S.timer.end); }
+function doUpdate(){ try { clearTimeout(pushTimer); if (S && UID) pushNow(); if (S) save(); } catch(e){} setTimeout(() => location.reload(), 500); }
+async function checkUpdate(){
+  if (BUILD.startsWith("__") || !navigator.onLine) return;
+  try {
+    const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return;
+    const j = await r.json(); if (!j.v || j.v === BUILD) return;
+    if (navigator.serviceWorker) navigator.serviceWorker.getRegistration().then(g => g && g.update()).catch(()=>{});
+    if (!busyNow()) return doUpdate();
+    if (updWaiting) return; updWaiting = true;
+    const d = document.createElement("button"); d.className = "updbar"; d.textContent = isEN() ? "New update ✨ tap to refresh" : gx("فيه تحديث جديد ✨ دوسي علشان يتحدّث", isMale());
+    d.onclick = doUpdate; document.body.appendChild(d);
+  } catch(e){}
+}
+setTimeout(checkUpdate, 4000);
+setInterval(checkUpdate, 20 * 60000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
+window.addEventListener("online", checkUpdate);

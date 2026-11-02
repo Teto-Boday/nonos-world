@@ -7,6 +7,10 @@ await build({ entryPoints: ["web/main.js"], bundle: true, minify: true, format: 
 for (const f of readdirSync("web")) {
   if (/\.(html|css|svg|png|webmanifest)$/.test(f) && f !== "test.html") cpSync(`web/${f}`, `dist/app/${f}`);
 }
-writeFileSync("dist/app/sw.js", readFileSync("web/sw.js", "utf8").replace('"dev"', JSON.stringify(String(Date.now()))));
+const stamp = String(Date.now());
+writeFileSync("dist/app/sw.js", readFileSync("web/sw.js", "utf8").replace('"dev"', JSON.stringify(stamp)));
+// the app knows its own version and compares it with version.json to pick up updates
+writeFileSync("dist/app/main.js", readFileSync("dist/app/main.js", "utf8").split("__NW_BUILD__").join(stamp));
+writeFileSync("dist/app/version.json", JSON.stringify({ v: stamp }));
 cpSync("site", "dist", { recursive: true });
 console.log("built dist/");

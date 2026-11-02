@@ -236,3 +236,4 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .item.income{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
 .item.income b{color:var(--good)}
 .income-tag{color:var(--good);font-weight:700}
+.updbar{position:fixed;z-index:61;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);background:var(--accent);color:#fff;border:0;padding:10px 18px;border-radius:16px;font:inherit;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.18);cursor:pointer;animation:fade .25s}

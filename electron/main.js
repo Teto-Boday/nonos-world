@@ -1,5 +1,5 @@
 // Windows app: opens the hosted Nono's World, stays in the tray so reminders keep working.
-const { app, BrowserWindow, Tray, Menu, shell, nativeImage } = require("electron");
+const { app, BrowserWindow, Tray, Menu, shell, nativeImage, session } = require("electron");
 const path = require("path");
 const URL = "https://teto-boday.github.io/nonos-world/app/";
 let win, tray, quitting = false;
@@ -12,7 +12,8 @@ function create(show = true) {
   win.on("close", e => { if (!quitting) { e.preventDefault(); win.hide(); } });
 }
 app.on("second-instance", () => { if (win) { win.show(); win.focus(); } });
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await session.defaultSession.clearCache().catch(() => {});
   app.setLoginItemSettings({ openAtLogin: true, args: ["--hidden"] });
   create(!process.argv.includes("--hidden"));
   tray = new Tray(nativeImage.createFromPath(path.join(__dirname, "icon.png")).resize({ width: 16, height: 16 }));
