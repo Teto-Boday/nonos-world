@@ -455,9 +455,17 @@ function notifyPartner(text, force){
 }
 const genCode = () => (Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6)).toUpperCase().replace(/[O0I1]/g,"7").slice(0,6);
 async function signUp(name, username, pass, gender, religion = "muslim"){
-  let resolveSU, rejectSU; signingUp = new Promise((r,j)=>{resolveSU=r; rejectSU=j;});
+  let resolveSU, rejectSU; signingUp = new Promise((r,j)=>{resolveSU=r; rejectSU=j;}); signingUp.catch(()=>{});
   try {
-    const uidNew = await fb.signUp(username, pass);
+    let uidNew;
+    try { uidNew = await fb.signUp(username, pass); }
+    catch(e){
+      if (!String(e && e.code || "").includes("email-already-in-use")) throw e;
+      // an earlier try may have made the login but not the profile: same password = it's yours, finish it
+      try { uidNew = await fb.signIn(username, pass); } catch(_){ throw e; }
+      let existing; try { existing = await fb.get(`users/${uidNew}`); } catch(_){ throw e; }
+      if (existing){ resolveSU(); return; }
+    }
     const code = genCode(), topic = "nw-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     const me = {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, religion, createdAt:Date.now()};
     // queued writes go out in order, so the user doc lands before the rest; no need to wait for the server here
@@ -471,6 +479,7 @@ async function signUp(name, username, pass, gender, religion = "muslim"){
     Promise.all([fb.set(`invites/${code}`, {uid:uidNew, name}, false), fb.set(`u/${uidNew}/sec/prefs`, secData(st, "prefs"), false), fb.set(`u/${uidNew}/sec/msgs`, secData(st, "msgs"), false)]).catch(e => console.warn("signup extras", e));
   } catch(e){ rejectSU(e); throw e; } finally { setTimeout(()=>signingUp=null, 0); }
 }
+function authBoy(){ if (U.authMode !== "login") return U.ag === "m"; try { return localStorage.getItem("nw-g") === "m"; } catch(e){ return false; } }
 function authError(e){
   const c = (e && e.code) || "";
   if (c.includes("email-already-in-use")) return "اسم المستخدم ده متاخد، جرّبي اسم تاني";
@@ -600,7 +609,7 @@ function render(){
   document.documentElement.lang = LANG(); document.documentElement.dir = isEN() ? "ltr" : "rtl";
   const app = $("#app");
   if (CLOUD && (U.booting || (UID && !S))){ app.innerHTML = splashView(); $("#tabs")?.remove(); return; }
-  if (!S || !S.user){ app.innerHTML = gx(authView(), U.ag === "m" && U.authMode !== "login"); $("#tabs")?.remove(); return; }
+  if (!S || !S.user){ app.innerHTML = gx(authView(), authBoy()); $("#tabs")?.remove(); return; }
   if (ME && ME.banned){ app.innerHTML = `<div class="auth"><div class="logo">⛔</div><h1>الحساب موقوف</h1><p class="center muted">الحساب ده اتوقف من إدارة التطبيق. لو فاكرة إن ده غلط، كلّمي صاحب التطبيق.</p><button class="btn ghost" data-act="logout">خروج</button></div>`; app.innerHTML = gx(app.innerHTML); $("#tabs")?.remove(); return; }
   const v = {home:homeView, money:moneyView, day:dayView, study:studyView, diary:diaryView, settings:settingsView, partner:partnerView, mate:mateView, admin:adminView}[S.tab] || homeView;
   app.innerHTML = `
@@ -1589,11 +1598,11 @@ document.addEventListener("submit", e => {
         else { const g = U.ag || "f"; S.user = {name: val("a-name") || "نونو", username:user, gender:g}; S.theme = g === "m" ? "leil" : "basbousa"; }
         U.lastName = S.user.name; S.tab = "home"; save(); render(); break;
       }
-      if (!/^[A-Za-z0-9_.]{3,20}$/.test(user)){ const er = $("#a-err"); er.textContent = "اسم المستخدم من 3 لـ 20 حرف إنجليزي أو رقم"; er.style.display = "block"; return; }
+      if (!/^[A-Za-z0-9_.]{3,20}$/.test(user)){ const er = $("#a-err"); er.textContent = gx("اسم المستخدم من 3 لـ 20 حرف إنجليزي أو رقم", authBoy()); er.style.display = "block"; return; }
       const nm = val("a-name") || user;
       U.busy = true; render();
       const p = U.authMode === "login" ? fb.signIn(user, pass) : signUp(nm, user, pass, U.ag || "f", U.rel || "muslim");
-      p.then(() => { U.busy = false; }).catch(err => { U.busy = false; render(); const er = $("#a-err"); if (er){ er.textContent = authError(err); er.style.display = "block"; } });
+      p.then(() => { U.busy = false; }).catch(err => { U.busy = false; render(); const er = $("#a-err"); if (er){ er.textContent = gx(authError(err), authBoy()); er.style.display = "block"; } });
       break;
     }
     case "code": { const c = val("pcode"); if (c) sendCode(c); break; }
