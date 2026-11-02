@@ -195,3 +195,7 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .legend i{width:10px;height:10px;border-radius:4px;display:inline-block}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.prayers{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+.prayers button{border:2px solid transparent;background:var(--soft);border-radius:12px;padding:7px 0;font-weight:700;font-size:13px;color:var(--muted)}
+.prayers button[aria-pressed="true"]{background:var(--accent);color:#fff}

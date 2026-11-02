@@ -44,7 +44,7 @@ const MSG_GROUPS = [
   ["حكاياتي: مذاكرة أو امتحان","d_study"],["حكاياتي: تعبانة","d_tired"],["حكاياتي: زعلانة","d_sad"],["حكاياتي: فرحانة أو نجحت","d_happy"],
   ["حكاياتي: لو كتبت إزيك","d_greet"],["حكاياتي: لو كتبت غور","d_ghor"],["حكاياتي: عايزة أحكي","d_story"],["حكاياتي: أي حاجة تانية","d_other"],
   ["الدرجات: 75% أو أكتر","g_high"],["الدرجات: من 50% لـ 75%","g_mid"],["الدرجات: أقل من 50%","g_low"],
-  ["لما تعمل مهمة ✅","done"],["لما تكسل عن مهمة 🙈","lazy"],["فاكرك علطول 💌","love"],["صحّيني ⏰ صباح الخير","morning"]
+  ["لما تعمل مهمة ✅","done"],["لما تكسل عن مهمة 🙈","lazy"],["فاكرك علطول 💌","love"],["صحّيني ⏰ صباح الخير","morning"],["أيام العذر (دلع زيادة)","period"]
 ];
 const DEFAULT_MSGS = {
   happy:["يا بخت اليوم اللي إنتي مبسوطة فيه 😍","الضحكة دي لازم تتحط في متحف يا نونو","خليكي كده على طول، الدنيا بتحلو لما إنتي تحلوّي","ببقا مبسوط طول مانت مبسوطه يا نونو 🤏🏽"],
@@ -66,29 +66,31 @@ const DEFAULT_MSGS = {
   done:["انت اشطر بنوته في الدنيا 🤏🏽","انا فخور بيكي يا بنوتي 🤏🏽"],
   lazy:["كسلتي؟ عادي، بكرة نعوّضها 😌","ماشي يا كسولة، بس بكرة مفيش هزار 😂"],
   love:["جيتي في بالي و قلت اقولك ان حبي ليكي زاد","انتي بجد احلى حاجه في الدنيا","انتي اجمل حاجه حصلت لي","انا اسف على كل حاجه زعلتك","حقك عليا يا نور عيوني في كل مره زعلتك فيها","اسفلك على كل مره زعلتك فيها"],
+  period:["ألف سلامة عليكي يا قلبي، ارتاحي ومتشيليش هم حاجة 🤍","اعملي لنفسك حاجة دافية واتغطي كويس، وأنا معاكي","لو تعبانة سيبي المذاكرة شوية، صحتك أهم من أي حاجة","إنتي أحلى حاجة في الدنيا حتى وإنتي تعبانة ❤️","عايزة شوكولاتة؟ قوليلي وأنا أجيبهالك 🍫","قربة مية سخنة وفيلم حلو والبطانية، ده أمر 😤","أي حاجة مضايقاكي قوليلي، أنا هنا يا نونو","مسموحلك تتدلّعي على الآخر الأيام دي 🎀"],
   morning:["صباح الفل على أحلى نونو ☀️ قومي يلا، الدنيا مستنياكي","اصحي يا بسبوسة، النهارده هيبقى يوم حلو","يلا قومي… وأول حاجة اشربي مية وابتسمي 😁","صباح الخير يا بنوتي","صباح الخير يا اشطر بنوته في الدنيا","ابعتيلي عشان وحشاني اوي","كنت مستنيكي بفارغ الصبر"]
 };
 const DEFAULT_MSGS_M = {
-  happy:["يا بخت اليوم اللي إنت مبسوط فيه 😍","الضحكة دي لازم تتحط في متحف يا وحش","خليك كده على طول يا بطل","ببقى مبسوطة طول ما إنت مبسوط 🤍"],
-  good:["كويس؟ يبقى ناويين نبقى أحلى 💪","يوم هادي، كمّل كده يا بطل","حلو أوي، كمّل يا وحش 🔥"],
-  meh:["عادي إيه بس، إنت مفيش فيك حاجة عادية 🙄","قوم اعمل حاجة بتحبها وتعالى قولّي بقيت أحسن 😉","لعله خير إن شاء الله","اليوم ده محتاج كوباية شاي وأغنية حلوة ☕"],
-  sad:["مالك يا وحش؟ قولّي بس 🤍","الزعل ده ضيف وهيمشي، وأنا جنبك","مسموحلك تزعل، بس متنساش إن في حد بيحبك جدًا","حقك عليا لو أنا السبب 😟"],
-  stressed:["خد نفس… الدنيا هتعدّي يا بطل 💪","مش لازم تخلّص كل حاجة النهارده، حاجة واحدة تكفي","إنت أقوى من الضغط ده بكتير","أنا جنبك، كل حاجة هتبقى كويسة ❤️"],
-  d_study:["إنت قدها يا بطل 💪","كل صفحة بتذاكرها بتقرّبك من الإفراج 🎉","فخورة بيك إنك قاعد تذاكر أصلًا","يلا يا وحش، فاضل شوية 🔥"],
-  d_tired:["كفاية كده النهارده، نام بدري وده أمر 😤","جسمك بيقولك ارتاح، اسمع كلامه","تعبك ده في ميزان حسناتك ❤️","إنت قد التعب يا بطل"],
-  d_sad:["مش هسيبك زعلان لوحدك أبدًا 🤍","مهما حصل، إنت مش لوحدك","أنا معاك وجنبك ❤️","مالك يا وحش؟ احكيلي"],
-  d_happy:["قولّي تاني! 😍 أنا فرحانة أكتر منك","شوفت بقى؟ قولتلك إنك جامد","ده يستاهل احتفال 🎉","كنت متأكدة إنك أشطر واحد في الدنيا 💪"],
-  d_greet:["أحسن منك 😂😂","أكيد كويسة عشان إنت معايا","كويسة طول ما إنت معايا"],
-  d_ghor:["للجنة معاك نيهاهاها 😂","يارب لبيتنا","وأسيبك؟ تؤ تؤ مقدرش"],
-  d_story:["احكيلي يا حبيبي ❤️","سامعاك يا وحش 👂🏽","أنا معاك، احكي"],
-  d_other:["شكرًا إنك حكيت 🤍","حكاياتك أحلى حاجة في يومي","مستنية الحكاية الجاية يا بطل 📔"],
-  g_high:["إيه الشطارة دي يا وحش 🔥","كنت عارفة! بطل زي العادة 💪","الدرجة دي تتبروز 🖼️"],
-  g_mid:["حلو، والجاية أحلى إن شاء الله 💪","مش بطالة خالص، نزوّد شوية المرة الجاية"],
-  g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنت مين، إنت أشطر منها","الجاية نعوّضها يا بطل 💪"],
-  done:["عاش يا بطل 💪","إيه الشغل ده يا وحش 🔥"],
-  lazy:["كسلت؟ عادي، بكرة نعوّضها 😌","ماشي يا كسول، بس بكرة مفيش هزار 😂"],
-  love:["على فكرة، أنا فاكراك دلوقتي 💌","اشرب مية، دي مش نصيحة دي رسالة حب 💧","إنت أحلى حاجة حصلتلي","لو مضايق من حاجة كلّمني على طول"],
-  morning:["صباح الفل يا وحش ☀️ قوم يلا، الدنيا مستنياك","اصحى يا بطل، النهارده يوم حلو","صباح الخير، اشرب مية وابتسم 😁"]
+  happy:["يا بخت اليوم اللي إنت مبسوط فيه يا راجلي 😍","ضحكتك دي أحلى حاجة في يومي يا بطلي","خليك مبسوط كده على طول يا حبيبي","ببقى مبسوطة طول ما إنت مبسوط 🤍"],
+  good:["كويس؟ يبقى ناويين نبقى أحلى يا بطلي 💪","يوم هادي وحلو زيك يا راجلي","كمّل كده يا حبيبي، أنا فخورة بيك"],
+  meh:["عادي إيه بس يا بطلي، إنت مفيش فيك حاجة عادية 🙄","قوم اعمل حاجة بتحبها وتعالى قولّي بقيت أحسن 😉","لعله خير إن شاء الله يا حبيبي","اليوم ده محتاج كوباية شاي وأغنية حلوة، وأنا معاك ☕"],
+  sad:["مالك يا راجلي؟ قولّي بس مين زعّلك 😤","الزعل ده ضيف وهيمشي، وأنا جنبك ومش ماشية 🤍","مسموحلك تزعل يا بطلي، بس متنساش إن في واحدة بتحبك جدًا","حقك عليا يا حبيبي لو أنا السبب 😟"],
+  stressed:["خد نفس يا بطلي… الدنيا هتعدّي وإنت أقوى منها 💪","مش لازم تخلّص كل حاجة النهارده يا راجلي، حاجة واحدة بس تكفي","إنت أشطر وأجدع راجل في الدنيا، والضغط ده صغير عليك","أنا جنبك ومعاك يا حبيبي، كل حاجة هتبقى كويسة ❤️"],
+  d_study:["إنت قدها يا بطلي، أنا واثقة فيك 💪","كل صفحة بتذاكرها بتقرّبك من الإفراج يا راجلي 🎉","فخورة بيك إنك قاعد تذاكر أصلًا، دي لوحدها رجولة","يلا يا بطلي، فاضل شوية وتخلّص 🔥"],
+  d_tired:["كفاية كده النهارده يا حبيبي، نام بدري وده أمر 😤","جسمك بيقولك ارتاح، اسمع كلامه وكلامي يا راجلي","تعبك ده في ميزان حسناتك يا بطلي ❤️","إنت قد التعب وأكتر، بس ارتاح شوية عشان خاطري"],
+  d_sad:["مش هسيبك زعلان لوحدك أبدًا يا راجلي 🤍","مهما حصل، إنت مش لوحدك، أنا معاك","أنا معاك وجنبك وهفضل جنبك يا بطلي ❤️","مالك يا حبيبي؟ احكيلي"],
+  d_happy:["قولّي تاني! 😍 أنا فرحانة بيك أكتر منك","شوفت بقى؟ قولتلك إنك بطلي","ده يستاهل احتفال يا راجلي 🎉","كنت متأكدة إنك أشطر واحد في الدنيا 💪"],
+  d_greet:["أحسن منك 😂😂","أكيد كويسة عشان إنت معايا يا حبيبي","كويسة طول ما إنت معايا يا راجلي"],
+  d_ghor:["للجنة معاك يا حبيبي نيهاهاها 😂","يارب لبيتنا يا راجلي","وأسيبك؟ تؤ تؤ مقدرش"],
+  d_story:["احكيلي يا حبيبي ❤️","سامعاك يا بطلي 👂🏽","أنا معاك، احكي يا راجلي"],
+  d_other:["شكرًا إنك حكيتلي يا حبيبي 🤍","حكاياتك أحلى حاجة في يومي","مستنية الحكاية الجاية يا بطلي 📔"],
+  g_high:["إيه الشطارة دي يا بطلي 🔥","كنت عارفة! راجلي أشطر واحد زي العادة 💪","الدرجة دي لازم تتبروز يا حبيبي 🖼️"],
+  g_mid:["اللهم بارك، والجاية أحلى إن شاء الله يا بطلي 💪","حلوة يا راجلي، المرة الجاية هتقفل"],
+  g_low:["ولا يهمك يا حبيبي، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنت مين يا بطلي، إنت أشطر منها","واثقة إنك هتعوّض يا راجلي 💪"],
+  done:["عاش يا بطلي 💪","إيه الرجولة دي يا راجلي 🔥","فخورة بيك يا حبيبي"],
+  lazy:["كسلت؟ عادي يا حبيبي، بكرة نعوّضها 😌","ماشي يا كسول، بس بكرة مفيش هزار يا راجلي 😂"],
+  love:["على فكرة، أنا فاكراك دلوقتي يا راجلي 💌","اشرب مية يا حبيبي، دي مش نصيحة دي رسالة حب 💧","إنت أحلى حاجة حصلتلي يا بطلي","لو مضايق من حاجة كلّمني على طول، أنا هنا","ربنا يخليك ليا يا راجلي ❤️"],
+  morning:["صباح الخير يا راجلي ☀️ قوم يلا، الدنيا مستنياك","اصحى يا بطلي، النهارده يوم حلو","صباح الفل يا حبيبي، اشرب مية وابتسم 😁","وحشتني، ابعتلي أول ما تصحى 💌"],
+  period:[]
 };
 const defMsgs = g => JSON.parse(JSON.stringify(g === "m" ? DEFAULT_MSGS_M : DEFAULT_MSGS));
 /* keyword → reply group for the diary (checked in order) */
@@ -222,7 +224,7 @@ function seed(){
 function blank(){
   return { v:1, theme:"basbousa", dark:"auto", lang:"ar", pin:null, tab:"home", sample:false,
     money:{allowance:0, period:"month", expenses:[]}, schedule:[], tasks:[], subjects:[], sessions:[], exams:[], grades:[],
-    moods:{}, care:{}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
+    moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false} };
 }
@@ -241,8 +243,8 @@ function load(){
 
 /* ================= cloud sync (Firebase) ================= */
 const CLOUD = !!window.fb;
-const SEC = { prefs:["theme","dark","lang","durations","vacation","alarm","subjects","chatId","lastMorning","pin"], money:["money"], day:["schedule","tasks"],
-  study:["sessions","exams","grades"], mood:["moods"], care:["care"], msgs:["msgs","rules"] };
+const SEC = { prefs:["theme","dark","lang","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
+  study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
 const secData = (st, sec) => { const o = {}; SEC[sec].forEach(k => o[k] = st[k] === undefined ? null : st[k]); return o; };
 function save(){
@@ -290,6 +292,7 @@ async function boot(u){
   const st = S && S.v ? S : blank();
   Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d){ Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); } });
   S = normalize(st, ME.gender); S.tab = S.tab || "home";
+  if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; save(); }
   S.user = {name:ME.name, username:ME.username, gender:ME.gender}; S.share = Object.assign({}, ME.share || {});
   IS_ADMIN = !!(await fb.get(`admins/${UID}`).catch(()=>null));
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
@@ -334,9 +337,9 @@ async function sendCode(code){
   await fb.set(`linkRequests/${inv.uid}`, {from:UID, name:ME.name, at:Date.now()}, false);
   closeSheet(); toast("اتبعت الطلب لـ " + inv.name + " 💌"); setupPartner();
 }
-function notifyPartner(text){
+function notifyPartner(text, force){
   if (!P || !P.linked || !P.user || !P.user.ntfy) return;
-  try { const last = +localStorage.getItem("nw-alert") || 0; if (Date.now() - last < 3600e3) return; localStorage.setItem("nw-alert", Date.now()); } catch(e){}
+  if (!force) try { const last = +localStorage.getItem("nw-alert") || 0; if (Date.now() - last < 3600e3) return; localStorage.setItem("nw-alert", Date.now()); } catch(e){}
   fetch("https://ntfy.sh/" + P.user.ntfy, {method:"POST", body:text, headers:{"Title":"Nono's World","Tags":"heart","Priority":"high"}}).catch(()=>{});
 }
 const genCode = () => (Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6)).toUpperCase().replace(/[O0I1]/g,"7").slice(0,6);
@@ -368,6 +371,7 @@ function startupChecks(){
   setTimeout(vacationCheck, 300);
   const t = new Date(), k = dkey(t), now = t.toTimeString().slice(0,5);
   if (!vacDue() && S.lastMorning !== k && now >= S.alarm.wake && t.getHours() < 14){ S.lastMorning = k; save(); setTimeout(morningSheet, 400); }
+  else if (S.user.gender !== "m" && cycleOn() && S.lastCare !== k && !vacDue()){ S.lastCare = k; save(); setTimeout(() => message("🤍", pick(S.msgs.period), "دلع زيادة الأيام دي"), 500); }
 }
 
 /* ================= derived ================= */
@@ -398,6 +402,14 @@ function onVacation(day = dkey()){
   if (v.until && day > v.until) return false;
   return !v.from || day >= v.from;
 }
+const PRAYERS = [["fajr","الفجر"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]];
+const CARE_TIPS = ["اشربي حاجة دافية زي ينسون أو قرفة","قربة مية سخنة على بطنك بتريّح جدًا","نامي بدري واديله راحة","كُلي حاجة فيها حديد زي العدس والسبانخ","مشي بسيط أو حركة خفيفة بيفرق","اشربي مية كتير النهارده","اتفرجي على حاجة بتحبيها وانسي المذاكرة شوية"];
+function cycleOn(day = dkey()){
+  const c = S.cycle; if (!c || !c.on || !c.start) return false;
+  return day >= c.start && day <= dkey(addDays(fromKey(c.start), (c.days||7) - 1));
+}
+function cycleLeft(){ const c = S.cycle; return Math.max(0, Math.round((addDays(fromKey(c.start), (c.days||7) - 1) - fromKey(dkey()))/864e5) + 1); }
+function avgCycleDays(){ const h = (S.cycle && S.cycle.history) || []; if (!h.length) return 7; return Math.round(h.slice(-6).reduce((a,x)=>a+x.days,0) / Math.min(6, h.length)); }
 function studyDays(n=7){
   const set = new Set(); const from = dkey(addDays(new Date(),-(n-1)));
   S.sessions.forEach(s => { if (s.date >= from) set.add(s.date); });
@@ -409,14 +421,14 @@ function lastGradePct(){
   return g.total ? g.score/g.total*100 : null;
 }
 function examLabel(){ return onVacation() ? L.vacation : examGood() ? L.examsGood : L.examsBad; }
-function examGood(){ if (onVacation()) return true; const p = lastGradePct(); return studyDays(7) >= 4 || (p !== null && p >= 75); }
+function examGood(){ if (onVacation() || cycleOn()) return true; const p = lastGradePct(); return studyDays(7) >= 4 || (p !== null && p >= 75); }
 function streak(){
   const active = d => S.sessions.some(s=>s.date===d) || S.tasks.some(t=>t.date===d && t.status==="done");
   let n = 0, d = new Date();
-  if (!active(dkey(d)) && !onVacation(dkey(d))) d = addDays(d,-1);
+  if (!active(dkey(d)) && !onVacation(dkey(d)) && !cycleOn(dkey(d))) d = addDays(d,-1);
   for (let i = 0; i < 400; i++){
     const kk = dkey(d);
-    if (active(kk)) n++; else if (!onVacation(kk)) break;
+    if (active(kk)) n++; else if (!onVacation(kk) && !cycleOn(kk)) break;
     d = addDays(d,-1);
   }
   return n;
@@ -481,6 +493,9 @@ function homeView(){
     <p>${prettyDate(t)}</p>
   </section>
 
+  ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
+    <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(S.msgs.period)))}</p>
+    <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
   <div class="letter"><div class="row between"><span class="lbl">${esc(L.love)}</span><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button></div><p>${esc(love)}</p></div>
 
   <div class="card">
@@ -515,6 +530,8 @@ function homeView(){
       <div class="stars" style="margin-top:4px">${Array.from({length:5},(_,i)=>`<button data-act="star" data-v="${i+1}" class="${i<(care.stars||0)?"f":""}" aria-label="${i+1} نجوم">⭐</button>`).join("")}</div>
       <div class="row between" style="margin-top:10px"><span class="sectionlbl" style="margin:0">😴 نمتي كام ساعة؟</span>
         <div class="row"><button class="mini" data-act="sleep" data-v="-1" aria-label="أقل">−</button><b class="num">${care.sleep}</b><button class="mini" data-act="sleep" data-v="1" aria-label="أكتر">+</button></div></div>
+      ${prayersBlock(k)}
+      ${S.user.gender !== "m" ? cycleBlock() : ""}
     </div>
   </div>
 
@@ -674,10 +691,11 @@ function dashboard(o){
   return keep(`
   ${o.banner||""}
   <section class="hello"><h1>${o.title}</h1><p>${prettyDate(new Date())}</p></section>
+  ${sh("care") && o.gender !== "m" && cycleOn() ? `<div class="card tint"><h3>🤍 ${name} محتاجة اهتمام ودلع زيادة الأيام دي</h3><p class="small" style="margin:4px 0 10px">اهتم بيها أكتر، ابعتلها كلمة حلوة أو جيبلها حاجة بتحبها.</p><button class="btn small" ${send}>💌 ابعتلها</button></div>` : ""}
   ${upset?`<div class="card alert"><h3>🚨 ${name} ${fem?"مضايقة":"مضايق"}</h3><p class="small" style="margin:4px 0 10px">${m&&(mood==="sad"||mood==="stressed")?`${fem?"اختارت":"اختار"} ${m.e} ${m.t} النهارده`:(fem?"كتبت":"كتب")+" حكاية زعلانة"}، ${fem?"كلّمها":"كلّمه"} 🤍</p><button class="btn small" ${send}>💌 ابعت كلمة</button></div>`:""}
   <div class="grid2">
     ${sh("mood")?`<div class="card"><h3>النفسيه</h3><div class="big" style="margin-top:6px">${m?m.e+` <small>${m.t}</small>`:`<small>لسه ${fem?"مختارتش":"مختارش"}</small>`}</div></div>`:lock("النفسيه")}
-    ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.water||0}</b><span>💧 كوباية</span></div><div class="stat"><b class="num">${care.stars||0}/5</b><span>⭐ اهتمام</span></div><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات</span></div></div></div>`:lock(L.care)}
+    ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.water||0}</b><span>💧 كوباية</span></div><div class="stat"><b class="num">${care.stars||0}/5</b><span>⭐ اهتمام</span></div><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات</span></div></div>${o.gender !== "m" && cycleOn() ? "" : `<div class="muted small" style="margin-top:8px">الصلاة: <b class="num">${PRAYERS.filter(([p])=>(S.prayers[k]||{})[p]).length}</b> من 5</div>`}</div>`:lock(L.care)}
   </div>
   ${sh("diary")?`<div class="card"><div class="row between"><h3>${L.diary}</h3><button class="btn small" ${send}>ردّ بنفسك 💌</button></div>
     <div class="chat" style="padding-bottom:0;margin-top:10px">${chat.length?chat.map(e=>{const tm=new Date(e.ts).toTimeString().slice(0,5); const flag = o.admin && e.flagged ? " 🚩" : "";
@@ -691,6 +709,28 @@ function dashboard(o){
     ${sh("money")?`<div class="card"><div class="row between"><h3>الفلوس</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div><div class="big num" style="margin-top:8px">${fmt(mi.left)} <small>جنيه فاضلين</small></div></div>`:lock("الفلوس")}
   </div>
   ${o.footer||""}`, o.gender);
+}
+function prayersBlock(k){
+  const pr = S.prayers[k] || {}, n = PRAYERS.filter(([p])=>pr[p]).length;
+  if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>`;
+  return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
+    <div class="prayers">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}</button>`).join("")}</div>`;
+}
+function cycleBlock(){
+  const c = S.cycle || {};
+  if (cycleOn()) return `<div class="row between" style="margin-top:12px"><div><span class="sectionlbl" style="margin:0">العذر الشرعي</span><div class="muted small">باقي <b class="num">${cycleLeft()}</b> ${cycleLeft()===1?"يوم":"أيام"} · لحد ${prettyDate(addDays(fromKey(c.start),(c.days||7)-1))}</div></div><button class="mini" data-act="cycle-end">خلص</button></div>`;
+  return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">العذر الشرعي</span><button class="mini" data-act="cycle-start">جالي</button></div>`;
+}
+function cycleSheet(){
+  const linked = CLOUD && P && P.linked;
+  sheet(`<h2>العذر الشرعي 🤍</h2>
+  <form class="form" data-form="cycle">
+    <div class="two"><label class="f">بدأ يوم<input class="in num" type="date" id="cy-start" value="${dkey()}" max="${dkey()}" required></label>
+    <label class="f">بيقعد كام يوم؟<input class="in num" type="number" id="cy-days" min="2" max="12" value="${avgCycleDays()}" required inputmode="numeric"></label></div>
+    ${(S.cycle.history||[]).length ? `<p class="muted small" style="margin:0">المتوسط من المرات اللي فاتت: <b class="num">${avgCycleDays()}</b> أيام</p>` : ""}
+    ${linked ? `<label class="item" style="cursor:pointer"><input type="checkbox" id="cy-tell" checked style="width:20px;height:20px;accent-color:var(--accent)"><div class="grow"><div class="t">ابعتي لـ${esc(P.user.name)} يهتم بيكي أكتر</div><div class="s">هيوصله إنك محتاجة اهتمام ودلع زيادة الأيام دي، من غير ما نقوله السبب</div></div></label>` : ""}
+    <button class="btn" type="submit">تمام</button>
+  </form>`);
 }
 function partnerView(){
   return dashboard({name:S.user.name, gender:S.user.gender, title:`${S.user.gender==="m"?"شريكي":"شريكتي"} 💞 ${esc(S.user.name)}`, canReply:false,
@@ -1063,6 +1103,10 @@ document.addEventListener("click", e => {
       break;
     }
     case "water": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.water = c.water === +v ? +v-1 : +v; save(); render(); if (c.water===8) toast("8 كوبايات! إيه الشطارة دي 💧"); break; }
+    case "pray": { const pr = S.prayers[k] = S.prayers[k] || {}; pr[v] = !pr[v]; save(); render(); if (PRAYERS.every(([p])=>pr[p])) toast("ما شاء الله، الخمس فروض كاملين، ربنا يتقبل"); break; }
+    case "cycle-start": cycleSheet(); break;
+    case "cycle-end": { const c = S.cycle; const days = Math.max(1, Math.round((fromKey(dkey()) - fromKey(c.start))/864e5) + 1); c.history = (c.history||[]).concat({start:c.start, days}).slice(-12); c.on = false; save(); render(); toast("ألف سلامة عليكي 🤍"); break; }
+    case "new-pmsg": S._pmsg = pick(S.msgs.period); render(); break;
     case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast("ايه الحلاوه دي كلها 💅✨"); break; }
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
@@ -1076,7 +1120,7 @@ document.addEventListener("click", e => {
       const t = S.tasks.find(x=>x.id===v); if (!t) break;
       const was = t.status; t.status = was === b.dataset.s ? null : b.dataset.s; save(); render();
       if (t.status === "done") toast(L.done + " · " + pick(S.msgs.done));
-      if (t.status === "lazy") message("🙈", pick(S.msgs.lazy));
+      if (t.status === "lazy") message(cycleOn() && S.user.gender !== "m" ? "🤍" : "🙈", pick(cycleOn() && S.user.gender !== "m" && S.msgs.period.length ? S.msgs.period : S.msgs.lazy));
       break;
     }
     case "del-task": S.tasks = S.tasks.filter(x=>x.id!==v); save(); render(); break;
@@ -1207,6 +1251,14 @@ document.addEventListener("submit", e => {
     }
     case "vac": { S.vacation = {on:true, type:S._vtype||"mid", from:dkey(), until:val("v-until")||null}; save(); closeSheet(); render(); toast("إجازة سعيدة 🏖️"); break; }
     case "vac-until": { const d = val("vu-date"); if (!d) return; S.vacation.until = d; save(); closeSheet(); render(); toast("تمام، الإجازة هتخلص " + prettyDate(fromKey(d)) + " 🏖️"); break; }
+    case "cycle": {
+      const st = val("cy-start"), days = Math.max(2, Math.min(12, Math.round(+val("cy-days") || 7))); if (!st) return;
+      const tell = $("#cy-tell") && $("#cy-tell").checked;
+      S.cycle = Object.assign({}, S.cycle, {on:true, start:st, days}); S._pmsg = null; save(); closeSheet(); render();
+      if (tell) notifyPartner(`${S.user.name} محتاجة اهتمام ودلع زيادة الأيام دي 🤍 اهتم بيها أكتر`, true);
+      message("🤍", pick(S.msgs.period) || "ألف سلامة عليكي", "منه 💌");
+      break;
+    }
     case "rule": {
       const keys = val("ru-keys").split(/[,،]/).map(x=>x.trim()).filter(Boolean);
       const replies = val("ru-replies").split("\n").map(x=>x.trim()).filter(Boolean);
