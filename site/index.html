@@ -84,7 +84,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
   if (id){ var el = document.getElementById(id); el.classList.add("mine"); var t = document.createElement("span"); t.className = "tag"; t.textContent = document.documentElement.lang === "en" ? "Your device" : "جهازك"; el.insertBefore(t, el.firstChild); el.parentNode.insertBefore(el, el.parentNode.firstChild); }
   function setLang(l){ document.documentElement.lang = l; document.documentElement.dir = l === "en" ? "ltr" : "rtl"; document.getElementById("lang").textContent = l === "en" ? "عربي" : "English"; var tg = document.querySelector(".tag"); if (tg) tg.textContent = l === "en" ? "Your device" : "جهازك"; try{localStorage.setItem("nw-lang", l);}catch(e){} }
   var saved; try{ saved = localStorage.getItem("nw-lang"); }catch(e){}
-  setLang(saved || (navigator.language || "ar").slice(0,2) === "ar" ? (saved || "ar") : "en");
+  setLang(saved === "en" ? "en" : "ar");
   document.getElementById("lang").onclick = function(){ setLang(document.documentElement.lang === "en" ? "ar" : "en"); };
 })();
 </script>
