@@ -182,7 +182,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
 "بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
 "تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
-"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
+"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
 "خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
 "شغّليها":"شغّلها","شوفي":"شوف","صاحبة":"صاحب","ضيفي":"ضيف","عارفة":"عارف","عايزة":"عايز","عايزه":"عايز","عدّيتي":"عدّيت","عليكي":"عليك","علّمي":"علّم","عملتي":"عملت",
 "عملتيها":"عملتها","عيّطي":"عيّط","فاكرة":"فاكر","فرحانة":"فرحان","قاعدة":"قاعد","قوليلي":"قولّي","قومي":"قوم","كسلتي":"كسلت","كسولة":"كسول","كلّمي":"كلّم","كمّلي":"كمّل",
@@ -647,9 +647,38 @@ function authError(e){
   if (c.includes("too-many-requests")) return "محاولات كتير، استني شوية وجرّبي تاني";
   return "حصلت مشكلة، جرّبي تاني";
 }
+/* push notifications when the app is closed go through the free ntfy app; walk everyone through setting it up once */
+const DEVICE = () => { const ua = navigator.userAgent || ""; return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? "ios" : /Android/.test(ua) ? "android" : /Electron/.test(ua) ? "win" : "desktop"; };
+const NTFY_IOS = "https://apps.apple.com/app/ntfy/id1625396347", NTFY_ANDROID = "https://play.google.com/store/apps/details?id=io.heckel.ntfy";
+const notifDone = () => { try { return localStorage.getItem("nw-ntfy-ok") === "1"; } catch(e){ return true; } };
+const notifNeeded = () => CLOUD && ME && ME.ntfy && !notifDone() && (DEVICE() === "ios" || DEVICE() === "android");
+function notifSheet(){
+  const d = DEVICE(), topic = ME && ME.ntfy || "";
+  const copy = `<div class="item" style="margin:6px 0"><div class="grow t num" dir="ltr" style="word-break:break-all;font-size:13px">${esc(topic)}</div><button class="mini" data-act="copy" data-v="${esc(topic)}">نسخ</button></div>`;
+  const steps = d === "ios" ? `<ol class="howto">
+      <li>نزّلي تطبيق <b>ntfy</b> من الـ App Store (مجاني):<br><a class="btn small" style="margin-top:6px;text-decoration:none" href="${NTFY_IOS}" target="_blank" rel="noopener">⬇️ App Store</a></li>
+      <li>انسخي الكود بتاعك:${copy}</li>
+      <li>افتحي <b>ntfy</b> ودوسي <b>+</b> اللي فوق، والزقي الكود في <b>Topic</b>، ودوسي <b>Subscribe</b>.</li>
+      <li>لما يسألك "Allow notifications؟" دوسي <b>Allow</b>.</li></ol>`
+    : d === "android" ? `<ol class="howto">
+      <li>نزّلي تطبيق <b>ntfy</b> من Google Play (مجاني):<br><a class="btn small" style="margin-top:6px;text-decoration:none" href="${NTFY_ANDROID}" target="_blank" rel="noopener">⬇️ Google Play</a></li>
+      <li>انسخي الكود بتاعك:${copy}</li>
+      <li>افتحي <b>ntfy</b> ودوسي <b>+</b> اللي تحت، والزقي الكود في <b>Topic name</b>، ودوسي <b>Subscribe</b>.</li>
+      <li>لو سألك عن الإشعارات دوسي <b>سماح</b>.</li></ol>`
+    : d === "win" ? `<p>إنتي على الكمبيوتر ✅ الإشعارات شغالة لوحدها طول ما البرنامج شغال جنب الساعة.</p>`
+    : `<p>إنتي فاتحة من المتصفح. علشان الإشعارات توصلك على الموبايل وهو مقفول، افتحي التطبيق من الموبايل وهيوريكي الطريقة. ولو عايزة على الكمبيوتر، نزّلي برنامج الويندوز من الموقع.</p>`;
+  sheet(`<h2>🔔 خلّي الإشعارات توصلك</h2>
+    <p class="muted small" style="margin:-6px 0 6px">علشان رسايل ${P && P.linked ? "شريكك وصحابك" : "صحابك"} والجروبات توصلك حتى لو التطبيق مقفول خالص. دقيقة واحدة ومرة واحدة بس 💗</p>
+    ${steps}
+    <p class="muted small">🔒 الكود ده بتاعك إنتي بس، متقوليهوش لحد.</p>
+    ${d === "ios" || d === "android" ? `<button class="btn ghost small block" style="margin-bottom:8px" data-act="notif-test">🧪 ابعتيلي إشعار تجربة</button>` : ""}
+    <div class="form"><button class="btn" data-act="notif-ok">✅ عملتها</button>${d === "ios" || d === "android" ? `<button class="btn ghost" data-act="notif-later">بعدين</button>` : ""}</div>`);
+}
 function startupChecks(){
   if (!S || !S.user) return;
   setTimeout(vacationCheck, 300);
+  setTimeout(() => { let snooze = 0; try { snooze = +localStorage.getItem("nw-ntfy-snooze") || 0; } catch(e){}
+    if (notifNeeded() && Date.now() > snooze && !$("#layer").innerHTML) notifSheet(); }, 2500);
   const t = new Date(), k = dkey(t), now = t.toTimeString().slice(0,5);
   if (!vacDue() && S.lastMorning !== k && now >= S.alarm.wake && t.getHours() < 14){ S.lastMorning = k; save(); setTimeout(morningSheet, 400); }
   else if (S.user.gender !== "m" && cycleOn() && S.lastCare !== k && !vacDue()){ S.lastCare = k; save(); setTimeout(() => message("🤍", pick(MS("period")), "دلع زيادة الأيام دي"), 500); }
@@ -829,6 +858,7 @@ function homeView(){
   ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
     <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(MS("period"))))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
+  ${notifNeeded() ? `<button class="card tint" data-act="notif" style="text-align:right;border:0;width:100%"><div class="row between"><h3>🔔 فعّلي الإشعارات</h3><span class="pill">دقيقة</span></div><div class="muted small" style="margin-top:4px">علشان الرسايل توصلك حتى لو التطبيق مقفول</div></button>` : ""}
   <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${hasMate() ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
 
   <div class="card">
@@ -1395,7 +1425,8 @@ function settingsView(){
   ${CLOUD && ME ? `<div class="card"><h3>🔔 الإشعارات والتطبيق مقفول</h3><p class="muted small" style="margin:4px 0 0">رسايل ${ME.gender==="m" ? "\uE000شريكتك\uE001" : "شريكك"} والجروبات والتنبيهات توصلك حتى لو التطبيق مقفول خالص.</p>
     <ol class="small" style="margin:8px 0 0;padding-inline-start:18px;line-height:1.9"><li>نزّل تطبيق <b>ntfy</b> (موجود على Google Play وApp Store ومتاح للكمبيوتر).</li><li>دوس <b>+</b> واكتب الاسم ده بالظبط:</li></ol>
     <div class="item" style="margin-top:6px"><div class="grow t num" dir="ltr" style="word-break:break-all">${esc(ME.ntfy||"")}</div><button class="mini" data-act="copy" data-v="${esc(ME.ntfy||"")}">نسخ</button></div>
-    <p class="muted small" style="margin:8px 0 0">متقولش الاسم ده لحد، ده بتاعك إنت بس.</p></div>` : ""}
+    <p class="muted small" style="margin:8px 0 0">متقولش الاسم ده لحد، ده بتاعك إنت بس.</p>
+    <button class="btn ghost small" style="margin-top:10px" data-act="notif">📖 الطريقة خطوة بخطوة</button></div>` : ""}
   ${IS_ADMIN ? `<button class="btn block" data-act="tab" data-v="admin">👑 لوحة التحكم</button>` : ""}
   <div class="card"><h3>${L.backup}</h3>
     <p class="muted small" style="margin:6px 0 10px">انسخي كل بياناتك في ملف نصي، أو رجّعيها من نسخة قديمة.</p>
@@ -1882,6 +1913,10 @@ document.addEventListener("click", e => {
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
     case "gedit": openGlobalMsgs(v); break;
+    case "notif": notifSheet(); break;
+    case "notif-test": { const t = ME && ME.ntfy; if (!t) break; fetch("https://ntfy.sh/" + t + "?title=" + encodeURIComponent("Nono's World 🔔") + "&tags=tada", {method:"POST", body:"الإشعارات شغالة ✅ كده كل رسايلك هتوصلك"}).then(()=>toast("اتبعت، لو وصلك يبقى كله تمام ✅")).catch(()=>toast("مقدرتش أبعت، اتأكدي من النت")); break; }
+    case "notif-ok": try { localStorage.setItem("nw-ntfy-ok", "1"); } catch(e){} closeSheet(); render(); toast("تمام، الإشعارات هتوصلك 🔔"); if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(()=>{}); break;
+    case "notif-later": try { localStorage.setItem("nw-ntfy-snooze", String(Date.now() + 864e5)); } catch(e){} closeSheet(); break;
     case "reset-msgs": { const T = msgsTarget(); T.msgs = U.edit === "global" ? defMsgs(U.gEdit, "muslim", "ar") : T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }
     case "change-pin": S.pin = null; save(); pinSheet(); break;
   }
