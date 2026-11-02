@@ -310,7 +310,7 @@ function blank(){
     money:{allowance:0, period:"month", expenses:[]}, schedule:[], tasks:[], subjects:[], sessions:[], exams:[], grades:[],
     moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
-    lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false} };
+    lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false}, loveOff:false };
 }
 function normalize(s, gender){
   const b = blank();
@@ -330,13 +330,22 @@ function load(){
 
 /* ================= cloud sync (Firebase) ================= */
 const CLOUD = !!window.fb;
-const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
+const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin","loveOff"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
 const CP = {msgs:[], cid:null};
 const CFG = {love:{}};
 const lovePool = () => { const extra = ((CFG.love || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []; return (S.msgs.love || []).concat(isEN() ? [] : extra); };
 const PSUB = {};
+/* encouragement instead of love notes, for anyone who turned them off */
+const CHEER_F = ["إنتي أقوى بكتير مما تتخيلي 💪","خطوة صغيرة النهارده أحسن من ولا حاجة 🌱","إنتي قدها، وأكتر من قدها","افتكري قد إيه وصلتي، وكمّلي 🌸","مش لازم تكوني مثالية، كفاية إنك بتحاولي","كل يوم بتتعلمي حاجة جديدة، وده إنجاز","ارتاحي لو تعبتي، بس متستسلميش","إنتي تستاهلي كل حاجة حلوة 🤍","النهارده فرصة جديدة، استغليها","فخورين بيكي، حتى في الأيام الصعبة","ابتسمي، الدنيا لسه فيها حاجات حلوة كتير ☀️","صدّقي في نفسك زي ما بتصدّقي في اللي بتحبيهم","إنتي أشطر من الامتحان ده، ومن أي ضغط","اهتمي بنفسك، إنتي أهم حاجة 💅","حلمك يستاهل التعب، كمّلي"];
+const CHEER_M = ["إنت أقوى بكتير مما تتخيل 💪","خطوة صغيرة النهارده أحسن من ولا حاجة 🌱","إنت قدها، وأكتر من قدها","افتكر قد إيه وصلت، وكمّل 🔥","مش لازم تكون مثالي، كفاية إنك بتحاول","كل يوم بتتعلم حاجة جديدة، وده إنجاز","ارتاح لو تعبت، بس متستسلمش","إنت تستاهل كل حاجة حلوة","النهارده فرصة جديدة، استغلها يا بطل","فخورين بيك، حتى في الأيام الصعبة","ركّز في هدفك، والباقي هييجي ☀️","صدّق في نفسك، إنت تقدر","إنت أشطر من الامتحان ده، ومن أي ضغط","اهتم بنفسك، إنت أهم حاجة","حلمك يستاهل التعب، كمّل يا وحش 💪"];
+const CHEER_EN = ["You're way stronger than you think 💪","A small step today beats no step at all 🌱","You've got this, and then some","Look how far you've come, keep going","You don't have to be perfect, trying is enough","Rest if you're tired, just don't give up","You deserve every good thing 🤍","Today is a fresh chance, use it","Believe in yourself the way you believe in the people you love","Your dream is worth the effort, keep going"];
+const loveOn = () => !(S && S.loveOff);
+const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"];
+const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
+const morningPick = () => loveOn() ? pick(S.msgs.morning) : (isEN() ? "Good morning ☀️ a new day, a new chance" : pick(S.user && S.user.gender === "m" ? MORNING_CHEER_M : MORNING_CHEER_F));
+const cheerPool = () => isEN() ? CHEER_EN : (S.user && S.user.gender === "m" ? CHEER_M : CHEER_F);
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
@@ -700,7 +709,7 @@ function homeView(){
   const care = S.care[k] || {water:0,sleep:0};
   const st = streak(), good = examGood();
   const upcoming = S.exams.filter(e=>e.date>=k).sort((a,b)=>a.date<b.date?-1:1)[0];
-  const love = S._love || (S._love = pick(lovePool()));
+  const love = S._love || (S._love = pick(loveOn() ? lovePool() : cheerPool()));
   return `
   ${ME && ME.special ? `<div class="card special"><div class="lbl">${isEN() ? "Just for you" : "ليكي مخصوص"}</div><p>${esc(ME.special)}</p></div>` : ""}
   <section class="hello">
@@ -711,7 +720,7 @@ function homeView(){
   ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
     <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(S.msgs.period)))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
-  <div class="letter"><div class="row between"><span class="lbl">${L.love}</span><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button></div><p>${esc(love)}</p></div>
+  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button><span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button></span></div><p>${esc(love)}</p></div>
 
   <div class="card">
     <div class="row between"><h2>${L.mood} النهارده</h2>${mood?`<span class="pill">${MOODS.find(m=>m.k===mood).e} ${MOODS.find(m=>m.k===mood).t}</span>`:""}</div>
@@ -741,7 +750,7 @@ function homeView(){
       <h3>${L.care}</h3>
       <div class="sectionlbl" style="margin:8px 0 4px">💧 كوبايات المية</div>
       <div class="cups">${Array.from({length:8},(_,i)=>`<button data-act="water" data-v="${i+1}" class="${i<care.water?"f":""}" aria-label="${i+1} كوباية">💧</button>`).join("")}</div>
-      <div class="row between wrap" style="margin-top:10px"><span class="sectionlbl" style="margin:0">💅 اهتميتي بنفسك النهارده</span><span class="muted small num">${care.stars||0} من 5</span></div>
+      <div class="row between wrap" style="margin-top:10px"><span class="sectionlbl" style="margin:0">${S.user.gender === "m" ? "💪" : "💅"} اهتميتي بنفسك النهارده</span><span class="muted small num">${care.stars||0} من 5</span></div>
       <div class="stars" style="margin-top:4px">${Array.from({length:5},(_,i)=>`<button data-act="star" data-v="${i+1}" class="${i<(care.stars||0)?"f":""}" aria-label="${i+1} نجوم">⭐</button>`).join("")}</div>
       <div class="row between" style="margin-top:10px"><span class="sectionlbl" style="margin:0">😴 نمتي كام ساعة؟</span>
         <div class="row"><button class="mini" data-act="sleep" data-v="-1" aria-label="أقل">−</button><b class="num">${care.sleep}</b><button class="mini" data-act="sleep" data-v="1" aria-label="أكتر">+</button></div></div>
@@ -1356,7 +1365,7 @@ function weekSheet(){
   <p class="muted" style="margin:-6px 0 12px">آخر 7 أيام</p>
   <div class="stats"><div class="stat"><b>${pc(pct)}</b><span>خلّصتي من مهماتك</span></div><div class="stat"><b class="num">${done}</b><span>${L.done}</span></div><div class="stat"><b class="num">${lazy}</b><span>${L.lazy}</span></div>
   <div class="stat"><b>${hm(mins)}</b><span>مذاكرة</span></div><div class="stat"><b class="num">${fmt(spent)}</b><span>${CUR()} صرفتيهم</span></div><div class="stat"><b>${top&&top.n?top.e:"·"}</b><span>أكتر مود</span></div></div>
-  <div class="letter" style="margin-top:14px"><span class="lbl">${L.love}</span><p>${esc(pick(pct>=60?S.msgs.g_high:S.msgs.lazy))}</p></div>
+  <div class="letter" style="margin-top:14px"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><p>${esc(pick(loveOn() ? (pct>=60?S.msgs.g_high:S.msgs.lazy) : cheerPool()))}</p></div>
   <button class="btn block" data-act="close" style="margin-top:14px">تمام 🫠</button>`);
 }
 function reminderSheet(){
@@ -1373,7 +1382,7 @@ function subjectSheet(){
 }
 function morningSheet(){
   const t = new Date(), lec = S.schedule.filter(s=>s.day===t.getDay()).length, mi = moneyInfo();
-  sheet(`<div class="popmsg"><div class="em">☀️</div><p>${esc(pick(S.msgs.morning))}</p><small>${L.love}</small></div>
+  sheet(`<div class="popmsg"><div class="em">☀️</div><p>${esc(morningPick())}</p><small>${loveOn() ? L.love : "صباح الخير"}</small></div>
   <div class="stats" style="margin-top:12px"><div class="stat"><b class="num">${lec}</b><span>محاضرات النهارده</span></div><div class="stat"><b class="num">${S.tasks.filter(x=>x.date===dkey()).length}</b><span>مهمات</span></div><div class="stat"><b class="num">${fmt(Math.max(0,mi.daily))}</b><span>${L.daily}</span></div></div>
   <button class="btn block" data-act="close" style="margin-top:14px">صباح النور 🌷</button>`);
 }
@@ -1469,7 +1478,8 @@ document.addEventListener("click", e => {
   switch(act){
     case "close": closeSheet(); break;
     case "tab": go(v); break;
-    case "new-love": S._love = pick(lovePool()); render(); break;
+    case "new-love": S._love = pick(loveOn() ? lovePool() : cheerPool()); render(); break;
+    case "love-toggle": S.loveOff = !S.loveOff; S._love = null; save(); render(); toast(S.loveOff ? "تمام، هيظهرلك كلام تشجيع بس 💪" : "رجعت رسايل الحب 💌"); break;
     case "mood": {
       S.moods[k] = v; save(); render();
       const m = MOODS.find(x=>x.k===v); message(m.e, pick(S.msgs[v]));
@@ -1481,7 +1491,7 @@ document.addEventListener("click", e => {
     case "cycle-start": cycleSheet(); break;
     case "cycle-end": { const c = S.cycle; const days = Math.max(1, Math.round((fromKey(dkey()) - fromKey(c.start))/864e5) + 1); c.history = (c.history||[]).concat({start:c.start, days}).slice(-12); c.on = false; save(); render(); const nx = nextCycle(); toast("ألف سلامة عليكي 🤍" + (nx ? " · المرة الجاية حوالي " + prettyDate(nx.date) : "")); break; }
     case "new-pmsg": S._pmsg = pick(S.msgs.period); render(); break;
-    case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast("ايه الحلاوه دي كلها 💅✨"); break; }
+    case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast(S.user.gender === "m" ? "إيه الروقان ده كله 😎" : "ايه الحلاوه دي كلها 💅✨"); break; }
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
     case "add-exp": expSheet(); break;
@@ -1825,13 +1835,13 @@ function pushTo(topic, title, body){
 }
 async function scheduleNative(){
   const ln = LN(); if (!ln || !S || !S.user) return;
-  const plan = JSON.stringify([S.alarm, S.msgs.morning]); if (plan === lastSchedule) return; lastSchedule = plan;
+  const plan = JSON.stringify([S.alarm, S.msgs.morning, S.loveOff]); if (plan === lastSchedule) return; lastSchedule = plan;
   try {
     const perm = await ln.requestPermissions(); if (perm.display !== "granted") return;
     try { await ln.createChannel({id:"alarm", name:"صحّيني", importance:5, sound:"default", vibration:true}); } catch(e){}
     const pending = await ln.getPending(); if (pending.notifications.length) await ln.cancel({notifications: pending.notifications.map(n=>({id:n.id}))});
     const at = t => { const [h,m] = t.split(":").map(Number); return {hour:h, minute:m}; };
-    const list = [{id:1, title:"صحّيني ⏰", body:pick(S.msgs.morning) || "صباح الخير ☀️", channelId:"alarm", schedule:{on:at(S.alarm.wake), allowWhileIdle:true}}];
+    const list = [{id:1, title:"صحّيني ⏰", body:morningPick() || "صباح الخير ☀️", channelId:"alarm", schedule:{on:at(S.alarm.wake), allowWhileIdle:true}}];
     S.alarm.reminders.forEach((r,i) => list.push({id:10+i, title:"Nono's World 🌍", body:r.text, schedule:{on:at(r.time), allowWhileIdle:true}}));
     await ln.schedule({notifications:list});
   } catch(e){ console.warn("notify", e); }
@@ -1841,7 +1851,7 @@ function inAppReminders(){
   const now = new Date(), hm5 = now.toTimeString().slice(0,5), k = dkey(now);
   let fired = {}; try { fired = JSON.parse(localStorage.getItem("nw-fired") || "{}"); } catch(e){}
   const due = [];
-  if (S.alarm.wake === hm5) due.push(["wake", "صحّيني ⏰", pick(S.msgs.morning)]);
+  if (S.alarm.wake === hm5) due.push(["wake", "صحّيني ⏰", morningPick()]);
   S.alarm.reminders.forEach(r => { if (r.time === hm5) due.push([r.id, "Nono's World 🌍", r.text]); });
   due.forEach(([id, title, body]) => {
     if (fired[id] === k) return; fired[id] = k;
@@ -1889,3 +1899,7 @@ setTimeout(checkUpdate, 4000);
 setInterval(checkUpdate, 20 * 60000);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(); });
 window.addEventListener("online", checkUpdate);
+// closing or hiding the app: send any change still waiting, so nothing is lost
+const flushNow = () => { try { if (pushTimer && S && UID){ clearTimeout(pushTimer); pushTimer = null; pushNow(); } } catch(e){} };
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushNow(); });
+window.addEventListener("pagehide", flushNow);
