@@ -411,7 +411,8 @@ async function boot(u){
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
-  render(); startupChecks(); scheduleNative();
+  let firstTime = false; try { firstTime = localStorage.getItem("nw-welcome") === UID; if (firstTime) localStorage.removeItem("nw-welcome"); } catch(e){}
+  render(); if (firstTime) welcomeScreen(); else startupChecks(); scheduleNative();
   try { if (!LN() && "Notification" in window && Notification.permission === "default") document.addEventListener("click", () => Notification.requestPermission().catch(()=>{}), {once:true}); } catch(e){}
 }
 function setupPartner(){
@@ -458,6 +459,7 @@ async function signUp(name, username, pass, gender, religion = "muslim"){
     const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion);
     if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
     U.fresh = {uid:uidNew, me, st};
+    try { localStorage.setItem("nw-welcome", uidNew); } catch(e){}
     resolveSU();
     Promise.all([fb.set(`invites/${code}`, {uid:uidNew, name}, false), fb.set(`u/${uidNew}/sec/prefs`, secData(st, "prefs"), false), fb.set(`u/${uidNew}/sec/msgs`, secData(st, "msgs"), false)]).catch(e => console.warn("signup extras", e));
   } catch(e){ rejectSU(e); throw e; } finally { setTimeout(()=>signingUp=null, 0); }
@@ -558,6 +560,18 @@ const hm = m => isEN() ? (m >= 60 ? Math.floor(m/60) + "h" + (m%60 ? " " + (m%60
 let tapCount = 0, tapTimer = null;
 function CLOUD_BOOT(){ return !!window.fb; }
 const U = {booting:CLOUD_BOOT(), authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
+function welcomeScreen(){
+  const boy = S.user.gender === "m", en = isEN(), name = escP(S.user.name);
+  const title = en ? "Welcome, " + name : "أهلًا يا " + name;
+  const body = en ? "Your new world is ready. Your money, studies, mood and diary, all in one place, made just for you."
+    : boy ? "نورت دنيتك الجديدة. هنا فلوسك ومذاكرتك ويومك كله في مكان واحد، وكل حاجة معمولة علشانك."
+          : "نورتي دنيتك الجديدة. هنا فلوسك ومذاكرتك ونفسيتك وحكاياتك في مكان واحد، وكل حاجة معمولة علشانك إنتي.";
+  const sub = en ? "Take your time and explore." : boy ? "خد راحتك، واكتشفها على مهلك." : "خدي راحتك، واكتشفيها على مهلك.";
+  $("#layer").innerHTML = `<div class="splash ${boy ? "boy" : "girl"}" role="dialog" aria-modal="true" aria-label="${title}"><div class="splash-in">
+    <img src="icon-192.png" alt="" class="splash-logo"><div class="splash-brand">Nono's World</div>
+    <h1 class="splash-title">${title}</h1><p class="splash-sub">${body}</p><p class="splash-sub" style="opacity:.8">${sub}</p>
+    <button class="splash-go" data-act="welcome-go">${en ? "Let's start" : "يلا نبدأ"}</button></div></div>`;
+}
 function splashView(){
   let g = "f", name = ""; try { g = localStorage.getItem("nw-g") || U.ag || "f"; name = localStorage.getItem("nw-name") || ""; } catch(e){}
   const en = isEN(), boy = g === "m";
@@ -1337,6 +1351,7 @@ document.addEventListener("click", e => {
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
+    case "welcome-go": $("#layer").innerHTML = ""; startupChecks(); break;
     case "set-cur": S.currency = v; save(); render(); break;
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
