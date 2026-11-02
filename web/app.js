@@ -327,6 +327,7 @@ const CLOUD = !!window.fb;
 const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
+const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
 const secData = (st, sec) => { const o = {}; SEC[sec].forEach(k => o[k] = st[k] === undefined ? null : st[k]); return o; };
 function save(){
@@ -405,7 +406,11 @@ async function boot(u){
     Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d) Object.assign(st, d); });
     apply(meDoc, st, true);
   }
+  SEEN.him = null; SEEN.mate = null; SEEN.groups = null;
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
+    const him = list.filter(e => e.from === "him");
+    if (SEEN.him) him.filter(e => !SEEN.him.has(e.id)).forEach(e => { if (!(S.tab === "diary" && document.visibilityState === "visible")) notice(`💌 ${P && P.user ? P.user.name : "شريكك"}`, e.text || ""); });
+    SEEN.him = new Set(him.map(e => e.id));
     const local = new Map(S.diary.filter(e=>e.pending).map(e=>[e.id,e]));
     S.diary = list.map(e => { const {at, ...rest} = e; lastDiary.set(e.id, JSON.stringify(rest)); return rest; });
     local.forEach((e,id) => { if (!S.diary.some(x=>x.id===id)) S.diary.push(e); });
@@ -415,7 +420,10 @@ async function boot(u){
   unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   GR.list = []; GR.open = null; GR.msgs = [];
-  unsubs.push(fb.listenWhere("groups", "members", "array-contains", UID, list => { GR.list = list; if (S && S.tab === "diary" && U.dmode === "friends" && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
+  unsubs.push(fb.listenWhere("groups", "members", "array-contains", UID, list => {
+    if (SEEN.groups) list.forEach(g => { const before = SEEN.groups[g.id] || 0; if ((g.last||0) > before && !SEEN.mine.has(g.last) && !(GR.open === g.id && S.tab === "diary" && document.visibilityState === "visible")) notice(`👭 ${g.name || ""}`, g.lastText || ""); });
+    SEEN.groups = {}; list.forEach(g => { SEEN.groups[g.id] = g.last || 0; if (ME && ME.ntfy && (g.topics||{})[UID] !== ME.ntfy && !SEEN.tried.has(g.id)){ SEEN.tried.add(g.id); fb.set(`groups/${g.id}`, {topics:{[UID]:ME.ntfy}}).catch(()=>{}); } });
+    GR.list = list; if (S && S.tab === "diary" && U.dmode === "friends" && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`admins/${UID}`, d => { const was = IS_ADMIN; IS_ADMIN = !!d; if (was !== IS_ADMIN && S && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
@@ -433,7 +441,9 @@ function setupPartner(){
     P.user = d; const wasLinked = P.linked; P.linked = d.partner === UID; P.share = d.share || {};
     if (P.linked && !wasLinked){
       ["prefs","msgs"].concat(SHARE.map(x=>x[0]).filter(k=>k!=="diary")).forEach(sec => sub(`u/${pid}/sec/${sec}`, v => { if (v){ Object.assign(P, v); P.loaded[sec] = true; } if (S.tab === "partner") render(); }));
-      if (P.share.diary !== false) punsubs.push(fb.listenCol(`u/${pid}/chat`, list => { P.diary = list; if (S.tab === "partner") render(); }, () => {}));
+      if (P.share.diary !== false) punsubs.push(fb.listenCol(`u/${pid}/chat`, list => { const own = list.filter(e => e.from !== "him");
+        if (SEEN.mate) own.filter(e => !SEEN.mate.has(e.id)).forEach(e => { if (!(S.tab === "mate" && document.visibilityState === "visible")) notice(`📔 ${P.user ? P.user.name : ""}`, e.text || ""); });
+        SEEN.mate = new Set(own.map(e => e.id)); P.diary = list; if (S.tab === "partner") render(); }, () => {}));
     }
     render();
   }, () => { P.linked = false; render(); }));
@@ -629,7 +639,7 @@ function render(){
   nav.innerHTML = gx(`<div class="in">${tabs.map(([k,e,t])=>`<button data-act="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':""}><span class="e">${e}</span>${t}</button>`).join("")}</div>`);
   tickTimer();
 }
-function go(tab){ S.tab = tab; save(); render(); if (tab==="diary") window.scrollTo({top:document.body.scrollHeight}); else window.scrollTo({top:0}); }
+function go(tab){ S.tab = tab; save(); render(); if (tab === "mate" && P && P.linked && CLOUD){ try { const k = "nw-rh-" + UID; if (!localStorage.getItem(k)){ localStorage.setItem(k, "1"); setTimeout(repliesHelp, 400); } } catch(e){} } if (tab==="diary") window.scrollTo({top:document.body.scrollHeight}); else window.scrollTo({top:0}); }
 function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent = isEN() ? trRaw(t, isMale()) : isMale() ? mascRaw(t) : String(t); document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
 function sheet(html, onMount){
   const layer = $("#layer");
@@ -961,7 +971,32 @@ function partnerView(){
 function mateView(){
   if (!P || !P.linked || !P.user) return `<div class="card"><p class="empty">مستنيين ${P&&P.user?esc(P.user.name):"شريكك"} يوافق على الربط 💌</p></div>`;
   return withState(P, () => dashboard({name:P.user.name, gender:P.user.gender, title:`${P.user.gender==="m"?"شريكي":"شريكتي"} 💞 ${esc(P.user.name)}`, canReply:true,
-    footer:`<button class="btn ghost block" data-act="p-msgs">✏️ رسايلي ${P.user.gender==="m"?"ليه":"ليها"} وردود "لو ${P.user.gender==="m"?"قال":"قالت"}…"</button>`}));
+    footer:`<button class="btn ghost block" data-act="p-msgs">✏️ رسايلي ${P.user.gender==="m"?"ليه":"ليها"} وردود "لو ${P.user.gender==="m"?"قال":"قالت"}…"</button><button class="btn ghost block small" style="margin-top:8px" data-act="replies-help">📖 إزاي أعدّل الردود؟</button>`}));
+}
+function repliesHelp(){
+  const me = isMale(), pm = !!(P && P.user && P.user.gender === "m"), pn = P && P.user ? esc(P.user.name) : (pm ? "شريكك" : "شريكتك");
+  const w = (f, m) => me ? m : f, q = (f, m) => pm ? m : f;
+  const linked = !!(P && P.linked);
+  if (isEN()) return sheet(keep(`<h2>📖 How to edit the auto-replies</h2>
+  <p class="muted small">When ${pn} writes in their diary, the app answers right away with <b>your</b> words, even when you're busy.</p>
+  <ol class="howto"><li>Open the <b>💞</b> tab at the bottom.</li><li>Scroll down and tap <b>✏️ My messages…</b>.</li>
+  <li><b>"If they say… reply…"</b>: type a word they might write (e.g. <i>miss you</i>), your reply under it (one per line), then <b>Add</b>.</li>
+  <li><b>General messages</b>: each box is a moment (sad, finished a task, morning…). Edit or add lines and <b>Save</b>.</li>
+  <li>Done. It's saved on their side instantly.</li></ol>
+  ${linked ? `<button class="btn block" data-act="p-msgs">Open the replies</button>` : ""}`, "f"));
+  sheet(keep(`<h2>📖 إزاي ${w("تعدّلي","تعدّل")} الردود التلقائية</h2>
+  <p class="muted small">لما ${pn} ${q("تكتب","يكتب")} في دفتر حكاياتي، التطبيق بيرد ${q("عليها","عليه")} على طول <b>بكلامك ${w("إنتي","إنت")}</b>، حتى لو ${w("مشغولة","مشغول")}. وده بيتعمل كده:</p>
+  <ol class="howto">
+    <li>${w("ادخلي","ادخل")} تاب <b>💞 ${q("شريكتي","شريكي")}</b> اللي تحت.</li>
+    <li>${w("انزلي","انزل")} لآخر الصفحة و${w("دوسي","دوس")} <b>✏️ رسايلي ${q("ليها","ليه")}…</b></li>
+    <li>في <b>"لو ${q("قالت","قال")}… يبقى الرد…"</b>:
+      <div class="howto-ex">لو ${q("قالت","قال")}: <b>وحشتني، وحشتيني</b><br>الرد: <b>${q("وانتي أكتر يا قلبي ❤️","وانت أكتر يا حبيبي ❤️")}</b></div>
+      ${w("اكتبي","اكتب")} الكلمة اللي ${q("ممكن تقولها","ممكن يقولها")}، ولو أكتر من كلمة ${w("افصلي","افصل")} بينهم بفاصلة (،). وتحتها ${w("ردّك","ردّك")}، وكل سطر رد لوحده والتطبيق بيختار واحد منهم. و${w("دوسي","دوس")} <b>ضيف الرد</b>.</li>
+    <li>في <b>الرسايل العامة</b>: كل خانة ليها وقت (لما ${q("تكون مضايقة","يكون مضايق")}، لما ${q("تخلّص","يخلّص")} مهمة، الصبح…). ${w("عدّلي","عدّل")} أو ${w("زوّدي","زوّد")} سطور و${w("دوسي","دوس")} <b>حفظ الرسايل</b>.</li>
+    <li>خلاص! الكلام بيتحفظ ${q("عندها","عنده")} على طول، ولما ${q("تكتب","يكتب")} كلمة من اللي ${w("حطّيتيها","حطّيتها")} يطلع ${w("ردّك","ردّك")} ${w("إنتي","إنت")}.</li>
+  </ol>
+  <p class="muted small">💡 ${w("تقدري","تقدر")} ${w("تشوفي","تشوف")} ${q("هي كتبت","هو كتب")} إيه في الدفتر و${w("تردّي","تردّ")} بنفسك كمان من تاب 💞.</p>
+  ${linked ? `<button class="btn block" data-act="p-msgs">يلا ${w("افتحي","افتح")} الردود ✏️</button>` : `<div class="notice">${w("اربطي","اربط")} حسابك بـ${q("شريكتك","شريكك")} الأول من الإعدادات.</div>`}`, "f"));
 }
 function adminView(){
   if (!IS_ADMIN) return `<div class="card"><p class="empty">الصفحة دي لصاحب التطبيق بس 👑</p></div>`;
@@ -1421,6 +1456,7 @@ document.addEventListener("click", e => {
     case "share": S.share[v] = S.share[v] === false; save(); render(); break;
     case "p-send": partnerSendSheet(); break;
     case "p-msgs": U.edit = "mate"; secretSheet(); break;
+    case "replies-help": repliesHelp(); break;
     case "durations": durationsSheet(); break;
     case "dpreset": { const [f,r] = v.split(","); $("#d-focus").value = f; $("#d-rest").value = r; break; }
     case "vacation": if (onVacation()){ S.vacation = {on:false}; save(); render(); toast("رجعنا للمذاكرة 📚"); } else vacationSheet(); break;
@@ -1538,13 +1574,14 @@ document.addEventListener("submit", e => {
       const pool = cat.startsWith("rule:") ? (S.rules.find(r=>"rule:"+r.id===cat)||{}).replies : S.msgs[cat];
       const ans = pick(pool && pool.length ? pool : S.msgs.d_other);
       S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null, pending:ans}); save(); render(); scrollChat();
+      if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
       if (CLOUD && cat === "d_sad") notifyPartner(`${S.user.name} كتب/كتبت حكاية زعلانة 📔 كلّمه/كلّمها 🤍`);
       setTimeout(() => { const e = S.diary.find(x=>x.id===id); if (!e) return; e.reply = e.pending; delete e.pending; save(); if (S.tab==="diary"){ render(); scrollChat(); setTimeout(()=>$("#diarytext")?.focus(),30); } }, 1200 + Math.random()*900);
       break;
     }
     case "psend": {
       const t = val("ps-text"); if (!t) return;
-      if (CLOUD && P && P.linked){ const id = uid(), e = {id, chat:P.chatId||"c0", ts:Date.now(), from:"him", text:t}; fb.set(`u/${P.uid}/chat/${id}`, e, false).then(()=>moderate(e, `u/${P.uid}/chat/${id}`, P.uid)).catch(()=>toast("مقدرتش أبعت")); closeSheet(); toast("وصلت 💌"); break; }
+      if (CLOUD && P && P.linked){ const id = uid(), e = {id, chat:P.chatId||"c0", ts:Date.now(), from:"him", text:t}; fb.set(`u/${P.uid}/chat/${id}`, e, false).then(()=>{ moderate(e, `u/${P.uid}/chat/${id}`, P.uid); pushTo(P.user && P.user.ntfy, `💌 ${S.user.name}`, t); }).catch(()=>toast("مقدرتش أبعت")); closeSheet(); toast("وصلت 💌"); break; }
       closeSheet(); toast("ده عرض بس 👀"); break;
     }
     case "dur": {
@@ -1570,7 +1607,7 @@ document.addEventListener("submit", e => {
     case "gnew": {
       const name = val("g-name"); if (!name) return;
       const gid = uid() + uid(), code = genCode();
-      fb.set(`groups/${gid}`, {name, owner:UID, members:[UID], names:{[UID]:ME.name}, code, at:Date.now()}, false)
+      fb.set(`groups/${gid}`, {name, owner:UID, members:[UID], names:{[UID]:ME.name}, topics:{[UID]:ME.ntfy||""}, code, at:Date.now()}, false)
         .then(() => fb.set(`groupCodes/${code}`, {gid, name}, false))
         .then(() => { closeSheet(); U.dmode = "friends"; openGroup(gid); toast("اتعمل الجروب، ابعتي الكود لصحابك 💌"); })
         .catch(() => toast("مقدرتش أعمل الجروب، جرّبي تاني"));
@@ -1588,7 +1625,7 @@ document.addEventListener("submit", e => {
       const t = val("gtext"); if (!t || !GR.open) return;
       const id = uid() + uid(), m = {id, from:UID, name:ME.name, text:t, ts:Date.now()}, path = `groups/${GR.open}/msgs/${id}`;
       GR.msgs = GR.msgs.concat(m); keepTyping(render); $("#gtext").value = ""; scrollChat();
-      fb.set(path, m, false).then(() => { moderate(m, path, null); fb.set(`groups/${GR.open}`, {last:m.ts, lastText:t.slice(0,60)}).catch(()=>{}); }).catch(() => toast("مقدرتش أبعت"));
+      fb.set(path, m, false).then(() => { moderate(m, path, null); SEEN.mine.add(m.ts); const g = GR.list.find(x=>x.id===GR.open) || {}; fb.set(`groups/${GR.open}`, {last:m.ts, lastText:(ME.name + ": " + t).slice(0,70)}).catch(()=>{}); Object.entries(g.topics||{}).forEach(([k,tp]) => { if (k !== UID && (g.members||[]).includes(k)) pushTo(tp, `👭 ${g.name||""}`, ME.name + ": " + t); }); }).catch(() => toast("مقدرتش أبعت"));
       break;
     }
     case "feedback": {
@@ -1670,6 +1707,21 @@ document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.t
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
 let lastSchedule = "";
+// a new message arrived: system notification when the app is in the background, a small toast when it's open
+let noticeId = 1000;
+function notice(title, body){
+  title = isEN() ? trRaw(title, isMale()) : title;
+  if (document.visibilityState === "visible" && document.hasFocus()){ toast(title + " · " + String(body).slice(0, 60)); return; }
+  const ln = LN();
+  if (ln){ ln.schedule({notifications:[{id: noticeId++, title, body:String(body).slice(0, 200)}]}).catch(()=>{}); return; }
+  try { if ("Notification" in window && Notification.permission === "granted"){ const n = new Notification(title, {body:String(body).slice(0, 200), icon:"icon-192.png", tag:"nw-msg"}); n.onclick = () => { window.focus(); n.close(); }; } } catch(e){}
+}
+// push to someone's phone even if their app is closed (ntfy)
+const pushGap = {};
+function pushTo(topic, title, body){
+  if (!topic) return; const now = Date.now(); if (pushGap[topic] && now - pushGap[topic] < 20000) return; pushGap[topic] = now;
+  fetch("https://ntfy.sh/" + topic + "?title=" + encodeURIComponent(title) + "&tags=speech_balloon", {method:"POST", body:String(body).slice(0, 300)}).catch(()=>{});
+}
 async function scheduleNative(){
   const ln = LN(); if (!ln || !S || !S.user) return;
   const plan = JSON.stringify([S.alarm, S.msgs.morning]); if (plan === lastSchedule) return; lastSchedule = plan;

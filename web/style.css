@@ -241,3 +241,7 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .pwwrap .in{padding-left:48px!important}
 .pweye{position:absolute;left:6px;right:auto;margin:0;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:transparent;color:var(--mu);display:grid;place-items:center;padding:0;cursor:pointer;border-radius:10px;line-height:1}
 .pweye:focus-visible{outline:2px solid var(--accent)}
+.howto{margin:12px 0 14px;padding-inline-start:22px;line-height:1.9;font-size:15px}
+.howto li{margin-bottom:8px}
+.howto li::marker{color:var(--accent);font-weight:800}
+.howto-ex{background:var(--a2, #ffe3ec);background:color-mix(in srgb, var(--accent) 12%, transparent);border-radius:12px;padding:8px 12px;margin:6px 0;font-size:14px;line-height:1.8}

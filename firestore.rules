@@ -69,7 +69,10 @@ service cloud.firestore {
           && (request.resource.data.members.toSet().difference(resource.data.members.toSet()) == [me()].toSet()
               || resource.data.members.toSet().difference(request.resource.data.members.toSet()) == [me()].toSet()))
         // members update the last-message preview
-        || (me() in resource.data.members && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last', 'lastText'])));
+        || (me() in resource.data.members && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last', 'lastText']))
+        // members save their own notification address
+        || (me() in resource.data.members && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['topics'])
+          && request.resource.data.topics.diff(resource.data.get('topics', {})).affectedKeys().hasOnly([me()])));
       allow delete: if signed() && (resource.data.owner == me() || admin());
 
       match /msgs/{mid} {
