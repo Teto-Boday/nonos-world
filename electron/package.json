@@ -1,0 +1,19 @@
+{
+  "name": "nonos-world-desktop",
+  "productName": "Nono's World",
+  "version": "1.0.0",
+  "description": "Nono's World for Windows",
+  "main": "main.js",
+  "author": "Teto-Boday",
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "world.nonos.app",
+    "productName": "Nono's World",
+    "files": ["main.js", "icon.png"],
+    "win": { "target": "nsis", "icon": "icon.png", "artifactName": "NonosWorld-Setup.${ext}" },
+    "nsis": { "oneClick": true, "perMachine": false, "createDesktopShortcut": true, "shortcutName": "Nono's World" }
+  }
+}

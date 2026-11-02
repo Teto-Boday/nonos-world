@@ -1,0 +1,12 @@
+{
+  "appId": "world.nonos.app",
+  "appName": "Nono's World",
+  "webDir": "dist/app",
+  "server": {
+    "url": "https://teto-boday.github.io/nonos-world/app/",
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": { "iconColor": "#e85d8a" }
+  }
+}

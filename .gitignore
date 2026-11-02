@@ -1,0 +1,8 @@
+node_modules/
+dist/
+android/
+electron/node_modules/
+electron/dist/
+web/test.html
+web/fb-mock.js
+web/main-mock.js

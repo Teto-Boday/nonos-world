@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nono's World 🌍 حمّلي التطبيق</title>
+<meta name="description" content="Nono's World: فلوسك، جدولك، مذاكرتك، نفسيتك وحكاياتك في مكان واحد كيوت.">
+<link rel="icon" href="app/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff6f9;--surface:#fff;--ink:#3b2430;--muted:#8d7380;--accent:#e85d8a;--accent2:#b28ae6;--soft:#fde7ef;--display:"Baloo Bhaijaan 2","Cairo",sans-serif;--body:"Cairo",Tahoma,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:radial-gradient(1200px 600px at 100% -10%,#ffe0ec,transparent),radial-gradient(900px 500px at -10% 10%,#efe4ff,transparent),var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 60px}
+header{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:24px;color:var(--accent)}
+.logo img{width:44px;height:44px;border-radius:12px}
+.lang{border:0;background:var(--surface);border-radius:12px;padding:6px 14px;font-weight:700;color:var(--accent);box-shadow:0 2px 0 #f6cddb;cursor:pointer;font:inherit}
+.hero{text-align:center;padding:36px 0 18px}
+.hero h1{font-family:var(--display);font-size:clamp(30px,6vw,46px);line-height:1.2;margin:0;text-wrap:balance}
+.hero p{color:var(--muted);font-size:17px;max-width:560px;margin:10px auto 0}
+.feats{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:20px 0 6px}
+.feats span{background:var(--surface);border-radius:99px;padding:4px 14px;font-weight:600;font-size:14px;box-shadow:0 2px 0 #f6cddb}
+.devices{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:26px}
+.dev{background:var(--surface);border-radius:26px;padding:20px;display:flex;flex-direction:column;gap:10px;border:3px solid transparent;box-shadow:0 4px 0 #f6cddb,0 18px 30px -24px var(--accent)}
+.dev.mine{border-color:var(--accent)}
+.dev .em{font-size:42px;line-height:1}
+.dev h2{font-family:var(--display);margin:0;font-size:22px}
+.dev .tag{align-self:flex-start;background:var(--accent);color:#fff;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:700}
+.dev ol{margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px}
+.btn{display:block;text-align:center;text-decoration:none;background:var(--accent);color:#fff;font-weight:700;border-radius:16px;padding:12px;box-shadow:0 3px 0 #b8466c;margin-top:auto}
+.btn.ghost{background:var(--soft);color:var(--accent);box-shadow:none}
+.note{margin-top:26px;background:var(--surface);border-radius:20px;padding:16px 18px;font-size:14px;color:var(--muted)}
+.note b{color:var(--ink)}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
+[data-l]{display:none}html[lang="ar"] [data-l="ar"],html[lang="en"] [data-l="en"]{display:revert}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><img src="app/icon-192.png" alt="">Nono's World</div>
+    <button class="lang" id="lang">English</button>
+  </header>
+  <section class="hero">
+    <h1><span data-l="ar">دنيتك كلها في تطبيق واحد كيوت 🌸</span><span data-l="en">Your whole world in one cute app 🌸</span></h1>
+    <p><span data-l="ar">فلوسك، جدولك، مذاكرتك، نفسيتك وحكاياتك، ومعاكي شريك حياتك يطمّن عليكي ويرد عليكي.</span><span data-l="en">Money, schedule, study, mood and diary, with your partner checking in and replying.</span></p>
+    <div class="feats"><span>💸 <b data-l="ar">الفلوس</b><b data-l="en">Money</b></span><span>📅 <b data-l="ar">الجدول</b><b data-l="en">Schedule</b></span><span>📚 <b data-l="ar">المذاكرة</b><b data-l="en">Study</b></span><span>😍 <b data-l="ar">النفسيه</b><b data-l="en">Mood</b></span><span>📔 <b data-l="ar">حكاياتي</b><b data-l="en">Diary</b></span><span>💞 <b data-l="ar">الشريك</b><b data-l="en">Partner</b></span></div>
+  </section>
+
+  <div class="devices">
+    <div class="dev" id="d-android">
+      <div class="em">🤖</div><h2><span data-l="ar">سامسونج / أندرويد</span><span data-l="en">Samsung / Android</span></h2>
+      <ol data-l="ar"><li>حمّلي الملف</li><li>افتحيه، ولو طلب "السماح بالتثبيت من المصدر ده" اسمحي</li><li>دوسي تثبيت ✨</li></ol>
+      <ol data-l="en"><li>Download the file</li><li>Open it and allow "install from this source" if asked</li><li>Tap Install ✨</li></ol>
+      <a class="btn" href="https://github.com/Teto-Boday/nonos-world/releases/latest/download/NonosWorld.apk"><span data-l="ar">حمّلي للأندرويد</span><span data-l="en">Download for Android</span></a>
+    </div>
+    <div class="dev" id="d-ios">
+      <div class="em">🍎</div><h2><span data-l="ar">آيفون / آيباد</span><span data-l="en">iPhone / iPad</span></h2>
+      <ol data-l="ar"><li>افتحي اللينك من <b>Safari</b></li><li>دوسي زرار المشاركة ⬆️</li><li>اختاري <b>إضافة للشاشة الرئيسية</b></li></ol>
+      <ol data-l="en"><li>Open the link in <b>Safari</b></li><li>Tap the Share button ⬆️</li><li>Choose <b>Add to Home Screen</b></li></ol>
+      <a class="btn" href="app/"><span data-l="ar">افتحي التطبيق</span><span data-l="en">Open the app</span></a>
+    </div>
+    <div class="dev" id="d-pc">
+      <div class="em">💻</div><h2><span data-l="ar">كمبيوتر ويندوز</span><span data-l="en">Windows PC</span></h2>
+      <ol data-l="ar"><li>حمّلي البرنامج وشغّليه</li><li>لو ويندوز قال "Windows protected your PC" دوسي <b>More info</b> وبعدين <b>Run anyway</b></li></ol>
+      <ol data-l="en"><li>Download and run the installer</li><li>If Windows shows "protected your PC", click <b>More info</b> then <b>Run anyway</b></li></ol>
+      <a class="btn" href="https://github.com/Teto-Boday/nonos-world/releases/latest/download/NonosWorld-Setup.exe"><span data-l="ar">حمّلي للويندوز</span><span data-l="en">Download for Windows</span></a>
+      <a class="btn ghost" href="app/"><span data-l="ar">أو افتحيه من المتصفح</span><span data-l="en">Or open in the browser</span></a>
+    </div>
+  </div>
+
+  <div class="note" id="ios-alarm">
+    <span data-l="ar"><b>⏰ المنبّه على الآيفون:</b> اظبطي منبّه الآيفون العادي. وبعدين افتحي تطبيق <b>Shortcuts</b> ← <b>Automation</b> ← <b>+</b> ← <b>Alarm</b> ← <b>Is Stopped</b> ← <b>Run Immediately</b> ← أضيفي <b>Open URLs</b> وحطي لينك التطبيق. كده أول ما تقفلي المنبّه، Nono's World يفتح ويقولك صباح الخير ☀️. وللتذكيرات اعملي نفس الخطوات بس اختاري <b>Time of Day</b>.</span>
+    <span data-l="en"><b>⏰ Alarm on iPhone:</b> set a normal iPhone alarm, then open <b>Shortcuts</b> → <b>Automation</b> → <b>+</b> → <b>Alarm</b> → <b>Is Stopped</b> → <b>Run Immediately</b> → add <b>Open URLs</b> with the app link. When you stop the alarm, Nono's World opens and says good morning ☀️. For reminders, do the same with <b>Time of Day</b>.</span>
+  </div>
+  <footer>Nono's World · <span data-l="ar">مجاني 💗</span><span data-l="en">Free 💗</span></footer>
+</div>
+<script>
+(function(){
+  var ua = navigator.userAgent, id = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "d-ios" : /Android/.test(ua) ? "d-android" : /Windows/.test(ua) ? "d-pc" : null;
+  if (id){ var el = document.getElementById(id); el.classList.add("mine"); var t = document.createElement("span"); t.className = "tag"; t.textContent = document.documentElement.lang === "en" ? "Your device" : "جهازك"; el.insertBefore(t, el.firstChild); el.parentNode.insertBefore(el, el.parentNode.firstChild); }
+  function setLang(l){ document.documentElement.lang = l; document.documentElement.dir = l === "en" ? "ltr" : "rtl"; document.getElementById("lang").textContent = l === "en" ? "عربي" : "English"; var tg = document.querySelector(".tag"); if (tg) tg.textContent = l === "en" ? "Your device" : "جهازك"; try{localStorage.setItem("nw-lang", l);}catch(e){} }
+  var saved; try{ saved = localStorage.getItem("nw-lang"); }catch(e){}
+  setLang(saved || (navigator.language || "ar").slice(0,2) === "ar" ? (saved || "ar") : "en");
+  document.getElementById("lang").onclick = function(){ setLang(document.documentElement.lang === "en" ? "ar" : "en"); };
+})();
+</script>
+</body>
+</html>

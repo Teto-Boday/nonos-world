@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function admin() { return signed() && exists(/databases/$(database)/documents/admins/$(me())); }
+    function userDoc(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    function linked(uid) {
+      return signed() && exists(/databases/$(database)/documents/users/$(uid))
+        && userDoc(uid).get('partner', null) == me()
+        && userDoc(me()).get('partner', null) == uid;
+    }
+    function shares(uid, sec) { return userDoc(uid).get('share', {}).get(sec, true) != false; }
+    function banned() { return userDoc(me()).get('banned', false) == true; }
+
+    match /admins/{uid} {
+      allow read: if signed() && me() == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if signed() && (me() == uid || admin() || resource.data.get('partner', null) == me());
+      allow create: if signed() && me() == uid && !request.resource.data.keys().hasAny(['banned']);
+      allow update: if admin() || (signed() && me() == uid
+        && request.resource.data.get('banned', false) == resource.data.get('banned', false));
+      allow delete: if admin();
+    }
+
+    match /invites/{code} {
+      allow read: if signed();
+      allow create: if signed() && request.resource.data.uid == me();
+      allow delete: if signed() && resource.data.uid == me();
+    }
+
+    match /linkRequests/{uid} {
+      allow read, delete: if signed() && (me() == uid || resource.data.from == me());
+      allow create, update: if signed() && request.resource.data.from == me();
+    }
+
+    match /u/{uid}/sec/{sec} {
+      allow read: if signed() && (me() == uid || admin()
+        || (linked(uid) && (sec in ['prefs', 'msgs'] || shares(uid, sec))));
+      allow write: if signed() && ((me() == uid && !banned()) || (sec == 'msgs' && linked(uid)));
+    }
+
+    match /u/{uid}/chat/{id} {
+      allow read: if signed() && (me() == uid || admin() || (linked(uid) && shares(uid, 'diary')));
+      allow create: if signed() && ((me() == uid && !banned()) || (linked(uid) && request.resource.data.from == 'him' && !banned()));
+      allow update: if signed() && (me() == uid || (linked(uid) && resource.data.from == 'him'));
+      allow delete: if signed() && (me() == uid || admin() || (linked(uid) && resource.data.from == 'him'));
+    }
+
+    match /reports/{id} {
+      allow create: if signed();
+      allow read, update, delete: if admin();
+    }
+  }
+}
