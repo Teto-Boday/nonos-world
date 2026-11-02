@@ -350,7 +350,7 @@ const CHEER_F = ["إنتي أقوى بكتير مما تتخيلي 💪","خطو
 const CHEER_M = ["إنت أقوى بكتير مما تتخيل 💪","خطوة صغيرة النهارده أحسن من ولا حاجة 🌱","إنت قدها، وأكتر من قدها","افتكر قد إيه وصلت، وكمّل 🔥","مش لازم تكون مثالي، كفاية إنك بتحاول","كل يوم بتتعلم حاجة جديدة، وده إنجاز","ارتاح لو تعبت، بس متستسلمش","إنت تستاهل كل حاجة حلوة","النهارده فرصة جديدة، استغلها يا بطل","فخورين بيك، حتى في الأيام الصعبة","ركّز في هدفك، والباقي هييجي ☀️","صدّق في نفسك، إنت تقدر","إنت أشطر من الامتحان ده، ومن أي ضغط","اهتم بنفسك، إنت أهم حاجة","حلمك يستاهل التعب، كمّل يا وحش 💪"];
 const CHEER_EN = ["You're way stronger than you think 💪","A small step today beats no step at all 🌱","You've got this, and then some","Look how far you've come, keep going","You don't have to be perfect, trying is enough","Rest if you're tired, just don't give up","You deserve every good thing 🤍","Today is a fresh chance, use it","Believe in yourself the way you believe in the people you love","Your dream is worth the effort, keep going"];
 const hasMate = () => !CLOUD || !!(P && P.linked);
-const loveOn = () => !(S && S.loveOff);
+const loveOn = () => hasMate() && !(S && S.loveOff);
 const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"];
 const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
 const morningPick = () => loveOn() ? pick(S.msgs.morning) : (isEN() ? "Good morning ☀️ a new day, a new chance" : pick(S.user && S.user.gender === "m" ? MORNING_CHEER_M : MORNING_CHEER_F));
@@ -629,7 +629,7 @@ async function signUp(name, username, pass, gender, religion = "muslim"){
     // queued writes go out in order, so the user doc lands before the rest; no need to wait for the server here
     const meWrite = fb.set(`users/${uidNew}`, me, false);
     meWrite.catch(e => { console.warn("me write", e); toast("حصلت مشكلة في حفظ الحساب، جرّبي تاني"); });
-    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion); st.loveOff = true; st.stage = U.stage || "uni";
+    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion); st.stage = U.stage || "uni";
     if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
     U.fresh = {uid:uidNew, me, st};
     try { localStorage.setItem("nw-welcome", uidNew); } catch(e){}
@@ -829,7 +829,7 @@ function homeView(){
   ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
     <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(MS("period"))))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
-  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${true ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
+  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${hasMate() ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
 
   <div class="card">
     <div class="row between"><h2>${L.mood} النهارده</h2>${mood?`<span class="pill">${MOODS.find(m=>m.k===mood).e} ${MOODS.find(m=>m.k===mood).t}</span>`:""}</div>
