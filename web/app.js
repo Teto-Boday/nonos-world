@@ -1,5 +1,6 @@
 
 "use strict";
+import { EN } from "./en.js";
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
 const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -132,9 +133,24 @@ const stripMarks = h => String(h).replace(/[]/g, "");
 const mascProtected = h => String(h).split(/([^]*)/).map(x => x[0] === "" ? x.slice(1, -1) : mascRaw(x)).join("");
 const isMale = () => !!(S && S.user && S.user.gender === "m");
 /* gx: final pass on any HTML before it hits the page */
-const gx = (html, on = isMale()) => String(html).split(/(<!--k-->[\s\S]*?<!--\/k-->)/).map(x => x.startsWith("<!--k-->") ? x : (on ? mascProtected(x) : stripMarks(x))).join("");
-/* keep(): a block about another person, worded by THEIR gender, left alone by gx */
-const keep = (html, gender) => `<!--k-->${gender === "m" ? mascProtected(html) : stripMarks(html)}<!--/k-->`;
+/* ================= language (Arabic / English) ================= */
+const LANG = () => (S && S.lang) || (() => { try { return localStorage.getItem("nw-lang") || "ar"; } catch(e){ return "ar"; } })();
+const isEN = () => LANG() === "en";
+const TR_RE = new RegExp("(^|[^\\u0600-\\u06FF])(" + Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0600-\\u06FF])", "g");
+const EN_M = [[/\bcupcake\b/g,"champ"],[/Did it, Nono/g,"Did it, hero"],[/^Nono!$/g,"hero!"]];
+const trRaw = (str, male) => { let o = String(str).replace(TR_RE, (m, pre, w) => pre + EN[w]); if (male) EN_M.forEach(([r,v]) => o = o.replace(r, v)); return o; };
+const splitMarks = h => String(h).split(/([^]*)/);
+const mascKeep = h => splitMarks(h).map(x => x[0] === "" ? x : mascRaw(x)).join("");
+const trKeep = (h, male) => splitMarks(h).map(x => x[0] === "" ? x : trRaw(x, male)).join("");
+/* gx: final pass on any HTML before it hits the page (masculine wording, English, then remove the "written by people" marks) */
+const gx = (html, on = isMale()) => {
+  const en = isEN();
+  let out = String(html).split(/(<!--k-->[\s\S]*?<!--\/k-->)/).map(x => x.startsWith("<!--k-->") ? x.slice(8, -9) : (on && !en ? mascKeep(x) : x)).join("");
+  if (en) out = trKeep(out, on);
+  return stripMarks(out);
+};
+/* keep(): a block about another person, worded by THEIR gender, left alone by the viewer's masculine pass */
+const keep = (html, gender) => `<!--k-->${gender === "m" && !isEN() ? mascKeep(html) : html}<!--/k-->`;
 
 /* ================= themes ================= */
 const THEMES = [
@@ -228,7 +244,7 @@ function seed(){
   };
 }
 function blank(){
-  return { v:1, theme:"basbousa", dark:"auto", lang:"ar", pin:null, tab:"home", sample:false,
+  return { v:1, theme:"basbousa", dark:"auto", lang:(()=>{ try { return localStorage.getItem("nw-lang") || "ar"; } catch(e){ return "ar"; } })(), pin:null, tab:"home", sample:false,
     money:{allowance:0, period:"month", expenses:[]}, schedule:[], tasks:[], subjects:[], sessions:[], exams:[], grades:[],
     moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
@@ -299,6 +315,7 @@ async function boot(u){
   Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d){ Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); } });
   st.religionHint = ME.religion || "muslim";
   S = normalize(st, ME.gender); S.tab = S.tab || "home";
+  try { localStorage.setItem("nw-lang", S.lang || "ar"); } catch(e){}
   if (S.cycle && S.cycle.on && !cycleOn() && dkey() > S.cycle.start){ S.cycle.history = (S.cycle.history||[]).concat({start:S.cycle.start, days:S.cycle.days||7}).slice(-12); S.cycle.on = false; save(); }
   S.user = {name:ME.name, username:ME.username, gender:ME.gender, religion:ME.religion || "muslim"}; S.share = Object.assign({}, ME.share || {});
   IS_ADMIN = !!(await fb.get(`admins/${UID}`).catch(()=>null));
@@ -453,13 +470,14 @@ function streak(){
   return n;
 }
 function minsOn(day){ return S.sessions.filter(s=>s.date===day).reduce((a,s)=>a+s.mins,0); }
-const hm = m => m >= 60 ? (Math.floor(m/60) + " س" + (m%60 ? " و" + (m%60) + " د" : "")) : (m + " د");
+const hm = m => isEN() ? (m >= 60 ? Math.floor(m/60) + "h" + (m%60 ? " " + (m%60) + "m" : "") : m + "m") : (m >= 60 ? (Math.floor(m/60) + " س" + (m%60 ? " و" + (m%60) + " د" : "")) : (m + " د"));
 
 /* ================= UI shell ================= */
 let tapCount = 0, tapTimer = null;
 const U = {authMode:"signup", ag:"f", rel:"muslim", busy:false, admin:null, edit:"me"};
 function render(){
   applyTheme();
+  document.documentElement.lang = LANG(); document.documentElement.dir = isEN() ? "ltr" : "rtl";
   const app = $("#app");
   if (CLOUD && UID && !S){ app.innerHTML = `<div class="auth"><div class="logo">🌍</div><p class="center muted">بنجهّز دنيتك… 🌸</p></div>`; $("#tabs")?.remove(); return; }
   if (!S || !S.user){ app.innerHTML = gx(authView(), U.ag === "m" && U.authMode !== "login"); $("#tabs")?.remove(); return; }
@@ -480,7 +498,7 @@ function render(){
   tickTimer();
 }
 function go(tab){ S.tab = tab; save(); render(); if (tab==="diary") window.scrollTo({top:document.body.scrollHeight}); else window.scrollTo({top:0}); }
-function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent = isMale() ? mascRaw(t) : String(t); document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
+function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent = isEN() ? trRaw(t, isMale()) : isMale() ? mascRaw(t) : String(t); document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
 function sheet(html, onMount){
   const layer = $("#layer");
   layer.innerHTML = `<div class="scrim" data-act="close-scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${gx(html, isMale() && U.edit !== "mate")}</div></div>`;
@@ -515,7 +533,7 @@ function homeView(){
   ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
     <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(S.msgs.period)))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
-  <div class="letter"><div class="row between"><span class="lbl">${esc(L.love)}</span><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button></div><p>${esc(love)}</p></div>
+  <div class="letter"><div class="row between"><span class="lbl">${L.love}</span><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button></div><p>${esc(love)}</p></div>
 
   <div class="card">
     <div class="row between"><h2>${L.mood} النهارده</h2>${mood?`<span class="pill">${MOODS.find(m=>m.k===mood).e} ${MOODS.find(m=>m.k===mood).t}</span>`:""}</div>
@@ -841,6 +859,8 @@ function settingsView(){
     <ul class="list">${SHARE.map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="share" data-v="${k}" role="switch" aria-checked="${S.share[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
     <div class="row wrap" style="margin-top:10px"><button class="btn small" data-act="tab" data-v="partner">👀 شوفي هو بيشوفك إزاي</button></div>
   </div>
+  <div class="card"><h3>🌐 Language / اللغة</h3>
+    <div class="seg" style="margin-top:10px"><button data-act="set-lang" data-v="ar" aria-pressed="${!isEN()}">\uE000عربي\uE001</button><button data-act="set-lang" data-v="en" aria-pressed="${isEN()}">\uE000English\uE001</button></div></div>
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
     <div class="seg"><button data-act="set-rel" data-v="muslim" aria-pressed="${isMuslim()}">مسلمة</button><button data-act="set-rel" data-v="christian" aria-pressed="${!isMuslim()}">مسيحية</button></div></div>
   ${partnerCard()}
@@ -867,6 +887,7 @@ function authView(){
   const login = U.authMode === "login";
   return `
   <div class="auth">
+    <button class="btn ghost small" data-act="set-lang" data-v="${isEN()?"ar":"en"}" style="align-self:flex-end">\uE000${isEN()?"عربي":"English"}\uE001</button>
     <div class="logo">🌍</div>
     <h1>Nono's World</h1>
     <p class="center muted" style="margin:-8px 0 0">${login?"وحشتينا! ادخلي 💗":"اعملي حسابك وابدئي دنيتك 🌸"}</p>
@@ -1217,6 +1238,7 @@ document.addEventListener("click", e => {
     case "adm-dismiss": { fb.del(`reports/${v}`).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); }); break; }
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
+    case "set-lang": { try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { S.lang = v; save(); } closeSheet(); render(); break; }
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
     case "reset-msgs": { const T = msgsTarget(); T.msgs = T === P && P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion); saveMsgs(); secretSheet(); toast("رجعت الرسايل الأصلية"); break; }

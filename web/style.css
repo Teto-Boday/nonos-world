@@ -199,3 +199,11 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .prayers{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
 .prayers button{border:2px solid transparent;background:var(--soft);border-radius:12px;padding:7px 0;font-weight:700;font-size:13px;color:var(--muted)}
 .prayers button[aria-pressed="true"]{background:var(--accent);color:#fff}
+[dir="ltr"] .msg.me{justify-content:flex-end}
+[dir="ltr"] .msg.him{justify-content:flex-start}
+[dir="ltr"] .msg.me .bub{border-bottom-right-radius:6px;border-bottom-left-radius:20px}
+[dir="ltr"] .msg.him .bub{border-bottom-left-radius:6px;border-bottom-right-radius:20px}
+[dir="ltr"] .bub .tm{text-align:right}
+[dir="ltr"] .msg.me .bub .tm{text-align:left}
+[dir="ltr"] [style*="text-align:right"]{text-align:left!important}
+[dir="ltr"] .send{transform:none}
