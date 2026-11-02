@@ -39,6 +39,10 @@ for (const d of dels.docs) {
       await g.ref.update({ members: left, names, topics });
     }
     if (me.partner) await db.recursiveDelete(db.collection(`couples/${[uid, me.partner].sort().join("_")}/msgs`)).catch(() => {});
+    const frs = await db.collection("friends").where("members", "array-contains", uid).get();
+    for (const f of frs.docs) await db.recursiveDelete(f.ref);
+    if (me.fcode) await db.doc(`friendCodes/${me.fcode}`).delete().catch(() => {});
+    await db.doc(`act/${uid}`).delete().catch(() => {});
     if (me.invite) await db.doc(`invites/${me.invite}`).delete().catch(() => {});
     for (const path of [`linkRequests/${uid}`, `publicReviews/${uid}`, `admins/${uid}`]) await db.doc(path).delete().catch(() => {});
     const fbk = await db.collection("feedback").where("uid", "==", uid).get(); for (const f of fbk.docs) await f.ref.delete();

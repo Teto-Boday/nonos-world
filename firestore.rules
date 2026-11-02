@@ -61,6 +61,42 @@ service cloud.firestore {
       allow delete: if (couple(cid) && resource.data.from == me()) || admin();
     }
 
+    // friends: a lighter link than a partner. They see only what you tap in "what did you do today" (act/{uid}) and chat together
+    function friendOk(uid) {
+      return (exists(/databases/$(database)/documents/friends/$(uid + '_' + me()))
+          && get(/databases/$(database)/documents/friends/$(uid + '_' + me())).data.status == 'ok')
+        || (exists(/databases/$(database)/documents/friends/$(me() + '_' + uid))
+          && get(/databases/$(database)/documents/friends/$(me() + '_' + uid)).data.status == 'ok');
+    }
+    function friendDoc(pid) { return get(/databases/$(database)/documents/friends/$(pid)).data; }
+    match /friendCodes/{code} {
+      allow read: if signed();
+      allow create: if signed() && request.resource.data.uid == me() && request.resource.data.keys().hasOnly(['uid', 'name']);
+      allow delete: if admin();
+    }
+    match /friends/{pid} {
+      allow read: if signed() && (me() in resource.data.members || admin());
+      allow create: if signed() && !banned() && request.resource.data.from == me() && request.resource.data.status == 'pending'
+        && request.resource.data.members.size() == 2 && me() in request.resource.data.members
+        && pid == request.resource.data.members[0] + '_' + request.resource.data.members[1];
+      allow update: if signed() && me() in resource.data.members && resource.data.from != me()
+        && resource.data.status == 'pending' && request.resource.data.status == 'ok'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'names', 'topics']);
+      allow delete: if signed() && (me() in resource.data.members || admin());
+      match /msgs/{mid} {
+        allow read: if signed() && ((me() in friendDoc(pid).members && friendDoc(pid).status == 'ok') || admin());
+        allow create: if signed() && !banned() && request.resource.data.from == me()
+          && me() in friendDoc(pid).members && friendDoc(pid).status == 'ok'
+          && request.resource.data.text is string && request.resource.data.text.size() <= 2000;
+        allow delete: if signed() && (resource.data.from == me() || admin());
+      }
+    }
+    match /act/{uid} {
+      allow read: if signed() && (me() == uid || admin() || friendOk(uid));
+      allow write: if signed() && me() == uid && !banned();
+      allow delete: if admin();
+    }
+
     // app-wide settings the owner edits from the admin panel
     match /config/{id} {
       allow read: if signed();

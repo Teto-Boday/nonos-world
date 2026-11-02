@@ -334,18 +334,24 @@ const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","al
   study:["sessions","exams","grades"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
 const CP = {msgs:[], cid:null};
-const CFG = {love:{}};
+const CFG = {love:{}, cheer:{}};
 const lovePool = () => { const extra = ((CFG.love || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []; return (S.msgs.love || []).concat(isEN() ? [] : extra); };
 const PSUB = {};
+/* friends: a lighter link than a partner. They only see what you tap in "what did you do today", and chat in the friends tab */
+const FR = {list:[], acts:{}, subs:{}, open:null, msgs:[], unsub:null, mine:null, seen:{}};
+const ACT_PRESETS = [["🏋️","نزلت الجيم"],["🚿","خدت دش"],["📚","ذاكرت"],["💧","شربت مية كتير"],["🚶","اتمشيت"],["🥗","أكلت صحي"],["😴","نمت بدري"],["📖","قريت"]];
+const friendOf = f => (f.members || []).find(m => m !== UID);
+const todayLog = d => ((d && d.log) || []).filter(x => dkey(new Date(x.ts)) === dkey());
 /* encouragement instead of love notes, for anyone who turned them off */
 const CHEER_F = ["إنتي أقوى بكتير مما تتخيلي 💪","خطوة صغيرة النهارده أحسن من ولا حاجة 🌱","إنتي قدها، وأكتر من قدها","افتكري قد إيه وصلتي، وكمّلي 🌸","مش لازم تكوني مثالية، كفاية إنك بتحاولي","كل يوم بتتعلمي حاجة جديدة، وده إنجاز","ارتاحي لو تعبتي، بس متستسلميش","إنتي تستاهلي كل حاجة حلوة 🤍","النهارده فرصة جديدة، استغليها","فخورين بيكي، حتى في الأيام الصعبة","ابتسمي، الدنيا لسه فيها حاجات حلوة كتير ☀️","صدّقي في نفسك زي ما بتصدّقي في اللي بتحبيهم","إنتي أشطر من الامتحان ده، ومن أي ضغط","اهتمي بنفسك، إنتي أهم حاجة 💅","حلمك يستاهل التعب، كمّلي"];
 const CHEER_M = ["إنت أقوى بكتير مما تتخيل 💪","خطوة صغيرة النهارده أحسن من ولا حاجة 🌱","إنت قدها، وأكتر من قدها","افتكر قد إيه وصلت، وكمّل 🔥","مش لازم تكون مثالي، كفاية إنك بتحاول","كل يوم بتتعلم حاجة جديدة، وده إنجاز","ارتاح لو تعبت، بس متستسلمش","إنت تستاهل كل حاجة حلوة","النهارده فرصة جديدة، استغلها يا بطل","فخورين بيك، حتى في الأيام الصعبة","ركّز في هدفك، والباقي هييجي ☀️","صدّق في نفسك، إنت تقدر","إنت أشطر من الامتحان ده، ومن أي ضغط","اهتم بنفسك، إنت أهم حاجة","حلمك يستاهل التعب، كمّل يا وحش 💪"];
 const CHEER_EN = ["You're way stronger than you think 💪","A small step today beats no step at all 🌱","You've got this, and then some","Look how far you've come, keep going","You don't have to be perfect, trying is enough","Rest if you're tired, just don't give up","You deserve every good thing 🤍","Today is a fresh chance, use it","Believe in yourself the way you believe in the people you love","Your dream is worth the effort, keep going"];
-const loveOn = () => !(S && S.loveOff);
+const hasMate = () => !CLOUD || !!(P && P.linked);
+const loveOn = () => hasMate() && !(S && S.loveOff);
 const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"];
 const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
 const morningPick = () => loveOn() ? pick(S.msgs.morning) : (isEN() ? "Good morning ☀️ a new day, a new chance" : pick(S.user && S.user.gender === "m" ? MORNING_CHEER_M : MORNING_CHEER_F));
-const cheerPool = () => isEN() ? CHEER_EN : (S.user && S.user.gender === "m" ? CHEER_M : CHEER_F);
+const cheerPool = () => isEN() ? CHEER_EN : (S.user && S.user.gender === "m" ? CHEER_M : CHEER_F).concat(((CFG.cheer || {})[S.user && S.user.gender === "m" ? "m" : "f"]) || []);
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
@@ -449,7 +455,23 @@ async function boot(u){
     if (d && d.status === "done"){ U.unReq = null; fb.del(`usernameRequests/${UID}`).catch(()=>{}); if (ME) ME.username = d.username; if (S && S.user) S.user.username = d.username; render(); message("✅", "اليوزر نيم اتغيّر لـ @" + d.username + (isMale() ? "، ادخل بيه المرة الجاية" : "، ادخلي بيه المرة الجاية"), "👤"); }
     if (S && S.tab === "settings" && JSON.stringify(before) !== JSON.stringify(U.unReq) && !$("#layer").innerHTML) keepTyping(render);
   }, () => {}));
+  FR.list = []; FR.open = null; FR.msgs = []; FR.mine = null; FR.seen = {}; Object.values(FR.subs).forEach(u => { try { u(); } catch(e){} }); FR.subs = {}; FR.acts = {};
+  unsubs.push(() => { Object.values(FR.subs).forEach(u => { try { u(); } catch(e){} }); FR.subs = {}; if (FR.unsub){ try { FR.unsub(); } catch(e){} FR.unsub = null; } });
+  unsubs.push(fb.listen(`act/${UID}`, d => { FR.mine = d || {items:[], log:[]}; if (S && S.tab === "diary" && U.dmode === "friends" && !FR.open && !GR.open && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
+  unsubs.push(fb.listenWhere("friends", "members", "array-contains", UID, list => {
+    const before = FR.list; FR.list = list;
+    list.filter(f => f.status === "pending" && f.from !== UID && !before.some(b => b.id === f.id)).forEach(f => notice("👭 طلب صداقة", ((f.names||{})[f.from] || "")));
+    const ok = new Set(list.filter(f => f.status === "ok").map(friendOf));
+    Object.keys(FR.subs).forEach(id => { if (!ok.has(id)){ try { FR.subs[id](); } catch(e){} delete FR.subs[id]; delete FR.acts[id]; } });
+    ok.forEach(id => { if (FR.subs[id]) return; FR.subs[id] = fb.listen(`act/${id}`, d => {
+      const prev = FR.seen[id]; const ids = new Set(((d && d.log) || []).map(x => x.id));
+      if (prev) todayLog(d).filter(x => !prev.has(x.id)).forEach(x => { const f = FR.list.find(z => friendOf(z) === id); notice(`${x.e} ${((f||{}).names||{})[id] || ""}`, x.t); });
+      FR.seen[id] = ids; FR.acts[id] = d;
+      if (S && S.tab === "diary" && U.dmode === "friends" && !FR.open && !GR.open && !$("#layer").innerHTML) keepTyping(render); }, () => {}); });
+    if (S && S.tab === "diary" && U.dmode === "friends" && !$("#layer").innerHTML) keepTyping(render);
+  }, () => {}));
   unsubs.push(fb.listen("config/love", d => { CFG.love = d || {}; }, () => {}));
+  unsubs.push(fb.listen("config/cheer", d => { CFG.cheer = d || {}; }, () => {}));
   unsubs.push(fb.listen(`admins/${UID}`, d => { const was = IS_ADMIN; IS_ADMIN = !!d; if (was !== IS_ADMIN && S && !$("#layer").innerHTML) keepTyping(render); }, () => {}));
   unsubs.push(fb.listen(`linkRequests/${UID}`, d => { if (d && d.from && d.from !== ME.partner) linkRequestSheet(d); }));
   setupPartner();
@@ -464,7 +486,7 @@ function setupPartner(){
   const sub = (path, cb) => punsubs.push(fb.listen(path, cb, () => {}));
   punsubs.push(fb.listen(`users/${pid}`, d => {
     if (!d){ return; }
-    P.user = d; const wasLinked = P.linked; P.linked = d.partner === UID; P.share = d.share || {};
+    P.user = d; const wasLinked = P.linked; P.linked = d.partner === UID; P.share = d.share || {}; if (wasLinked !== P.linked && S) S._love = null;
     if (P.linked && !wasLinked){
       sub(`u/${pid}/sec/prefs`, v => { if (v){ Object.assign(P, v); P.loaded.prefs = true; } if (S.tab === "partner") render(); });
       sub(`u/${pid}/sec/msgs`, v => { if (v){ Object.assign(P, v); P.loaded.msgs = true; } if (S.tab === "partner") render(); });
@@ -720,7 +742,7 @@ function homeView(){
   ${S.user.gender !== "m" && cycleOn() ? `<div class="card tint"><div class="row between"><h3>🤍 دلع زيادة الأيام دي</h3><button class="x" data-act="new-pmsg" aria-label="رسالة تانية">🔄</button></div>
     <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(S.msgs.period)))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
-  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button><span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button></span></div><p>${esc(love)}</p></div>
+  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${hasMate() ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
 
   <div class="card">
     <div class="row between"><h2>${L.mood} النهارده</h2>${mood?`<span class="pill">${MOODS.find(m=>m.k===mood).e} ${MOODS.find(m=>m.k===mood).t}</span>`:""}</div>
@@ -881,10 +903,58 @@ function studyView(){
 function diarySwitch(){
   return `<div class="seg" style="margin-top:4px"><button data-act="dmode" data-v="me" aria-pressed="${U.dmode === "me"}">حكاياتي</button>${P && P.linked ? `<button data-act="dmode" data-v="us" aria-pressed="${U.dmode === "us"}">إحنا 💞</button>` : ""}<button data-act="dmode" data-v="friends" aria-pressed="${U.dmode === "friends"}">الصحاب 👯</button></div>`;
 }
+function friendChatView(f){
+  const oid = friendOf(f), on = esc((f.names||{})[oid] || "");
+  let last = "", out = "";
+  FR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    const d = new Date(m.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5);
+    if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
+    out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
+      : `<div class="msg him"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div><button class="x small" data-act="fr-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
+  });
+  const today = todayLog(FR.acts[oid]);
+  return `<div class="row between"><button class="btn ghost small" data-act="fr-back">رجوع</button><button class="btn ghost small" data-act="fr-remove" data-v="${esc(f.id)}">شيلي من صحابي</button></div>
+    <section class="hello"><h1>👭 ${on}</h1><p>${today.length ? "النهارده: " + today.map(x => esc(x.e + " " + x.t)).join(" · ") : "لسه مفيش حاجة النهارده"}</p></section>
+    <div class="chat" id="chat">${out || `<div class="empty">قولي أهلًا 👋</div>`}</div>
+    <form class="composer" data-form="frmsg"><textarea class="in" id="ftext" rows="1" placeholder="اكتبي لـ ${on}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+}
+function openFriend(fid){
+  if (FR.unsub){ try { FR.unsub(); } catch(e){} FR.unsub = null; }
+  FR.open = fid; FR.msgs = [];
+  if (fid) FR.unsub = fb.listenCol(`friends/${fid}/msgs`, list => {
+    const known = new Set(FR.msgs.map(m => m.id)), had = FR.msgs.length;
+    if (had) list.filter(m => m.from !== UID && !known.has(m.id)).forEach(m => { if (document.visibilityState !== "visible") notice(`👭 ${m.name || ""}`, m.text || ""); });
+    FR.msgs = list; if (S.tab === "diary" && U.dmode === "friends" && FR.open === fid){ keepTyping(render); scrollChat(); } }, () => {}, 300);
+  render(); if (fid) scrollChat(); else window.scrollTo({top:0});
+}
+function actCard(){
+  const mine = FR.mine || {items:[], log:[]}, items = mine.items || [], today = todayLog(mine);
+  return `<div class="card"><h3>✨ عملتي إيه النهارده؟</h3>
+    <p class="muted small" style="margin:4px 0 10px">دوسي على اللي عملتيه، وصحابك هيشوفوه. اللي مش بتدوسي عليه محدش بيشوفه.</p>
+    <div class="acts">${items.map(x => `<button class="actb ${today.some(l=>l.id.startsWith(x.id+":"))?"on":""}" data-act="act-do" data-v="${esc(x.id)}">${esc(x.e)} ${esc(x.t)}</button>`).join("")}<button class="actb add" data-act="act-add">＋ ضيفي</button></div>
+    ${today.length ? `<div class="muted small" style="margin-top:10px">ظاهر لصحابك النهارده:</div><div class="acts" style="margin-top:6px">${today.map(l => `<span class="actb on">${esc(l.e)} ${esc(l.t)} <span class="num muted">${new Date(l.ts).toTimeString().slice(0,5)}</span><button class="x" data-act="act-undo" data-v="${esc(l.id)}" aria-label="شيليها">✕</button></span>`).join("")}</div>` : ""}
+    ${items.length ? `<button class="btn ghost small" style="margin-top:10px" data-act="act-edit">✏️ عدّلي الحاجات</button>` : ""}
+  </div>`;
+}
+function friendsListCard(){
+  const inc = FR.list.filter(f => f.status === "pending" && f.from !== UID), out = FR.list.filter(f => f.status === "pending" && f.from === UID), ok = FR.list.filter(f => f.status === "ok");
+  return `<div class="card"><div class="row between"><h3>👭 صحابي</h3><button class="btn small" data-act="fr-add">＋ ضيفي حد</button></div>
+    <ul class="list" style="margin-top:10px">
+    ${inc.map(f => `<li class="item"><span class="ic">💌</span><div class="grow"><div class="t">${esc((f.names||{})[f.from] || "")}</div><div class="s">طلب صداقة 💌</div></div><button class="mini" data-act="fr-accept" data-v="${esc(f.id)}">موافقة</button><button class="x" data-act="fr-remove" data-v="${esc(f.id)}" aria-label="رفض">✕</button></li>`).join("")}
+    ${ok.map(f => { const oid = friendOf(f), t = todayLog(FR.acts[oid]); return `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="fr-open" data-v="${esc(f.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${esc((f.names||{})[oid] || "")}</div><div class="s">${t.length ? t.slice(-4).map(x => esc(x.e + " " + x.t)).join(" · ") : "لسه مفيش حاجة النهارده"}</div></div><span aria-hidden="true">💬</span></button></li>`; }).join("")}
+    ${out.map(f => `<li class="item"><span class="ic">⏳</span><div class="grow"><div class="t">مستنيين موافقة</div><div class="s">${esc(Object.values(f.names||{})[0] || "")}</div></div><button class="x" data-act="fr-remove" data-v="${esc(f.id)}" aria-label="إلغاء">✕</button></li>`).join("")}
+    ${!FR.list.length ? `<li class="empty">ضيفي صحابك بالكود، وتشوفوا بتعملوا إيه وتتكلموا 💬</li>` : ""}
+    </ul></div>`;
+}
 function friendsView(){
+  const f = FR.open && FR.list.find(x => x.id === FR.open && x.status === "ok");
+  if (f) return friendChatView(f);
   const g = GR.open && GR.list.find(x => x.id === GR.open);
   if (!g) return `${diarySwitch()}
-    <section class="hello"><h1>الصحاب 👯</h1><p>جروبات مع صحابك تتكلموا فيها مع بعض</p></section>
+    <section class="hello"><h1>الصحاب 👯</h1><p>صحابك يشوفوا بس اللي إنتي تختاريه، ومش بيشوفوا دفترك ولا أي حاجة تانية</p></section>
+    ${actCard()}
+    ${friendsListCard()}
+    <h3 style="margin:18px 0 8px">👯 الجروبات</h3>
     <div class="row wrap"><button class="btn small" data-act="g-new">＋ جروب جديد</button><button class="btn ghost small" data-act="g-join">ادخلي جروب بكود</button></div>
     <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button></li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
   let last = "", out = "";
@@ -914,6 +984,7 @@ function coupleView(){
     <div class="chat" id="chat">${out || `<div class="empty">ابدئي إنتي وقولي ${P.user && P.user.gender==="f" ? "لها" : "له"} حاجة حلوة 💌</div>`}</div>
     <form class="composer" data-form="cmsg"><textarea class="in" id="ctext" rows="1" placeholder="اكتبي لـ ${pn}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
+function actSaveItems(items){ const mine = FR.mine || {items:[], log:[]}; FR.mine = Object.assign({}, mine, {items}); render(); fb.set(`act/${UID}`, {items, log:mine.log||[], name:ME.name}, false).catch(()=>toast("مقدرتش أحفظ")); }
 function keepTyping(fn){ const a = document.activeElement, id = a && a.id, val = id && a.value; fn(); if (id){ const el = document.getElementById(id); if (el){ el.value = val; el.focus(); } } }
 function openGroup(gid){
   if (GR.unsub){ try{GR.unsub();}catch(e){} GR.unsub = null; }
@@ -1097,6 +1168,11 @@ function adminView(){
     <label class="f">🎀 للبنات (بصوت الولد)<textarea class="in" id="cfg-love-f" rows="5" placeholder="بحبك أكتر من امبارح">${escP(((CFG.love||{}).f||[]).join("\n"))}</textarea></label>
     <label class="f" style="margin-top:8px">🧢 للولاد (بصوت البنت)<textarea class="in" id="cfg-love-m" rows="5" placeholder="إنت ضهري وسندي">${escP(((CFG.love||{}).m||[]).join("\n"))}</textarea></label>
     <button class="btn block" style="margin-top:10px" data-act="adm-love">حفظ الرسايل للكل</button></div>
+  <div class="card"><h3>💪 كلام التشجيع للكل</h3><p class="muted small" style="margin:6px 0 10px">بيظهر للي مش مرتبطين، وللي قفلوا رسايل الحب. كل سطر جملة لوحدها، وبتتضاف على الجمل الموجودة.</p>
+    <label class="f">🎀 للبنات<textarea class="in" id="cfg-cheer-f" rows="5" placeholder="إنتي قدها 💪">${escP(((CFG.cheer||{}).f||[]).join("\n"))}</textarea></label>
+    <label class="f" style="margin-top:8px">🧢 للولاد<textarea class="in" id="cfg-cheer-m" rows="5" placeholder="كمّل يا بطل 🔥">${escP(((CFG.cheer||{}).m||[]).join("\n"))}</textarea></label>
+    <button class="btn block" style="margin-top:10px" data-act="adm-cheer">حفظ التشجيع للكل</button></div>
+  <div class="card"><h3>👭 الصحاب</h3><ul class="list" style="margin-top:10px">${(A.friends||[]).length ? A.friends.map(f=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-fopen" data-v="${esc(f.id)}"><span class="ic">${f.status==="ok"?"👭":"⏳"}</span><div class="grow"><div class="t">${Object.values(f.names||{}).map(esc).join(" و ")}</div><div class="s">${f.status==="ok"?"صحاب":"طلب لسه"}</div></div></button></li>`).join("") : `<li class="empty">مفيش صحاب لسه</li>`}</ul></div>
   <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات</h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
@@ -1110,6 +1186,7 @@ async function loadAdmin(){
     A.feedback = await fb.list("feedback", 100, "at").catch(()=>[]);
     A.resets = await fb.list("resetRequests", 100).catch(()=>[]);
     A.groups = await fb.list("groups", 300).catch(()=>[]);
+    A.friends = await fb.list("friends", 500).catch(()=>[]);
   } catch(e){ A.users = []; A.reports = []; toast("مش قادر أحمّل البيانات"); }
   if (S.tab === "admin") render();
 }
@@ -1125,6 +1202,9 @@ async function adminExport(){
     for (const g of await fb.list("groups", 1000).catch(()=>[])) out.groups.push({...g, msgs:(await fb.list(`groups/${g.id}/msgs`, 5000, "ts").catch(()=>[])).reverse()});
     out.couples = [];
     for (const u of users) if (u.partner && u.id < u.partner) out.couples.push({between:[u.id, u.partner], msgs:(await fb.list(`couples/${coupleId(u.id, u.partner)}/msgs`, 5000, "ts").catch(()=>[])).reverse()});
+    out.friends = [];
+    for (const f of await fb.list("friends", 2000).catch(()=>[])) out.friends.push({...f, msgs:(await fb.list(`friends/${f.id}/msgs`, 5000, "ts").catch(()=>[])).reverse()});
+    out.shared = await fb.list("act", 2000).catch(()=>[]);
     out.reports = await fb.list("reports", 2000).catch(()=>[]);
     out.feedback = await fb.list("feedback", 2000).catch(()=>[]);
     out.resetRequests = await fb.list("resetRequests", 2000).catch(()=>[]);
@@ -1570,6 +1650,12 @@ document.addEventListener("click", e => {
     case "adm-gback": { const A = U.admin, back = A.gback; A.gsel = null; A.gmsgs = null; A.gback = null; if (back) adminOpen(back); else render(); break; }
     case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`${A.gpath}/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
     case "adm-export": adminExport(); break;
+    case "adm-cheer": { const lines = id => (($("#" + id)||{}).value || "").split("\n").map(x=>x.trim()).filter(Boolean).slice(0, 200);
+      const d = {f:lines("cfg-cheer-f"), m:lines("cfg-cheer-m"), at:Date.now()};
+      fb.set("config/cheer", d, false).then(()=>{ CFG.cheer = d; toast("اتحفظ، وهيظهر للكل 💪"); }).catch(()=>toast("مقدرتش أحفظ، اتأكد إنك نشرت القواعد الجديدة")); break; }
+    case "adm-fopen": { const A = U.admin, f = (A.friends||[]).find(x=>x.id===v); if (!f) break;
+      A.gcouple = {name:`👭 ${Object.values(f.names||{}).join(" و ")}`, members:f.members||[]}; A.gback = null; A.gsel = "c:f:" + v; A.gpath = `friends/${v}/msgs`; A.gmsgs = null; render();
+      fb.list(A.gpath, 2000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; }).then(()=>{ if (A.gsel === "c:f:" + v) render(); }); window.scrollTo({top:0}); break; }
     case "adm-love": { const lines = id => (($("#" + id)||{}).value || "").split("\n").map(x=>x.trim()).filter(Boolean).slice(0, 200);
       const d = {f:lines("cfg-love-f"), m:lines("cfg-love-m"), at:Date.now()};
       fb.set("config/love", d, false).then(()=>{ CFG.love = d; toast("اتحفظت، وهتظهر للكل 💌"); }).catch(()=>toast("مقدرتش أحفظ، اتأكد إنك نشرت القواعد الجديدة")); break; }
@@ -1605,10 +1691,39 @@ document.addEventListener("click", e => {
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
     case "welcome-go": $("#layer").innerHTML = ""; startupChecks(); break;
-    case "dmode": U.dmode = v; if (v !== "friends") openGroup(null); else render(); if (v === "us") scrollChat(); break;
+    case "dmode": U.dmode = v; if (v !== "friends"){ openGroup(null); openFriend(null); } else render(); if (v === "us") scrollChat(); break;
     case "g-new": sheet(`<h2>جروب جديد 👯</h2><form class="form" data-form="gnew"><label class="f">اسم الجروب<input class="in" id="g-name" maxlength="40" required placeholder="البنات 💗"></label><button class="btn" type="submit">اعملي الجروب</button></form>`); break;
     case "g-join": sheet(`<h2>ادخلي جروب</h2><form class="form" data-form="gjoin"><label class="f">كود الجروب<input class="in num" id="g-code" dir="ltr" maxlength="8" required placeholder="ABC123"></label><button class="btn" type="submit">ادخلي</button></form>`); break;
     case "g-open": openGroup(v); break;
+    case "fr-open": openFriend(v); break;
+    case "fr-back": openFriend(null); break;
+    case "fr-add": {
+      const ensure = ME.fcode ? Promise.resolve(ME.fcode) : (() => { const c = genCode(); return fb.set(`friendCodes/${c}`, {uid:UID, name:ME.name}, false).then(() => saveMe({fcode:c})).then(() => c); })();
+      ensure.then(code => sheet(`<h2>👭 ضيفي حد من صحابك</h2>
+        <p class="muted small">ابعتي الكود بتاعك لصحابك، أو اكتبي الكود بتاعهم.</p>
+        <div class="item"><span class="ic">🔗</span><div class="grow"><div class="t num" dir="ltr">${esc(code)}</div><div class="s">كود الصحاب بتاعك (غير كود الشريك)</div></div><button class="mini" data-act="copy" data-v="${esc(code)}">نسخ</button></div>
+        <form class="row" data-form="fradd" style="margin-top:12px"><input class="in num" id="fr-code" dir="ltr" maxlength="8" required placeholder="ABC123" autocomplete="off" aria-label="كود الصاحب"><button class="btn small" type="submit">ضيفي</button></form>
+        <p class="muted small" style="margin-top:10px">🔒 صحابك بيشوفوا بس "عملتي إيه النهارده" اللي بتدوسي عليه، وشاتكم. مش بيشوفوا دفترك ولا فلوسك ولا مذاكرتك ولا أي حاجة تانية.</p>`)).catch(() => toast("مقدرتش، اتأكدي من النت"));
+      break;
+    }
+    case "fr-accept": { const f = FR.list.find(x=>x.id===v); if (!f) break; fb.set(`friends/${v}`, {status:"ok", names:Object.assign({}, f.names||{}, {[UID]:ME.name}), topics:Object.assign({}, f.topics||{}, {[UID]:ME.ntfy||""})}).then(()=>toast("بقيتوا صحاب 👭")).catch(()=>toast("مقدرتش")); break; }
+    case "fr-remove": { const f = FR.list.find(x=>x.id===v); if (!f) break; const nm = esc((f.names||{})[friendOf(f)] || "");
+      sheet(`<h2>${f.status === "ok" ? "تشيلي " + nm + " من صحابك؟" : "تلغي الطلب؟"}</h2><div class="form"><button class="btn danger" data-act="fr-remove-ok" data-v="${esc(v)}">أيوه</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
+    case "fr-remove-ok": closeSheet(); if (FR.open === v) openFriend(null); fb.del(`friends/${v}`).catch(()=>toast("مقدرتش")); break;
+    case "fr-report": { const m = FR.msgs.find(x=>x.id===v); if (!m) break; fb.add("reports", {kind:"user", path:`friends/${FR.open}/msgs/${v}`, owner:m.from, author:m.from, by:UID, text:m.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>{}); break; }
+    case "act-do": {
+      const mine = FR.mine || {items:[], log:[]}, it = (mine.items||[]).find(x=>x.id===v); if (!it) break;
+      if (todayLog(mine).some(l => l.id.startsWith(it.id + ":"))){ toast("ظاهرة لصحابك خلاص ✅"); break; }
+      const log = (mine.log||[]).concat({id:it.id + ":" + uid(), e:it.e, t:it.t, ts:Date.now()}).slice(-60);
+      FR.mine = Object.assign({}, mine, {log}); render();
+      fb.set(`act/${UID}`, {items:mine.items||[], log, name:ME.name}, false).then(()=>toast(`${it.e} صحابك هيشوفوها`)).catch(()=>toast("مقدرتش أحفظ")); break; }
+    case "act-undo": { const mine = FR.mine || {items:[], log:[]}, log = (mine.log||[]).filter(l => l.id !== v); FR.mine = Object.assign({}, mine, {log}); render(); fb.set(`act/${UID}`, {items:mine.items||[], log, name:ME.name}, false).catch(()=>{}); break; }
+    case "act-add": sheet(`<h2>✨ ضيفي حاجة بتعمليها</h2>
+      <div class="acts" style="margin-bottom:12px">${ACT_PRESETS.filter(([e,t]) => !((FR.mine||{}).items||[]).some(x=>x.t===t)).map(([e,t]) => `<button class="actb" data-act="act-preset" data-v="${esc(e + "|" + t)}">${e} ${t}</button>`).join("")}</div>
+      <form class="form" data-form="actnew"><div class="row"><input class="in center" id="act-e" maxlength="4" style="width:70px;flex:none" placeholder="⭐" aria-label="إيموجي"><input class="in" id="act-t" maxlength="30" required placeholder="مثلًا: عملت سكين كير" aria-label="الحاجة"></div><button class="btn" type="submit">ضيفي</button></form>`); break;
+    case "act-preset": { const [e, t] = v.split("|"); actSaveItems(((FR.mine||{}).items||[]).concat({id:uid(), e, t})); act === "act-preset" && closeSheet(); break; }
+    case "act-edit": sheet(`<h2>✏️ الحاجات بتاعتك</h2><ul class="list">${((FR.mine||{}).items||[]).map(x => `<li class="item"><span class="ic">${esc(x.e)}</span><div class="grow t">${esc(x.t)}</div><button class="x" data-act="act-del" data-v="${esc(x.id)}" aria-label="امسحي">🗑️</button></li>`).join("")}</ul>`); break;
+    case "act-del": { actSaveItems(((FR.mine||{}).items||[]).filter(x=>x.id!==v)); closeSheet(); break; }
     case "g-back": openGroup(null); break;
     case "g-info": { const g = GR.list.find(x=>x.id===GR.open); if (!g) break; sheet(`<h2>${esc(g.name)}</h2><p class="muted small" style="margin:-6px 0 10px">ابعتي الكود ده لصحابك علشان يدخلوا الجروب</p>
       <div class="item"><span class="ic">🔗</span><div class="grow"><div class="t num" dir="ltr">${esc(g.code)}</div><div class="s">كود الجروب</div></div><button class="mini" data-act="copy" data-v="${esc(g.code)}">نسخ</button></div>
@@ -1716,6 +1831,27 @@ document.addEventListener("submit", e => {
       }).catch(() => toast("مقدرتش أدخلك، جرّبي تاني"));
       break;
     }
+    case "fradd": {
+      const code = val("fr-code").toUpperCase(); if (!code) return;
+      fb.get(`friendCodes/${code}`).then(inv => {
+        if (!inv || !inv.uid) return toast("الكود ده مش موجود 🤔");
+        if (inv.uid === UID) return toast("ده الكود بتاعك إنتي 😅");
+        const pid = coupleId(UID, inv.uid), ex = FR.list.find(x=>x.id===pid);
+        if (ex && ex.status === "ok") return toast("إنتوا صحاب أصلًا 👭");
+        if (ex && ex.from !== UID) return fb.set(`friends/${pid}`, {status:"ok", names:Object.assign({}, ex.names||{}, {[UID]:ME.name}), topics:Object.assign({}, ex.topics||{}, {[UID]:ME.ntfy||""})}).then(()=>{ closeSheet(); toast("بقيتوا صحاب 👭"); });
+        return fb.set(`friends/${pid}`, {members:[UID, inv.uid].sort(), names:{[UID]:ME.name}, topics:{[UID]:ME.ntfy||""}, from:UID, status:"pending", at:Date.now()}, false)
+          .then(() => { closeSheet(); toast("اتبعت الطلب لـ " + inv.name + " 💌"); });
+      }).catch(() => toast("مقدرتش، جرّبي تاني"));
+      break;
+    }
+    case "actnew": { const t = val("act-t"); if (!t) return; const e = val("act-e") || "⭐"; actSaveItems(((FR.mine||{}).items||[]).concat({id:uid(), e, t})); closeSheet(); break; }
+    case "frmsg": {
+      const t = val("ftext"); const f = FR.list.find(x=>x.id===FR.open); if (!t || !f) return;
+      const id = uid() + uid(), m = {id, from:UID, name:ME.name, text:t, ts:Date.now()}, path = `friends/${f.id}/msgs/${id}`;
+      FR.msgs = FR.msgs.concat(m); keepTyping(render); $("#ftext").value = ""; $("#ftext").focus(); scrollChat();
+      fb.set(path, m, false).then(() => { moderate(m, path, UID); pushTo((f.topics||{})[friendOf(f)], `👭 ${ME.name}`, t); }).catch(() => { FR.msgs = FR.msgs.filter(x=>x.id!==id); render(); toast("مقدرتش أبعت"); });
+      break;
+    }
     case "cmsg": {
       const t = val("ctext"); if (!t || !P || !P.linked || !CP.cid) return;
       const id = uid() + uid(), m = {id, from:UID, text:t, ts:Date.now()}, path = `couples/${CP.cid}/msgs/${id}`;
@@ -1811,9 +1947,9 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !sheetLocked) closeSheet();
-  if ((e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext") && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches){ e.preventDefault(); e.target.form.requestSubmit(); }
+  if ((e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext" || e.target.id === "ftext") && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches){ e.preventDefault(); e.target.form.requestSubmit(); }
 });
-document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
+document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext" || e.target.id === "ftext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
 
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
