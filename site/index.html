@@ -69,8 +69,9 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1
 .phone .screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .8s}
 .phone .screen img.on{opacity:1}
 .phone.sm{width:min(250px,70vw)}
+.phone{transform:var(--tilt,none);transition:transform .15s linear;will-change:transform}
 .float{animation:bob 6s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-12px)}}
+@keyframes bob{50%{translate:0 -12px}}
 .stickers{position:absolute;inset:0;pointer-events:none}
 .stickers b{position:absolute;font-size:34px;background:var(--surface);width:58px;height:58px;border-radius:18px;display:grid;place-items:center;box-shadow:0 10px 24px -12px rgba(184,70,108,.6);animation:bob 5s ease-in-out infinite}
 .stickers b:nth-child(1){top:8%;inset-inline-start:-6%;animation-delay:-1s}
@@ -94,8 +95,12 @@ section.block{padding:70px 0}
 .reveal{opacity:1;transform:none;transition:opacity .7s,transform .7s}
 .js .reveal.pending{opacity:.15;transform:translateY(26px)}
 
-.themes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:10px}
-.themes span{width:46px;height:46px;border-radius:14px;box-shadow:0 3px 0 rgba(0,0,0,.06)}
+.themes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}
+.themes button{border:3px solid #fff;min-width:94px;height:46px;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.08);cursor:pointer;color:#fff;font:inherit;font-weight:700;font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,.35);padding:0 10px;transition:transform .15s}
+.themes button:hover{transform:translateY(-2px)}
+.themes button[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px;transform:scale(1.06)}
+.pickhint{text-align:center;color:var(--muted);margin:12px 0 0;font-weight:600}
+#th-a,#th-b{transition:opacity .35s}
 .duo{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
 
 /* privacy band */
@@ -247,7 +252,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
 
         <div class="feature reveal">
           <div class="f-media"><div class="phone sm"><div class="screen"><img data-src="home" class="on" alt="" loading="lazy"></div></div></div>
-          <div><div class="em">🛁</div>
+          <div>
             <h3><span data-l="ar">النفسيه والدلع</span><span data-l="en">Mood and pamper time</span></h3>
             <p><span data-l="ar">مودك النهارده، كوبايات المية، نجوم الاهتمام بنفسك، ساعات النوم، والصلوات الخمس. وفي أيام العذر الشرعي التطبيق بيدلّعك أكتر ويقول لشريكك يهتم بيكي.</span><span data-l="en">Today's mood, water, self-care stars, sleep and the five prayers. On your period the app pampers you more and nudges your partner to care extra.</span></p>
             <ul><li><span data-l="ar">⏰ صحّيني: منبّه برسالة صباح الخير منه</span><span data-l="en">⏰ Wake me up: an alarm with a good-morning note from them</span></li><li><span data-l="ar">💌 فاكرك علطول: رسايل حب طول اليوم</span><span data-l="en">💌 Thinking of you: love notes all day</span></li></ul>
@@ -271,12 +276,11 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
       <div class="sec-title reveal"><h2><span data-l="ar">12 ثيم… اختاري اللي يريّح عينك 🎨</span><span data-l="en">12 themes, pick what's easy on your eyes 🎨</span></h2>
         <p><span data-l="ar">بينك، موف، خوخي، نعناعي… ووضع ليلي بيشتغل لوحده بالليل.</span><span data-l="en">Pink, mauve, peach, mint… and a dark mode that turns on by itself at night.</span></p></div>
       <div class="duo reveal">
-        <div class="phone sm"><div class="screen"><img data-src="themes" class="on" alt="" loading="lazy"></div></div>
-        <div class="phone sm"><div class="screen"><img data-src="dark" class="on" alt="" loading="lazy"></div></div>
+        <div class="phone sm"><div class="screen"><img id="th-a" class="on" alt="" loading="lazy"></div></div>
+        <div class="phone sm"><div class="screen"><img id="th-b" class="on" alt="" loading="lazy"></div></div>
       </div>
-      <div class="themes reveal" aria-hidden="true">
-        <span style="background:linear-gradient(135deg,#e85d8a,#ffb3c9)"></span><span style="background:linear-gradient(135deg,#d63a74,#ff8fb6)"></span><span style="background:linear-gradient(135deg,#d65aa0,#b28ae6)"></span><span style="background:linear-gradient(135deg,#9b6fd1,#e6d8f7)"></span><span style="background:linear-gradient(135deg,#8a6cc9,#c9b6f0)"></span><span style="background:linear-gradient(135deg,#e8805a,#ffd0b3)"></span><span style="background:linear-gradient(135deg,#3f9bd1,#bfe3f7)"></span><span style="background:linear-gradient(135deg,#2fa07d,#bfe9d8)"></span><span style="background:linear-gradient(135deg,#4e6bcc,#a9b6e6)"></span><span style="background:linear-gradient(135deg,#1f6fb2,#9cc7ea)"></span><span style="background:linear-gradient(135deg,#a0714f,#e8d5c0)"></span><span style="background:linear-gradient(135deg,#5f6672,#cfd3da)"></span>
-      </div>
+      <div class="themes reveal" role="group" aria-label="Themes"><button data-theme="basbousa" aria-pressed="true" style="background:linear-gradient(135deg,#e85d8a,#ffb3c9)"><span data-l="ar">بسبوسة</span><span data-l="en">Cupcake</span></button><button data-theme="farawlaya" aria-pressed="false" style="background:linear-gradient(135deg,#d63a74,#ff8fb6)"><span data-l="ar">فراولاية</span><span data-l="en">Strawberry</span></button><button data-theme="ghazl" aria-pressed="false" style="background:linear-gradient(135deg,#d65aa0,#b28ae6)"><span data-l="ar">غزل البنات</span><span data-l="en">Cotton candy</span></button><button data-theme="yasmina" aria-pressed="false" style="background:linear-gradient(135deg,#9b6fd1,#e6d8f7)"><span data-l="ar">ياسمينة</span><span data-l="en">Jasmine</span></button><button data-theme="lavender" aria-pressed="false" style="background:linear-gradient(135deg,#8a6cc9,#c9b6f0)"><span data-l="ar">لافندر</span><span data-l="en">Lavender</span></button><button data-theme="khokh" aria-pressed="false" style="background:linear-gradient(135deg,#e8805a,#ffd0b3)"><span data-l="ar">خوخ</span><span data-l="en">Peach</span></button><button data-theme="ghayma" aria-pressed="false" style="background:linear-gradient(135deg,#3f9bd1,#bfe3f7)"><span data-l="ar">غيمة</span><span data-l="en">Cloud</span></button><button data-theme="naanaa" aria-pressed="false" style="background:linear-gradient(135deg,#2fa07d,#bfe9d8)"><span data-l="ar">نعناع</span><span data-l="en">Mint</span></button><button data-theme="leil" aria-pressed="false" style="background:linear-gradient(135deg,#4e6bcc,#a9b6e6)"><span data-l="ar">ليل</span><span data-l="en">Night</span></button><button data-theme="bahr" aria-pressed="false" style="background:linear-gradient(135deg,#1f6fb2,#9cc7ea)"><span data-l="ar">بحر</span><span data-l="en">Sea</span></button><button data-theme="ramli" aria-pressed="false" style="background:linear-gradient(135deg,#a0714f,#e8d5c0)"><span data-l="ar">رملي</span><span data-l="en">Sand</span></button><button data-theme="romady" aria-pressed="false" style="background:linear-gradient(135deg,#5f6672,#cfd3da)"><span data-l="ar">رمادي</span><span data-l="en">Grey</span></button></div>
+      <p class="pickhint"><span data-l="ar">دوسي على أي لون وشوفي التطبيق بيه 👆</span><span data-l="en">Tap any color to see the app in it 👆</span></p>
     </div>
   </section>
 
@@ -374,8 +378,16 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
     root.lang = l; root.dir = l === "en" ? "ltr" : "rtl";
     document.getElementById("lang").textContent = l === "en" ? "عربي" : "English";
     document.title = l === "en" ? "Nono's World 🌍 Your whole world in one cute app" : "Nono's World 🌍 دنيتك كلها في تطبيق واحد";
-    setImgs(l); try { localStorage.setItem("nw-lang", l); } catch(e){}
+    setImgs(l); setTheme(curTheme); try { localStorage.setItem("nw-lang", l); } catch(e){}
   }
+  var curTheme = "basbousa";
+  function setTheme(t){
+    t = t || "basbousa"; curTheme = t; var l = root.lang || "ar";
+    ["a","b"].forEach(function(x){ var im = document.getElementById("th-" + x); if (!im) return; var src = "img/th/" + t + "-" + x + "-" + l + ".jpg";
+      if (im.getAttribute("src") === src) return; im.style.opacity = .3; var pre = new Image(); pre.onload = pre.onerror = function(){ im.src = src; im.style.opacity = 1; }; pre.src = src; });
+    document.querySelectorAll("[data-theme]").forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-theme") === t); });
+  }
+  document.querySelectorAll("[data-theme]").forEach(function(b){ b.onclick = function(){ setTheme(b.getAttribute("data-theme")); }; });
   var saved; try { saved = localStorage.getItem("nw-lang"); } catch(e){}
   setLang(saved === "en" ? "en" : "ar");
   document.getElementById("lang").onclick = function(){ setLang(root.lang === "en" ? "ar" : "en"); };
@@ -391,6 +403,20 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   var ua = navigator.userAgent;
   var mine = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "t-ios" : /Android/.test(ua) ? "t-android" : /Windows/.test(ua) ? "t-pc" : null;
   if (mine){ pick(mine); var tag = document.createElement("span"); tag.className = "mine"; tag.innerHTML = '<span data-l="ar">جهازك</span><span data-l="en">yours</span>'; document.getElementById(mine).appendChild(tag); }
+
+  // phones tilt and float as you scroll
+  var phones = Array.prototype.slice.call(document.querySelectorAll(".phone"));
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, ticking = false;
+  function tilt(){
+    ticking = false; var vh = innerHeight, side = root.dir === "rtl" ? -1 : 1;
+    phones.forEach(function(ph, idx){
+      var r = ph.getBoundingClientRect(); if (r.bottom < -200 || r.top > vh + 200) return;
+      var d = Math.max(-1, Math.min(1, ((r.top + r.height/2) - vh/2) / vh));
+      var dir = (idx % 2 ? -1 : 1) * side;
+      ph.style.setProperty("--tilt", "perspective(1000px) rotateY(" + (d * 16 * dir).toFixed(2) + "deg) rotateX(" + (d * 7).toFixed(2) + "deg) rotateZ(" + (d * -3 * dir).toFixed(2) + "deg) translateY(" + (d * -30).toFixed(1) + "px) scale(" + (1 - Math.abs(d) * 0.07).toFixed(3) + ")");
+    });
+  }
+  if (!reduce){ addEventListener("scroll", function(){ if (!ticking){ ticking = true; requestAnimationFrame(tilt); } }, {passive:true}); addEventListener("resize", tilt); tilt(); }
 
   // gentle reveal on scroll (content is visible without JS)
   if ("IntersectionObserver" in window){

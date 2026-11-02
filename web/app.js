@@ -23,7 +23,7 @@ const norm = s => s.replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/
 const L = {
   app:"Nono's World 🌍", money:"اصرفي براحتك يا بسبوسه 💸", day:"علينا ايه النهارده 🤔", tasks:"مهماتي",
   done:"عملتيها يا نونو 🤏🏽", lazy:"كسلت 🙈", study:"ركن المذاكرة 📚", focus:"حبه جد", rest:"حبه هدوء ☕",
-  examsBad:"مكتوب عليا ⏳", examsGood:"إفراج 🎉", streak:"ايه الشطارة دي🔥", week:"راحه اخيرا 🫠", care:"الدلع 🛁",
+  examsBad:"مكتوب عليا ⏳", examsGood:"إفراج 🎉", streak:"ايه الشطارة دي🔥", week:"راحه اخيرا 🫠", care:"الدلع",
   mood:"النفسيه", diary:"دفتر حكاياتي 📔", love:"فاكرك علطول 💌", alarm:"صحّيني ⏰", backup:"احفظي ذكرياتي 💾",
   daily:"قربنا نفلس", vacation:"إجازة 🏖️", left:{ok:"لسه في الخير 😌", near:"هنفلس 😬", out:"فلسنا 🙆🏽‍♀️"}
 };
@@ -37,7 +37,7 @@ const CATS = [
   {k:"care",e:"💄",t:"ميكب وعناية",c:"#ff9fb7"},{k:"other",e:"✨",t:"حاجات تانية",c:"#a3a3b5"}
 ];
 const GTYPES = ["كويز","ميدترم","فاينل"];
-const SHARE = [["mood","النفسيه 💭"],["diary","دفتر حكاياتي 📔"],["study","المذاكرة والدرجات 📚"],["day","يومي ومهماتي 🗓️"],["money","الفلوس 💸"],["care","الدلع 🛁"]];
+const SHARE = [["mood","النفسيه 💭"],["diary","دفتر حكاياتي 📔"],["study","المذاكرة والدرجات 📚"],["day","يومي ومهماتي 🗓️"],["money","الفلوس 💸"],["care","الدلع"]];
 
 /* ================= his messages (editable from the secret screen) ================= */
 const MSG_GROUPS = [
