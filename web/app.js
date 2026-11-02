@@ -72,27 +72,27 @@ const DEFAULT_MSGS = {
   morning:["صباح الفل على أحلى نونو ☀️ قومي يلا، الدنيا مستنياكي","اصحي يا بسبوسة، النهارده هيبقى يوم حلو","يلا قومي… وأول حاجة اشربي مية وابتسمي 😁","صباح الخير يا بنوتي","صباح الخير يا اشطر بنوته في الدنيا","ابعتيلي عشان وحشاني اوي","كنت مستنيكي بفارغ الصبر"]
 };
 const DEFAULT_MSGS_M = {
-  d_miss:["وإنت كمان جدًا يا حبيبي ❤️","كل ثانية بتعدي عليا بتوحشني أكتر من اللي قبلها","إنت مش بتلحق توحشني لأنك دايمًا على بالي","بتوحشني دايمًا حتى في أكتر وقت مشغولة فيه"],
-  happy:["يا بخت اليوم اللي إنت مبسوط فيه 😍","الضحكة دي لازم تتحط في متحف يا راجلي","خليك كده على طول، الدنيا بتحلو لما إنت تحلو","ببقى مبسوطة طول ما إنت مبسوط يا حبيبي 🤏🏽"],
+  happy:["يا بخت اليوم اللي إنت مبسوط فيه يا حبيبي 😍","الضحكة دي لازم تتحط في متحف يا راجلي","خليك كده على طول، الدنيا بتحلو لما إنت تحلو","ببقى مبسوطة طول ما إنت مبسوط يا جوزي 🤏🏽"],
   good:["كويس؟ مش متطمنة 😑","يوم هادي ولطيف، زيك بالظبط يا حبيبي","حلو، كمّل كده يا راجلي 💪"],
   meh:["عادي إيه بس، إنت مفيش فيك حاجة عادية 🙄","اليوم ده محتاج كوباية حاجة سخنة وأغنية حلوة ☕","قوم اعمل حاجة بتحبها وتعالى قولّي بقيت أحسن 😉","لعله خير إن شاء الله"],
-  sad:["تعالى هنا… مين زعّلك؟ قولّي بس 😤","الزعل ده ضيف وهيمشي، وأنا هنا مش ماشية 🤍","مسموحلك تزعل، بس مش مسموحلك تنسى إن في حد بيحبك جدًا","مالك يا حبيبي؟ حقك عليا لو أنا السبب يا راجلي 😟","أنا السبب؟ ده أنا مني لله، كله إلا زعلك يا زوجي 🌑"],
-  stressed:["الدنيا ضغوطات بس إنت أشطر راجل في الدنيا 💪","مش لازم تخلّص كل حاجة النهارده، حاجة واحدة بس تكفي","إنت أقوى من الضغط ده بكتير، وأنا عارفة","أنا جنبك ومعاك يا حبيبي، كل حاجة هتبقى كويسة ❤️"],
-  d_study:["إنت أشطر راجل في الدنيا، إنت قدها ❤️","كل صفحة بتذاكرها بتقرّبك من الإفراج 🎉","أنا فخورة بيك إنك قاعد تذاكر أصلًا، دي لوحدها شطارة","أنا فخورة بيك يا راجلي 💪"],
-  d_tired:["كفاية كده النهارده يا حبيبي، نام بدري وده أمر 😤","جسمك بيقولك ارتاح، اسمع كلامه وكلامي","التعب ده معناه إنك بتعافر، ارتاح بقى وأنا فخورة بيك","تعبك ده في ميزان حسناتك يا زوجي ❤️","إنت قد التعب يا راجلي"],
-  d_sad:["مش هسيبك زعلان لوحدك أبدًا 🤍","مهما حصل، إنت مش لوحدك","طلّع كل اللي جواك هنا، ولما تخلّص افتكر إني بحبك","أنا معاك وجنبك وهفضل جنبك ❤️","من إيه يا حبيبي؟ تعالى احكيلي","احكي طيب، مالك يا حبيبي"],
-  d_happy:["قولّي تاني! 😍 أنا فرحانة أكتر منك","شوفت بقى؟ قولتلك إنك جامد","ده يستاهل احتفال، وأنا عزماك 🎉","بجد كنت متأكدة إنك أشطر راجل في الدنيا 💪","أنا فخورة بيك يا نور عيوني ❤️"],
-  d_greet:["أحسن منك 😂😂","أكيد كويسة لأنك معايا","كويسة طول ما إنت معايا"],
-  d_ghor:["للجنة معاك نيهاهاهاااا","يارب لبيتنا يا عيوني","وأسيبك؟ تؤ تؤ مقدرش"],
-  d_story:["احكيلي يا حبيبي ❤️","اشجيني يا روح قلبي 🙂","أنا معاك ووداني مطرطقة أهو 👂🏽"],
-  d_other:["شكرًا إنك حكيت 🤍","حكاياتك أحلى حاجة في يومي","مستنية الحكاية الجاية يا راجلي 📔"],
-  g_high:["إيه الشطارة دي يا راجلي 😍🔥","كنت عارفة! أشطر راجل زي العادة","الدرجة دي لازم تتبروز 🖼️","إنت أشطر راجل في الدنيا"],
-  g_mid:["اللهم بارك، واثقة إنها أحلى المرة الجاية","إنت أشطر واحد، المفروض تقفل"],
+  sad:["تعالى هنا… مين زعّلك؟ قولّي بس 😤","الزعل ده ضيف وهيمشي، وأنا هنا مش ماشية 🤍","مسموحلك تزعل، بس مش مسموحلك تنسى إن في واحدة بتحبك جدًا","طلّع اللي جواك، وبعدين نقوم ناكل حاجة حلوة 🍫","مالك يا حبيبي، حقك عليا لو أنا السبب يا راجلي 😟","أنا السبب؟ ده أنا مني لله، كله إلا زعلك يا جوزي 🌑"],
+  stressed:["الدنيا ضغوطات بس إنت أشطر وأجدع راجل في الدنيا 💪","مش لازم تخلّص كل حاجة النهارده، حاجة واحدة بس تكفي","إنت أقوى من الضغط ده بكتير، وأنا عارفة","أنا جنبك ومعاك يا حبيبي، كل حاجة هتبقى كويسة ❤️"],
+  d_miss:["وإنت كمان جدًا يا حبيبي ❤️","أنا كل ثانية بتعدي عليا بتوحشني أكتر من اللي قبلها","إنت مش بتلحق توحشني لأنك دايمًا على بالي","بتوحشني دايمًا حتى في أكتر وقت مشغولة فيه"],
+  d_study:["إنت أشطر راجل في الدنيا، إنت قدها ❤️","كل صفحة بتذاكرها بتقرّبك من الإفراج 🎉","أنا فخورة بيك إنك قاعد تذاكر أصلًا، دي لوحدها رجولة","أنا فخورة بيك يا راجلي 💪"],
+  d_tired:["كفاية كده النهارده يا حبيبي، نام بدري وده أمر 😤","جسمك بيقولك ارتاح، اسمع كلامه وكلامي","التعب ده معناه إنك بتعافر، ارتاح بقى وأنا فخورة بيك","تعبك ده في ميزان حسناتك يا جوزي ❤️","إنت أجدع راجل وقد التعب"],
+  d_sad:["مش هسيبك زعلان لوحدك أبدًا 🤍","مهما حصل، إنت مش لوحدك","طلّع كل اللي جواك هنا، ولما تخلّص افتكر إني بحبك","أنا معاك وجنبك وهفضل جنبك يا راجلي ❤️","من إيه يا حبيبي؟ تعالى احكيلي","احكي طيب مالك يا حبيبي"],
+  d_happy:["قولّي تاني! 😍 أنا فرحانة أكتر منك","شوفت بقى؟ قولتلك إنك جامد","ده يستاهل احتفال، وأنا عازماك 🎉","بجد كنت متأكدة إنك أشطر راجل في الدنيا 💪","أنا فخورة بيك يا نور عيوني ❤️"],
+  d_greet:["أحسن منك 😂😂","أكيد كويسة عشان إنت معايا","كويسة طول ما إنت معايا يا حبيبي"],
+  d_ghor:["للجنة معاك يا جوزي نيهاهاهاها","يارب لبيتنا يا عيوني","وأسيبك؟ تؤ تؤ مقدرش"],
+  d_story:["احكيلي يا حبيبي ❤️","اشجيني يا روح قلبي 🙂","أنا معاك وودني مطرطقة أهو 👂🏽"],
+  d_other:["شكرًا إنك حكيتلي 🤍","حكاياتك أحلى حاجة في يومي","مستنية الحكاية الجاية يا راجلي 📔"],
+  g_high:["إيه الشطارة دي يا حبيبي 😍🔥","كنت عارفة! أشطر راجل زي العادة","الدرجة دي لازم تتبروز 🖼️","إنت أشطر واحد في الدنيا يا جوزي"],
+  g_mid:["اللهم بارك، واثقة إنها أحلى المرة الجاية","إنت أشطر راجل، المفروض تقفل"],
   g_low:["ولا يهمك، دي درجة مش آخر الدنيا 🤍","الدرجة دي مش بتقول إنت مين، إنت أشطر منها","إنت أشطر راجل، واثقة إنك هتعوّض"],
-  done:["إنت أشطر راجل في الدنيا 💪","أنا فخورة بيك يا راجلي 💪"],
+  done:["إنت أشطر راجل في الدنيا 💪","أنا فخورة بيك يا راجلي 🤏🏽"],
   lazy:["كسلت؟ عادي، بكرة نعوّضها 😌","ماشي يا كسول، بس بكرة مفيش هزار 😂"],
-  love:["جيت في بالي وقلت أقولك إن حبي ليك زاد","إنت بجد أحلى حاجة في الدنيا","إنت أجمل حاجة حصلتلي يا زوجي","أنا آسفة على كل حاجة زعلتك","حقك عليا يا نور عيوني في كل مرة زعلتك فيها","آسفالك على كل مرة زعلتك فيها"],
-  morning:["صباح الفل على أحلى راجل ☀️ قوم يلا، الدنيا مستنياك","اصحى يا حبيبي، النهارده هيبقى يوم حلو","يلا قوم… وأول حاجة اشرب مية وابتسم 😁","صباح الخير يا راجلي","صباح الخير يا أشطر راجل في الدنيا","ابعتلي عشان وحشتني أوي","كنت مستنياك بفارغ الصبر"],
+  love:["جيت في بالي وقلت أقولك إن حبي ليك زاد","إنت بجد أحلى حاجة في الدنيا","إنت أجمل حاجة حصلتلي يا جوزي","أنا آسفة على كل حاجة زعلتك","حقك عليا يا نور عيوني في كل مرة زعلتك فيها","آسفة على كل مرة زعلتك فيها يا حبيبي"],
+  morning:["صباح الفل على أحلى راجل ☀️ قوم يلا، الدنيا مستنياك","اصحى يا حبيبي، النهارده هيبقى يوم حلو","يلا قوم… وأول حاجة اشرب مية وابتسم 😁","صباح الخير يا راجلي","صباح الخير يا أشطر واحد في الدنيا","ابعتلي عشان وحشتني أوي","كنت مستنياك بفارغ الصبر يا جوزي"],
   period:[]
 };
 
@@ -183,7 +183,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "كويسة":"كويس","ليكي":"ليك","مبسوطة":"مبسوط","مبسوطه":"مبسوط","متأكدة":"متأكد","مختارتيش":"مختارتش","مصرفتيش":"مصرفتش","مضايقة":"مضايق","مضغوطة":"مضغوط",
 "معاكي":"معاك","موافقة":"موافق","مستعدة":"مستعد","مستنيكي":"مستنيك","نامي":"نام","نسيتي":"نسيت","نمتي":"نمت","هتعوضي":"هتعوض","هصحّيكي":"هصحّيك","هنناديكي":"هنناديك",
 "وابتسمي":"وابتسم","وافقتي":"وافقت","شغالة":"شغال","بطلة":"بطل","بسبوسة":"وحش","بسبوسه":"وحش","نونو":"بطل","بنوتي":"بطل","حبيبتي":"حبيبي",
-"مسلمة":"مسلم","مسيحية":"مسيحي","خرجتي":"خرجت","قيّمي":"قيّم","اعرضي":"اعرض","فرّحتينا":"فرّحتنا","اكتبيلي":"اكتبلي","اعملي الجروب":"اعمل الجروب","فاكرك علطول":"فكراك علطول","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
+"مسلمة":"مسلم","مسيحية":"مسيحي","خرجتي":"خرجت","قيّمي":"قيّم","اعرضي":"اعرض","فرّحتينا":"فرّحتنا","اكتبيلي":"اكتبلي","اعملي الجروب":"اعمل الجروب","فاكرك علطول":"فكراك علطول","جالك":"جالك","حابة":"حابب","ضيفيها":"ضيفها","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
 const MASC_RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + Object.keys(MASC).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
 const mascRaw = str => String(str).replace(MASC_RE, (m, pre, w) => pre + MASC[w]);
 const stripMarks = h => String(h).replace(/[]/g, "");
@@ -501,13 +501,14 @@ function moneyInfo(){
   const {start,end} = periodRange(); const sk = dkey(start), ek = dkey(end), tk = dkey();
   const list = S.money.expenses.filter(e => e.date >= sk && e.date <= ek);
   const spent = list.reduce((a,e)=>a+e.amt,0), todaySpent = list.filter(e=>e.date===tk).reduce((a,e)=>a+e.amt,0);
-  const left = S.money.allowance - spent;
+  const incomes = (S.money.incomes || []).filter(e => e.date >= sk && e.date <= ek), added = incomes.reduce((a,e)=>a+e.amt,0);
+  const total = S.money.allowance + added, left = total - spent;
   const daysLeft = Math.round((end - fromKey(tk))/864e5) + 1;
   const leftStartToday = left + todaySpent;
   const daily = Math.max(0, leftStartToday / Math.max(1,daysLeft));
-  const ratio = S.money.allowance ? left / S.money.allowance : 0;
-  const state = !S.money.allowance ? "ok" : left <= 0 ? "out" : ratio < 0.3 ? "near" : "ok";
-  return {list, spent, left, daily, todaySpent, daysLeft, state, todayLeft: daily - todaySpent};
+  const ratio = total ? left / total : 0;
+  const state = !total ? "ok" : left <= 0 ? "out" : ratio < 0.3 ? "near" : "ok";
+  return {list, incomes, added, total, spent, left, daily, todaySpent, daysLeft, state, todayLeft: daily - todaySpent};
 }
 const dur = m => (m === "focus" ? S.durations.focus : S.durations.rest) * 60;
 const newTimer = (m, subject) => ({mode:m, total:dur(m), remain:dur(m), subject});
@@ -714,7 +715,7 @@ function moneyView(){
     <div class="row between"><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span><button class="btn ghost small" data-act="allowance">المصروف: <span class="num">${fmt(S.money.allowance)}</span></button></div>
     <div class="big num" style="margin-top:10px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div>
     <div class="bar" style="margin:12px 0 6px"><i style="width:${pct}%"></i></div>
-    <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(S.money.allowance)}</b></span></div>
+    <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(mi.total)}</b>${mi.added ? ` <span class="income-tag">(+<span class="num">${fmt(mi.added)}</span> جالك)</span>` : ""}</span></div>
   </div>
   <div class="card">
     <div class="row between"><h3>${L.daily}</h3><span class="muted small">علشان الفلوس تكفّي لآخر ${S.money.period==="week"?"الأسبوع":"الشهر"}</span></div>
@@ -724,7 +725,8 @@ function moneyView(){
     </div>
     ${mi.todaySpent > mi.daily && mi.daily>0 ? `<div class="notice" style="margin-top:10px">صرفتي النهارده أكتر من المسموح بـ <b class="num">${fmt(mi.todaySpent-mi.daily)}</b> ${CUR()}، بكرة نهدّي شوية 🙈</div>`:""}
   </div>
-  <button class="btn block" data-act="add-exp">＋ صرفت حاجة</button>
+  <div class="two"><button class="btn" data-act="add-exp">＋ صرفت حاجة</button><button class="btn ghost" data-act="add-inc">💰 جالي فلوس</button></div>
+  ${mi.incomes.length ? `<div class="card"><h3>💰 فلوس جاتلك</h3><ul class="list" style="margin-top:10px">${mi.incomes.slice().sort((a,b)=>a.date<b.date?1:-1).map(e=>`<li class="item income"><span class="ic">💰</span><div class="grow"><div class="t">${esc(e.note || "فلوس زيادة")}</div><div class="s">${e.date===dkey()?"النهارده":prettyDate(fromKey(e.date))}</div></div><b class="num">+${fmt(e.amt)}</b><button class="x" data-act="del-inc" data-v="${e.id}" aria-label="امسحي">✕</button></li>`).join("")}</ul></div>` : ""}
   ${byCat.length?`<div class="card"><h3>صرفتي على إيه؟</h3>
     <div class="cat-bar" style="margin:10px 0">${byCat.map(c=>`<i style="width:${c.sum/mi.spent*100}%;background:${c.c}" title="${c.t}"></i>`).join("")}</div>
     <div class="legend">${byCat.map(c=>`<span><i style="background:${c.c}"></i>${c.e} ${c.t} <b class="num">${fmt(c.sum)}</b></span>`).join("")}</div></div>`:""}
@@ -1143,6 +1145,14 @@ function forgotSheet(){
     <button class="btn" type="submit" id="fg-btn">ابعتي الطلب</button>
   </form>`);
 }
+function incSheet(){
+  sheet(`<h2>💰 جالك فلوس؟</h2>
+  <form class="form" data-form="inc">
+    <label class="f">المبلغ (${CUR()})<input class="in num" id="i-amt" type="number" inputmode="decimal" min="1" step="any" required placeholder="200"></label>
+    <label class="f">منين؟ (لو حابة)<input class="in" id="i-note" placeholder="عيدية، شغل، هدية…"></label>
+    <button class="btn" type="submit">ضيفيها</button>
+  </form>`);
+}
 function expSheet(){
   S._cat = S._cat || "food";
   sheet(`<h2>صرفتي على إيه؟ 💸</h2>
@@ -1333,6 +1343,8 @@ document.addEventListener("click", e => {
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
     case "add-exp": expSheet(); break;
+    case "add-inc": incSheet(); break;
+    case "del-inc": S.money.incomes = (S.money.incomes||[]).filter(x=>x.id!==v); save(); render(); break;
     case "ecat": S._cat = v; document.querySelectorAll("#e-cats .chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.v===v)); break;
     case "del-exp": S.money.expenses = S.money.expenses.filter(x=>x.id!==v); save(); render(); break;
     case "allowance": S._period = S.money.period; allowanceSheet(); break;
@@ -1448,6 +1460,11 @@ document.addEventListener("submit", e => {
   const k = dkey();
   switch(f.dataset.form){
     case "task": { const t = val("newtask"); if (!t) return; const d = dkey(addDays(new Date(), S._dayOff||0)); S.tasks.push({id:uid(),date:d,title:t,status:null}); save(); render(); setTimeout(()=>$("#newtask")?.focus(),30); break; }
+    case "inc": {
+      const amt = parseFloat(val("i-amt")); if (!(amt > 0)) return;
+      S.money.incomes = (S.money.incomes || []).concat({id:uid(), amt, note:val("i-note"), date:dkey()}); save(); closeSheet(); render();
+      toast("اتضافت ✅ بقى فاضلّك " + fmt(moneyInfo().left)); break;
+    }
     case "exp": {
       const amt = parseFloat(val("e-amt")); if (!(amt > 0)) return;
       S.money.expenses.push({id:uid(), amt, cat:S._cat||"food", note:val("e-note"), date:k}); save(); closeSheet(); render();

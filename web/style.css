@@ -233,3 +233,6 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .splash-ded{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-weight:700;font-size:14px;opacity:.85;letter-spacing:.3px}
 .splash-special{margin:4px 0 2px;font-family:var(--display);font-size:20px;font-weight:700;line-height:1.5;max-width:360px}
 .big-stars button{width:52px;height:52px;font-size:28px}
+.item.income{background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+.item.income b{color:var(--good)}
+.income-tag{color:var(--good);font-weight:700}
