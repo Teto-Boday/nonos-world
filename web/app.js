@@ -354,6 +354,7 @@ function moderate(e, path, owner){
   if (BAD.some(w => n.includes(norm(w)))){ e.flagged = true; fb.add("reports", {kind:"auto", path, owner, author: e.from==="him" ? (ME.partner||null) : owner, by: UID, text: e.text}).catch(()=>{}); }
 }
 function stopAll(list){ list.forEach(u => { try{u();}catch(e){} }); list.length = 0; }
+function forgetAccount(id){ try { [KEY + ":" + id, KEY + ":me:" + id, "nw-name", "nw-welcome"].forEach(k => localStorage.removeItem(k)); } catch(e){} }
 async function boot(u){
   stopAll(unsubs); stopAll(punsubs); P = null; ME = null; IS_ADMIN = false; lastPushed = {}; lastDiary = new Map();
   if (!u){ UID = null; S = null; render(); return; }
@@ -384,7 +385,7 @@ async function boot(u){
     apply(cachedME, normalize(cachedS, cachedME.gender), true);
     fetchAll().then(([meDoc, secs, adm]) => {
       if (UID !== u.uid) return;
-      if (!meDoc){ return; }
+      if (!meDoc){ forgetAccount(UID); toast("الحساب ده مبقاش موجود، اعملي حساب جديد"); fb.signOut(); return; }
       IS_ADMIN = !!adm; const st = S;
       Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (!d) return; if (JSON.stringify(secData(st, sec)) !== lastPushed[sec]) return; Object.assign(st, d); lastPushed[sec] = JSON.stringify(secData(st, sec)); });
       apply(meDoc, st, false); save(); if (!$("#layer").innerHTML && !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName))) render();
