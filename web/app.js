@@ -455,7 +455,9 @@ async function signUp(name, username, pass, gender, religion = "muslim"){
     const uidNew = await fb.signUp(username, pass);
     const code = genCode(), topic = "nw-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     const me = {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, religion, createdAt:Date.now()};
-    await fb.set(`users/${uidNew}`, me, false);
+    // queued writes go out in order, so the user doc lands before the rest; no need to wait for the server here
+    const meWrite = fb.set(`users/${uidNew}`, me, false);
+    meWrite.catch(e => { console.warn("me write", e); toast("حصلت مشكلة في حفظ الحساب، جرّبي تاني"); });
     const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion);
     if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
     U.fresh = {uid:uidNew, me, st};
@@ -834,7 +836,7 @@ function dashboard(o){
   const chat = o.fullChat ? chatAll : chatAll.slice(-8);
   const grades = S.grades.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,3);
   const ex = S.exams.filter(e=>e.date>=k).sort((a,b)=>a.date<b.date?-1:1)[0];
-  const send = o.canReply ? `data-act="p-send"` : "disabled";
+  const send = o.canReply ? `data-act="p-send"` : "hidden";
   return keep(`
   ${o.banner||""}
   <section class="hello"><h1>${o.title}</h1><p>${prettyDate(new Date())}</p></section>
@@ -849,7 +851,7 @@ function dashboard(o){
       const del = o.admin ? `<button class="x" data-act="adm-delmsg" data-v="${esc(e.id)}" aria-label="امسح">🗑️</button>` : "";
       return e.from==="him"?`<div class="msg him"><div class="bub real"><small class="from">💌 ${o.admin?"الشريك":"إنت"}${flag}</small>${esc(e.text)}<span class="tm num">${tm}</span></div>${del}</div>`:`<div class="msg me">${del}<div class="bub">${esc(e.text)}${flag}<span class="tm num">${tm}</span></div></div>${e.reply?`<div class="msg him"><div class="bub"><small class="from">🤖 رد أوتوماتيك</small>${esc(e.reply)}</div></div>`:""}`}).join(""):`<div class="empty">مفيش رسايل في الشات ده لسه</div>`}</div></div>`:lock(L.diary)}
   ${sh("study")?`<div class="card"><div class="row between"><h3>${examLabel()}</h3><span class="pill">${L.streak} ${streak()}</span></div>
-    <div class="muted small" style="margin-top:4px">ذاكر النهارده ${hm(minsOn(k))} · ${studyDays(7)} من 7 أيام${ex?` · ${esc(ex.type)} ${esc(ex.subject)} بعد ${Math.round((fromKey(ex.date)-fromKey(k))/864e5)} يوم`:""}</div>
+    <div class="muted small" style="margin-top:4px">${fem ? "ذاكرت" : "ذاكر"} النهارده ${hm(minsOn(k))} · ${studyDays(7)} من 7 أيام${ex?` · ${esc(ex.type)} ${esc(ex.subject)} بعد ${Math.round((fromKey(ex.date)-fromKey(k))/864e5)} يوم`:""}</div>
     <ul class="list" style="margin-top:10px">${grades.map(g=>{const p=g.score/g.total*100;return `<li class="item"><div class="grow t">${esc(g.type)} ${esc(g.subject)}</div><span class="pill ${p>=75?"good":p>=50?"warn":"bad"} num">${g.score} من ${g.total}</span></li>`}).join("")}</ul></div>`:lock(L.study)}
   <div class="grid2">
     ${sh("day")?`<div class="card"><h3>${L.day}</h3><ul class="list" style="margin-top:8px">${tasks.length?tasks.map(x=>`<li class="item ${x.status||""}"><div class="grow t">${esc(x.title)}</div><span class="small">${x.status==="done"?"✅":x.status==="lazy"?"🙈":"⏳"}</span></li>`).join(""):`<li class="empty">مفيش مهمات النهارده</li>`}</ul></div>`:lock(L.day)}
@@ -976,7 +978,7 @@ function settingsView(){
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
     <div class="seg"><button data-act="set-rel" data-v="muslim" aria-pressed="${isMuslim()}">مسلمة</button><button data-act="set-rel" data-v="christian" aria-pressed="${!isMuslim()}">مسيحية</button></div></div>
   ${partnerCard()}
-  ${CLOUD && ME ? `<div class="card"><h3>🔔 تنبيه لما ${ME.gender==="m"?"شريكتك":"شريكك"} ${ME.gender==="m"?"تبقى مضايقة":"يبقى مضايق"}</h3>
+  ${CLOUD && ME ? `<div class="card"><h3>🔔 ${ME.gender==="m" ? "\uE000تنبيه لما شريكتك تبقى مضايقة\uE001" : "تنبيه لما شريكك يبقى مضايق"}</h3>
     <ol class="small" style="margin:8px 0 0;padding-inline-start:18px;line-height:1.9"><li>نزّل تطبيق <b>ntfy</b> (موجود على Google Play وApp Store ومتاح للكمبيوتر).</li><li>دوس <b>+</b> واكتب الاسم ده بالظبط:</li></ol>
     <div class="item" style="margin-top:6px"><div class="grow t num" dir="ltr" style="word-break:break-all">${esc(ME.ntfy||"")}</div><button class="mini" data-act="copy" data-v="${esc(ME.ntfy||"")}">نسخ</button></div>
     <p class="muted small" style="margin:8px 0 0">متقولش الاسم ده لحد، ده بتاعك إنت بس.</p></div>` : ""}
@@ -1076,7 +1078,7 @@ function forgotSheet(){
     <label class="f">اسم المستخدم<input class="in" id="fg-user" required dir="ltr" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}"></label>
     <label class="f">نوصلك إزاي؟ (رقم واتساب مثلًا)<input class="in" id="fg-contact" required maxlength="80" dir="ltr"></label>
     <label class="f">حاجة تأكد إنه حسابك (اختياري)<input class="in" id="fg-note" maxlength="140" placeholder="اسمك في التطبيق، اسم شريكك…"></label>
-    <button class="btn" type="submit">ابعتي الطلب</button>
+    <button class="btn" type="submit" id="fg-btn">ابعتي الطلب</button>
   </form>`);
 }
 function expSheet(){
@@ -1465,7 +1467,8 @@ document.addEventListener("submit", e => {
     case "code": { const c = val("pcode"); if (c) sendCode(c); break; }
     case "forgot": {
       const u = val("fg-user").toLowerCase(), c = val("fg-contact"); if (!u || !c) return;
-      fb.add("resetRequests", {username:u, contact:c, note:val("fg-note"), status:"new"}).then(()=>{ closeSheet(); message("💌", "الطلب وصل، هيكلّمك قريب ويبعتلك باسورد مؤقت", "🔑"); }).catch(()=>toast("مقدرتش أبعت الطلب، اتأكدي من النت"));
+      const fbtn = $("#fg-btn"); if (fbtn){ fbtn.disabled = true; fbtn.textContent = isEN() ? "One sec…" : "لحظة…"; }
+      fb.add("resetRequests", {username:u, contact:c, note:val("fg-note"), status:"new"}).then(()=>{ closeSheet(); message("💌", "الطلب وصل، هيكلّمك قريب ويبعتلك باسورد مؤقت", "🔑"); }).catch(()=>{ toast("مقدرتش أبعت الطلب، اتأكدي من النت"); const fb2 = $("#fg-btn"); if (fb2){ fb2.disabled = false; fb2.textContent = isEN() ? "Send request" : "ابعتي الطلب"; } });
       break;
     }
     case "pass": {
