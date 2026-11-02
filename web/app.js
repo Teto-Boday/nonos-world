@@ -1120,7 +1120,7 @@ function settingsView(){
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
     <div class="seg"><button data-act="set-rel" data-v="muslim" aria-pressed="${isMuslim()}">مسلمة</button><button data-act="set-rel" data-v="christian" aria-pressed="${!isMuslim()}">مسيحية</button></div></div>
   ${partnerCard()}
-  ${CLOUD && ME ? `<div class="card"><h3>🔔 ${ME.gender==="m" ? "\uE000تنبيه لما شريكتك تبقى مضايقة\uE001" : "تنبيه لما شريكك يبقى مضايق"}</h3>
+  ${CLOUD && ME ? `<div class="card"><h3>🔔 الإشعارات والتطبيق مقفول</h3><p class="muted small" style="margin:4px 0 0">رسايل ${ME.gender==="m" ? "\uE000شريكتك\uE001" : "شريكك"} والجروبات والتنبيهات توصلك حتى لو التطبيق مقفول خالص.</p>
     <ol class="small" style="margin:8px 0 0;padding-inline-start:18px;line-height:1.9"><li>نزّل تطبيق <b>ntfy</b> (موجود على Google Play وApp Store ومتاح للكمبيوتر).</li><li>دوس <b>+</b> واكتب الاسم ده بالظبط:</li></ol>
     <div class="item" style="margin-top:6px"><div class="grow t num" dir="ltr" style="word-break:break-all">${esc(ME.ntfy||"")}</div><button class="mini" data-act="copy" data-v="${esc(ME.ntfy||"")}">نسخ</button></div>
     <p class="muted small" style="margin:8px 0 0">متقولش الاسم ده لحد، ده بتاعك إنت بس.</p></div>` : ""}
