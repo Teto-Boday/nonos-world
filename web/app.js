@@ -412,7 +412,7 @@ function onVacation(day = dkey()){
 const PRAYERS = [["fajr","الفجر"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]];
 const CARE_TIPS = ["اشربي حاجة دافية زي ينسون أو قرفة","قربة مية سخنة على بطنك بتريّح جدًا","نامي بدري واديله راحة","كُلي حاجة فيها حديد زي العدس والسبانخ","مشي بسيط أو حركة خفيفة بيفرق","اشربي مية كتير النهارده","اتفرجي على حاجة بتحبيها وانسي المذاكرة شوية"];
 const isMuslim = () => !(S && S.user && S.user.religion === "christian");
-const cycleName = () => isMuslim() ? "العذر الشرعي" : "أيام الدورة";
+const cycleName = () => "العذر الشرعي";
 function cycleInterval(){
   const h = ((S.cycle && S.cycle.history) || []).map(x=>x.start).sort();
   const gaps = []; for (let i = 1; i < h.length; i++){ const g = Math.round((fromKey(h[i]) - fromKey(h[i-1]))/864e5); if (g >= 18 && g <= 45) gaps.push(g); }
