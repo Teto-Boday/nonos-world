@@ -1,6 +1,7 @@
 
 "use strict";
 import { EN } from "./en.js";
+import { prayerTimes, CITIES } from "./pray.js";
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
 const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -182,7 +183,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
 "بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
 "تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
-"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
+"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","تقوليه":"تقوله","صلّيتي":"صلّيت","معلّمتيش":"معلّمتش","تقري":"تقرا","قوليها":"قولها","وقوليها":"وقولها","تحددي":"تحدد","اختاري":"اختار","تسجّلي":"تسجّل","تعرفي":"تعرف","معاكي":"معاك","تنسي":"تنسى","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
 "خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
 "شغّليها":"شغّلها","شوفي":"شوف","صاحبة":"صاحب","ضيفي":"ضيف","عارفة":"عارف","عايزة":"عايز","عايزه":"عايز","عدّيتي":"عدّيت","عليكي":"عليك","علّمي":"علّم","عملتي":"عملت",
 "عملتيها":"عملتها","عيّطي":"عيّط","فاكرة":"فاكر","فرحانة":"فرحان","قاعدة":"قاعد","قوليلي":"قولّي","قومي":"قوم","كسلتي":"كسلت","كسولة":"كسول","كلّمي":"كلّم","كمّلي":"كمّل",
@@ -313,7 +314,8 @@ function blank(){
     money:{allowance:0, period:"month", expenses:[]}, schedule:[], tasks:[], subjects:[], sessions:[], exams:[], grades:[],
     moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
-    lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false}, loveOff:false, stage:"uni", work:[] };
+    lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false}, loveOff:false, stage:"uni", work:[],
+    pray:{on:true, remind:true, azkar:true, kahf:true}, loc:null, nudge:{every:4}, azkarDone:{} };
 }
 function normalize(s, gender){
   const b = blank();
@@ -333,7 +335,7 @@ function load(){
 
 /* ================= cloud sync (Firebase) ================= */
 const CLOUD = !!window.fb;
-const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin","loveOff","stage"], money:["money"], day:["schedule","tasks"],
+const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin","loveOff","stage","pray","loc","nudge","azkarDone"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades","work"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
 const CP = {msgs:[], cid:null};
@@ -1228,8 +1230,11 @@ function prayersBlock(k){
   if (!isMuslim()) return "";
   const pr = S.prayers[k] || {}, n = PRAYERS.filter(([p])=>pr[p]).length;
   if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>`;
+  const tt = timesFor(fromKey(k)), nx = k === dkey() ? nextPrayer() : null, fri = new Date().getDay() === 5 && k === dkey();
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
-    <div class="prayers">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}</button>`).join("")}</div>`;
+    ${nx ? `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>` : ""}
+    <div class="prayers">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}<small class="num ptime">${hhmm(tt[p])}</small></button>`).join("")}</div>
+    ${k === dkey() ? `<div class="row wrap" style="gap:8px;margin-top:8px"><button class="btn ghost small" data-act="azkar" data-v="${azkarNow()}">📿 ${azkarNow() === "m" ? "أذكار الصباح" : "أذكار المساء"}</button>${fri ? `<a class="btn ghost small" style="text-decoration:none" href="https://quran.com/ar/18" target="_blank" rel="noopener">📖 سورة الكهف</a>` : ""}</div>` : ""}`;
 }
 function cycleBlock(){
   const c = S.cycle || {};
@@ -1427,6 +1432,15 @@ function settingsView(){
     <button class="add" style="margin-top:8px" data-act="add-rem">＋ تذكير جديد</button>
     <div class="notice" style="margin-top:10px">على التابلت بيرنّوا حتى لو التطبيق مقفول. على الكمبيوتر بيرنّوا طول ما البرنامج مفتوح. على الآيفون استخدمي منبّه الآيفون مع Shortcuts (الشرح في موقع التحميل).</div>
   </div>
+  ${isMuslim() ? `<div class="card"><h3>🕌 الصلاة والأذكار</h3>
+    <div class="item" style="margin-top:10px"><span class="ic">📍</span><div class="grow"><div class="t">${esc(myLoc().name)}</div><div class="s">${myLoc().guess ? "مختارين القاهرة لحد ما تحددي مكانك" : "مواعيد الصلاة على حسب المكان ده"}</div></div><button class="mini" data-act="loc-gps">مكاني</button></div>
+    <select class="in" id="loc-city" aria-label="اختاري المدينة" style="margin-top:8px"><option value="">أو اختاري مدينتك…</option>${CITIES.map(([n])=>`<option ${myLoc().name===n?"selected":""}>${n}</option>`).join("")}</select>
+    <div class="ptimes">${(() => { const t = timesFor(); return [["fajr","الفجر"],["sunrise","الشروق"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]].map(([p,n]) => `<div><small>${n}</small><b class="num">${hhmm(t[p])}</b></div>`).join(""); })()}</div>
+    <ul class="list" style="margin-top:6px">${[["on","🕌 إشعار الأذان في كل صلاة"],["remind","⏰ تذكير بعد 25 دقيقة لو معلّمتيش إنك صلّيتي"],["azkar","📿 أذكار الصباح والمساء"],["kahf","📖 سورة الكهف يوم الجمعة"]].map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="pray-opt" data-v="${k}" role="switch" aria-checked="${(S.pray||{})[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
+    ${S.user.gender !== "m" ? `<p class="muted small" style="margin:8px 4px 0">🤍 أيام البريود الأذان والتذكير بيقفوا لوحدهم، والأذكار بتفضل.</p>` : ""}
+  </div>` : ""}
+  <div class="card"><h3>🔔 تذكير الفلوس والمهام</h3><p class="muted small" style="margin:4px 0 10px">كل كام ساعة نفكّرك تسجّلي مصاريفك ومهامك (من 10 الصبح لـ 10 بالليل).</p>
+    <div class="seg">${[[0,"مقفول"],[2,"كل ساعتين"],[3,"كل 3"],[4,"كل 4"],[6,"كل 6"]].map(([n,t])=>`<button data-act="nudge" data-v="${n}" aria-pressed="${((S.nudge||{}).every||0)===n}">${t}</button>`).join("")}</div></div>
   <div class="card"><h3>🔒 شريكي يشوف إيه</h3>
     <p class="muted small" style="margin:6px 0 10px">إنتي اللي بتختاري. اللي تقفليه بيختفي من عنده على طول.</p>
     <ul class="list">${SHARE.map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="share" data-v="${k}" role="switch" aria-checked="${S.share[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
@@ -1926,6 +1940,16 @@ document.addEventListener("click", e => {
     case "adm-fb-del": fb.del(`feedback/${v}`).then(()=>{ U.admin.feedback = U.admin.feedback.filter(x=>x.id!==v); render(); }); break;
     case "set-cur": S.currency = v; save(); render(); break;
     case "add-work": workSheet(); break;
+    case "azkar": azkarSheet(v); break;
+    case "zikr": { const i = +v, L2 = U.az.left; if (L2[i] > 0){ L2[i]--; if (navigator.vibrate) navigator.vibrate(L2[i] ? 15 : [30, 40, 30]); } if (L2.every(n => n === 0)){ S.azkarDone = Object.assign({}, S.azkarDone, {[U.az.kind + dkey()]: true}); save(); } azkarSheet(U.az.kind); break; }
+    case "pray-opt": S.pray = Object.assign({on:true, remind:true, azkar:true, kahf:true}, S.pray); S.pray[v] = S.pray[v] === false; save(); render(); break;
+    case "nudge": S.nudge = {every:+v}; save(); render(); toast(+v ? "تمام، هنفكّرك ⏰" : "اتقفل"); break;
+    case "loc-gps": {
+      if (!navigator.geolocation){ toast("الجهاز ده مش بيدي المكان، اختاري مدينتك من القايمة"); break; }
+      toast("بنحدد مكانك… 📍");
+      navigator.geolocation.getCurrentPosition(pos => { S.loc = {name:"مكاني الحالي", lat:+pos.coords.latitude.toFixed(4), lng:+pos.coords.longitude.toFixed(4)}; save(); render(); toast("✅ مواعيد الصلاة بقت على حسب مكانك"); },
+        () => toast("مقدرتش أعرف مكانك، اختاري مدينتك من القايمة"), {timeout:15000, maximumAge:36e5});
+      break; }
     case "work-done": { const w = (S.work||[]).find(x=>x.id===v); if (!w) break; w.done = !w.done; save(); render(); if (w.done) toast(L.done + " · " + pick(MS("done"))); break; }
     case "work-del": S.work = (S.work||[]).filter(x=>x.id!==v); save(); render(); break;
     case "work-clear": S.work = (S.work||[]).filter(x=>!x.done); save(); render(); break;
@@ -2141,6 +2165,7 @@ document.addEventListener("submit", e => {
 document.addEventListener("input", e => { if (e.target.id === "adm-q"){ U.admin.q = e.target.value; const pos = e.target.selectionStart; render(); const i = $("#adm-q"); i.focus(); i.setSelectionRange(pos,pos); } });
 document.addEventListener("change", e => {
   if (e.target.id === "wake"){ S.alarm.wake = e.target.value; save(); toast("هصحّيكي الساعة " + e.target.value + " ⏰"); }
+  if (e.target.id === "loc-city" && e.target.value){ const c = CITIES.find(x => x[0] === e.target.value); if (c){ S.loc = {name:c[0], lat:c[1], lng:c[2]}; save(); render(); toast("✅ مواعيد الصلاة بقت على " + c[0]); } }
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !sheetLocked) closeSheet();
@@ -2148,6 +2173,87 @@ document.addEventListener("keydown", e => {
 });
 document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.target.id === "gtext" || e.target.id === "ctext" || e.target.id === "ftext"){ e.target.style.height = "auto"; e.target.style.height = Math.min(140, e.target.scrollHeight) + "px"; } });
 
+
+/* ================= prayer times, adhan, azkar, Kahf ================= */
+const myLoc = () => (S && S.loc && typeof S.loc.lat === "number") ? S.loc : {name:"القاهرة", lat:30.0444, lng:31.2357, guess:true};
+const timesFor = (d = new Date()) => { const l = myLoc(); return prayerTimes(d, l.lat, l.lng); };
+const hhmm = d => d.toTimeString().slice(0,5);
+function nextPrayer(){
+  const now = new Date();
+  for (const off of [0, 1]){ const d = addDays(now, off), t = timesFor(d);
+    for (const [p, n] of PRAYERS) if (t[p] > now) return {p, n, at:t[p]}; }
+  return null;
+}
+const inMins = ms => { const m = Math.max(0, Math.round(ms / 6e4)), h = Math.floor(m / 60), r = m % 60; return h ? `${h} ساعة${r ? ` و${r} دقيقة` : ""}` : `${r} دقيقة`; };
+const AZKAR = {
+  m:[
+    ["آية الكرسي: اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ", 1],
+    ["قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", 3],
+    ["قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِن شَرِّ مَا خَلَقَ، وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ، وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", 3],
+    ["قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلَٰهِ النَّاسِ، مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ، الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ، مِنَ الْجِنَّةِ وَالنَّاسِ", 3],
+    ["أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ", 1],
+    ["اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ", 1],
+    ["سيد الاستغفار: اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", 1],
+    ["رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا", 3],
+    ["بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", 3],
+    ["اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ", 3],
+    ["حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", 7],
+    ["يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ", 1],
+    ["اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ", 10],
+    ["سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", 100]
+  ]
+};
+AZKAR.e = AZKAR.m.map(([t, n]) => [t
+  .replace("أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ", "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ")
+  .replace("خَيْرَ مَا فِي هَٰذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ", "خَيْرَ مَا فِي هَٰذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا")
+  .replace("شَرِّ مَا فِي هَٰذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ", "شَرِّ مَا فِي هَٰذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا")
+  .replace("اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ", "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ"), n]);
+AZKAR.e.splice(9, 0, ["أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", 3]);
+const azkarNow = () => { const t = timesFor(); return new Date() >= t.asr || new Date() < t.fajr ? "e" : "m"; };
+function azkarSheet(kind){
+  U.az = U.az && U.az.kind === kind && U.az.day === dkey() ? U.az : {kind, day:dkey(), left:AZKAR[kind].map(x => x[1])};
+  const left = U.az.left, done = left.filter(n => n === 0).length;
+  sheet(`<h2>📿 ${kind === "m" ? "أذكار الصباح" : "أذكار المساء"}</h2><p class="muted small" style="margin:-6px 0 10px">دوسي على الذكر كل ما تقوليه، والعدد بيقل لوحده · <b class="num">${done}</b> من <b class="num">${left.length}</b></p>
+    <div class="azkar">${AZKAR[kind].map(([t, n], i) => `<button class="zikr ${left[i] === 0 ? "done" : ""}" data-act="zikr" data-v="${i}"><span class="zt">${escP(t)}</span><span class="zn num">${left[i] === 0 ? "✓" : left[i]}</span></button>`).join("")}</div>
+    ${done === left.length ? `<div class="notice" style="margin-top:10px">تقبّل الله 🤍</div>` : ""}`);
+}
+function prayerEvents(from, to){
+  const out = [], male = isMale(), G = t => isEN() ? t : gx(t, male);
+  for (let day = new Date(from); day.getTime() <= to + 864e5; day = addDays(day, 1)){
+    const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()), k = dkey(d), t = timesFor(d);
+    const period = S.user.gender !== "m" && cycleOn(k);
+    const add = (key, at, title, body, kind) => { const ms = at.getTime(); if (ms > from && ms <= to) out.push({key, at:ms, title, body, kind}); };
+    if (isMuslim() && S.pray && S.pray.on && !period){
+      PRAYERS.forEach(([p, n]) => {
+        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, "الله أكبر، حيّ على الصلاة 🤍", "adhan");
+        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍`), G("علّمي عليها في التطبيق لما تصلّي"), "remind");
+      });
+    }
+    if (isMuslim() && S.pray && S.pray.azkar){
+      const [wh, wm] = (S.alarm.wake || "07:30").split(":").map(Number), wake = new Date(d.getFullYear(), d.getMonth(), d.getDate(), wh, wm + 15);
+      add(`az-m-${k}`, wake > t.fajr ? wake : new Date(t.fajr.getTime() + 30 * 6e4), "📿 أذكار الصباح", G("دقيقتين لنفسك، افتحي التطبيق وقوليها 🤍"), "azkar");
+      add(`az-e-${k}`, new Date(t.asr.getTime() + 30 * 6e4), "📿 أذكار المساء", G("متنسيش أذكار المساء 🤍"), "azkar");
+    }
+    if (isMuslim() && S.pray && S.pray.kahf && d.getDay() === 5 && !period) add(`kahf-${k}`, new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10, 0), "📖 النهارده الجمعة", G("متنسيش تقري سورة الكهف 🤍"), "kahf");
+    const every = (S.nudge && S.nudge.every) || 0;
+    if (every) for (let h = 10, i = 0; h <= 22; h += every, i++){
+      const msgs = [["💸 صرفتي حاجة النهارده؟", "سجّليها علشان تعرفي فاضل معاكي كام"], ["✅ فاضل حاجة من مهامك؟", "ضيفيها أو علّمي على اللي خلص"], ["💰 جالك فلوس؟", "ضيفيها من \"جالي فلوس\" في صفحة الفلوس"], ["📝 يومك عامل إيه؟", "سجّلي مصاريفك ومهامك قبل ما تنسي"]];
+      const [a, b] = msgs[(i + d.getDate()) % msgs.length];
+      add(`nu-${k}-${h}`, new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, 0), G(a), G(b), "nudge");
+    }
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+/* iPhone: the app can't ring when it's closed, so the next day and a half goes to ntfy as delayed pushes */
+function schedulePushIOS(){
+  if (!CLOUD || !ME || !ME.ntfy || DEVICE() !== "ios" || !notifDone()) return;
+  const now = Date.now(); let h = 0; try { h = +localStorage.getItem("nw-ntfy-h") || 0; } catch(e){}
+  if (h > now + 12 * 36e5) return;
+  const from = Math.max(h, now + 6e4), to = now + 36 * 36e5;
+  prayerEvents(from, to).filter(e => e.kind !== "remind").slice(0, 40).forEach(e =>
+    fetch(`https://ntfy.sh/${ME.ntfy}?title=${encodeURIComponent(e.title)}&delay=${Math.floor(e.at / 1000)}&tags=${e.kind === "adhan" ? "mosque" : "bell"}`, {method:"POST", body:e.body}).catch(()=>{}));
+  try { localStorage.setItem("nw-ntfy-h", String(to)); } catch(e){}
+}
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
 let lastSchedule = "";
@@ -2168,14 +2274,17 @@ function pushTo(topic, title, body){
 }
 async function scheduleNative(){
   const ln = LN(); if (!ln || !S || !S.user) return;
-  const plan = JSON.stringify([S.alarm, S.msgs.morning, S.loveOff]); if (plan === lastSchedule) return; lastSchedule = plan;
+  const plan = JSON.stringify([S.alarm, S.msgs.morning, S.loveOff, dkey(), new Date().getHours() >= 12, S.pray, S.loc, S.nudge, S.prayers[dkey()], S.cycle, S.user.religion]); if (plan === lastSchedule) return; lastSchedule = plan;
   try {
     const perm = await ln.requestPermissions(); if (perm.display !== "granted") return;
     try { await ln.createChannel({id:"alarm", name:"صحّيني", importance:5, sound:"default", vibration:true}); } catch(e){}
+    try { await ln.createChannel({id:"adhan", name:"الأذان والأذكار", importance:5, sound:"default", vibration:true}); } catch(e){}
+    try { await ln.createChannel({id:"nudge", name:"تذكير الفلوس والمهام", importance:3}); } catch(e){}
     const pending = await ln.getPending(); if (pending.notifications.length) await ln.cancel({notifications: pending.notifications.map(n=>({id:n.id}))});
     const at = t => { const [h,m] = t.split(":").map(Number); return {hour:h, minute:m}; };
     const list = [{id:1, title:"صحّيني ⏰", body:morningPick() || "صباح الخير ☀️", channelId:"alarm", schedule:{on:at(S.alarm.wake), allowWhileIdle:true}}];
     S.alarm.reminders.forEach((r,i) => list.push({id:10+i, title:"Nono's World 🌍", body:r.text, schedule:{on:at(r.time), allowWhileIdle:true}}));
+    prayerEvents(Date.now() + 3e4, Date.now() + 48 * 36e5).slice(0, 50).forEach((e, i) => list.push({id:1000+i, title:e.title, body:e.body, channelId:e.kind === "nudge" ? "nudge" : "adhan", schedule:{at:new Date(e.at), allowWhileIdle:true}}));
     await ln.schedule({notifications:list});
   } catch(e){ console.warn("notify", e); }
 }
@@ -2186,8 +2295,10 @@ function inAppReminders(){
   const due = [];
   if (S.alarm.wake === hm5) due.push(["wake", "صحّيني ⏰", morningPick()]);
   S.alarm.reminders.forEach(r => { if (r.time === hm5) due.push([r.id, "Nono's World 🌍", r.text]); });
-  due.forEach(([id, title, body]) => {
-    if (fired[id] === k) return; fired[id] = k;
+  prayerEvents(Date.now() - 9e4, Date.now()).forEach(e => due.push([e.key, e.title, e.body, true]));
+  for (const x in fired) if (x.length > 12 && fired[x] < dkey(addDays(new Date(), -2))) delete fired[x];
+  due.forEach(([id, title, body, ev]) => {
+    if (fired[id] === k) return; fired[id] = k; if (ev) body = title + " · " + body;
     try { if ("Notification" in window && Notification.permission === "granted") new Notification(title, {body, icon:"icon-192.png"}); } catch(e){}
     if (id === "wake"){ beep(); setTimeout(beep, 1200); setTimeout(beep, 2400); }
     toast(body);
@@ -2196,6 +2307,8 @@ function inAppReminders(){
 }
 setInterval(inAppReminders, 20000);
 setInterval(scheduleNative, 15000);
+setInterval(() => { try { schedulePushIOS(); } catch(e){} }, 10 * 6e4);
+setTimeout(() => { try { schedulePushIOS(); } catch(e){} }, 8000);
 
 /* ================= start ================= */
 if (CLOUD){

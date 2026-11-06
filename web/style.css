@@ -267,3 +267,14 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .pres.on{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.22)}
 .pres.off{background:#ef4444}
 .prestag{display:inline-flex;align-items:center;font-size:13px;color:var(--mu)}
+.prayers button{display:flex;flex-direction:column;align-items:center;gap:2px}
+.prayers .ptime{font-size:11px;opacity:.75;font-weight:600}
+.ptimes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.ptimes div{background:color-mix(in srgb, var(--accent) 8%, transparent);border-radius:12px;padding:8px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.ptimes small{color:var(--mu);font-size:12px}
+.azkar{display:flex;flex-direction:column;gap:8px;max-height:62vh;overflow:auto}
+.zikr{display:flex;gap:10px;align-items:center;text-align:start;border:0;border-radius:16px;padding:12px 14px;font:inherit;cursor:pointer;background:color-mix(in srgb, var(--accent) 9%, var(--surface, #fff));color:var(--ink);line-height:1.9;font-size:16px}
+.zikr .zt{flex:1}
+.zikr .zn{min-width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-weight:800;font-size:14px;flex:none}
+.zikr.done{opacity:.45}
+.zikr.done .zn{background:#22c55e}
