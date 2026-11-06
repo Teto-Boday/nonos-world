@@ -45,7 +45,7 @@ export const EN = {
 "شغالة مذاكرة أو درجاتك حلوة، كمّلي كده":"You're studying or your grades are good, keep going","يلا نذاكر شوية أو نجيب درجة حلوة ونطلع إفراج":"Let's study a bit or get a good grade and break free",
 "ذاكرتي":"Studied","من 7 أيام":"of 7 days","آخر درجة":"last grade","خلص":"Done","النهارده!":"Today!","مفيش امتحانات متسجلة":"No exams yet","درجاتي":"My grades","سجّلي درجة":"Add a grade",
 "لسه مفيش درجات":"No grades yet","المواد":"Subjects","متوسط":"Average","منها":"from her","بجد":"for real","بلّغي":"Report","بيكتب":"typing","احكي يا":"Talk to me,",
-"سامعاك":"is listening","سامعك":"is listening","هو سامعك":"he's listening","شات جديد":"New chat","الشاتات القديمة":"Old chats","لسه مفيش حكايات… ابدئي إنتي":"No stories yet… you start",
+"سامعاك":"is listening","سامعك":"is listening","هو سامعك":"he's listening","هي سامعاك":"she's listening","عناية شخصية":"Personal care","شات جديد":"New chat","الشاتات القديمة":"Old chats","لسه مفيش حكايات… ابدئي إنتي":"No stories yet… you start",
 "اكتبي حكايتك":"Write your story","ابعتي":"Send","مخبّية":"is hiding","مخبّي":"is hiding","القسم ده":"this section",
 "محتاجة اهتمام ودلع زيادة الأيام دي":"needs extra care and pampering these days","اهتم بيها أكتر، ابعتلها كلمة حلوة أو جيبلها حاجة بتحبها":"Care for her more, send her something sweet or get her something she loves",
 "ابعتلها":"Send her","مضايقة":"is upset","مضايق":"is upset","اختارت":"picked","اختار":"picked","كتبت":"wrote","كتب":"wrote","حكاية زعلانة":"a sad story","كلّمها":"talk to her","كلّمه":"talk to him",

@@ -46,7 +46,7 @@ const MOODS = [
 const CATS = [
   {k:"food",e:"🍔",t:"أكل",c:"#f08a5d"},{k:"ride",e:"🚕",t:"مواصلات",c:"#f6c445"},{k:"clothes",e:"👗",t:"لبس",c:"#e85d8a"},
   {k:"uni",e:"📚",t:"كلية",c:"#7f6ad6"},{k:"out",e:"🎡",t:"خروجات",c:"#43b3ae"},{k:"gift",e:"🎁",t:"هدايا",c:"#d65aa0"},
-  {k:"care",e:"💄",t:"ميكب وعناية",c:"#ff9fb7"},{k:"other",e:"✨",t:"حاجات تانية",c:"#a3a3b5"}
+  {k:"care", get e(){ return (typeof S !== "undefined" && S && S.user && S.user.gender === "m") ? "🧴" : "💄"; }, get t(){ return (typeof S !== "undefined" && S && S.user && S.user.gender === "m") ? "عناية شخصية" : "ميكب وعناية"; }, c:"#ff9fb7"},{k:"other",e:"✨",t:"حاجات تانية",c:"#a3a3b5"}
 ];
 const GTYPES = ["كويز","ميدترم","فاينل"];
 const SHARE = [["mood","النفسيه 💭"],["diary","دفتر حكاياتي 📔"],["study","المذاكرة والدرجات 📚"],["day","يومي ومهماتي 🗓️"],["money","الفلوس 💸"],["care","الدلع"]];
@@ -209,7 +209,7 @@ const isMale = () => !!(S && S.user && S.user.gender === "m");
 const LANG = () => (S && S.lang) || (() => { try { return localStorage.getItem("nw-lang") || "ar"; } catch(e){ return "ar"; } })();
 const isEN = () => LANG() === "en";
 const TR_RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
-const EN_M = [[/\bcupcake\b/g,"champ"],[/Did it, Nono/g,"Did it, hero"],[/^Nono!$/g,"hero!"]];
+const EN_M = [[/\bcupcake\b/g,"champ"],[/Did it, Nono/g,"Did it, hero"],[/^Nono!$/g,"hero!"],[/he's listening/g,"she's listening"]];
 const trRaw = (str, male) => { let o = String(str).replace(TR_RE, (m, pre, w) => pre + EN[w]); if (male) EN_M.forEach(([r,v]) => o = o.replace(r, v)); return o; };
 const splitMarks = h => String(h).split(/([^]*)/);
 const mascKeep = h => splitMarks(h).map(x => x[0] === "" ? x : mascRaw(x)).join("");
