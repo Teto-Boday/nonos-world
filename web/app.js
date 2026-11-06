@@ -183,7 +183,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
 "بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
 "تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
-"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","تقوليه":"تقوله","صلّيتي":"صلّيت","معلّمتيش":"معلّمتش","تقري":"تقرا","قوليها":"قولها","وقوليها":"وقولها","تحددي":"تحدد","اختاري":"اختار","تسجّلي":"تسجّل","تعرفي":"تعرف","معاكي":"معاك","تنسي":"تنسى","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
+"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","ناوية":"ناوي","تصومي":"تصوم","تتسحّري":"تتسحّر","تقوليه":"تقوله","صلّيتي":"صلّيت","معلّمتيش":"معلّمتش","تقري":"تقرا","قوليها":"قولها","وقوليها":"وقولها","تحددي":"تحدد","اختاري":"اختار","تسجّلي":"تسجّل","تعرفي":"تعرف","معاكي":"معاك","تنسي":"تنسى","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
 "خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
 "شغّليها":"شغّلها","شوفي":"شوف","صاحبة":"صاحب","ضيفي":"ضيف","عارفة":"عارف","عايزة":"عايز","عايزه":"عايز","عدّيتي":"عدّيت","عليكي":"عليك","علّمي":"علّم","عملتي":"عملت",
 "عملتيها":"عملتها","عيّطي":"عيّط","فاكرة":"فاكر","فرحانة":"فرحان","قاعدة":"قاعد","قوليلي":"قولّي","قومي":"قوم","كسلتي":"كسلت","كسولة":"كسول","كلّمي":"كلّم","كمّلي":"كمّل",
@@ -315,7 +315,7 @@ function blank(){
     moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false}, loveOff:false, stage:"uni", work:[],
-    pray:{on:true, remind:true, azkar:true, kahf:true}, loc:null, nudge:{every:4}, azkarDone:{} };
+    pray:{on:true, remind:true, azkar:true, kahf:true, fast:false}, loc:null, nudge:{every:4}, azkarDone:{} };
 }
 function normalize(s, gender){
   const b = blank();
@@ -1233,7 +1233,8 @@ function adminExtra(){
 function prayersBlock(k){
   if (!isMuslim()) return "";
   const pr = S.prayers[k] || {}, n = PRAYERS.filter(([p])=>pr[p]).length;
-  if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>`;
+  if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>
+    <div class="notice" style="margin-top:8px;line-height:1.9">🤍 ${sabrAt(fromKey(k).getDate() + new Date().getHours())}</div>`;
   const tt = timesFor(fromKey(k)), nx = k === dkey() ? nextPrayer() : null, fri = new Date().getDay() === 5 && k === dkey();
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
     ${nx ? `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>` : ""}
@@ -1440,8 +1441,8 @@ function settingsView(){
     <div class="item" style="margin-top:10px"><span class="ic">📍</span><div class="grow"><div class="t">${esc(myLoc().name)}</div><div class="s">${myLoc().guess ? "مختارين القاهرة لحد ما تحددي مكانك" : "مواعيد الصلاة على حسب المكان ده"}</div></div><button class="mini" data-act="loc-gps">مكاني</button></div>
     <select class="in" id="loc-city" aria-label="اختاري المدينة" style="margin-top:8px"><option value="">أو اختاري مدينتك…</option>${CITIES.map(([n])=>`<option ${myLoc().name===n?"selected":""}>${n}</option>`).join("")}</select>
     <div class="ptimes">${(() => { const t = timesFor(); return [["fajr","الفجر"],["sunrise","الشروق"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]].map(([p,n]) => `<div><small>${n}</small><b class="num">${hhmm(t[p])}</b></div>`).join(""); })()}</div>
-    <ul class="list" style="margin-top:6px">${[["on","🕌 إشعار الأذان في كل صلاة"],["remind","⏰ تذكير بعد 25 دقيقة لو معلّمتيش إنك صلّيتي"],["azkar","📿 أذكار الصباح والمساء"],["kahf","📖 سورة الكهف يوم الجمعة"]].map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="pray-opt" data-v="${k}" role="switch" aria-checked="${(S.pray||{})[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
-    ${S.user.gender !== "m" ? `<p class="muted small" style="margin:8px 4px 0">🤍 أيام البريود الأذان والتذكير بيقفوا لوحدهم، والأذكار بتفضل.</p>` : ""}
+    <ul class="list" style="margin-top:6px">${[["on","🕌 إشعار الأذان في كل صلاة"],["remind","⏰ تذكير بعد 25 دقيقة لو معلّمتيش إنك صلّيتي"],["azkar","📿 أذكار الصباح والمساء"],["kahf","📖 سورة الكهف يوم الجمعة"],["fast","🌙 تذكير بصيام الاثنين والخميس (بالليل قبلها)"]].map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="pray-opt" data-v="${k}" role="switch" aria-checked="${k === "fast" ? !!(S.pray||{}).fast : (S.pray||{})[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
+    ${S.user.gender !== "m" ? `<p class="muted small" style="margin:8px 4px 0">🤍 أيام البريود الأذان بيقف لوحده، وبيوصلك مكانه حديث عن الصبر والأجر. والأذكار بتفضل، وتذكير الصيام مش بيوصل في الأيام دي.</p>` : ""}
   </div>` : ""}
   <div class="card"><h3>🔔 تذكير الفلوس والمهام</h3><p class="muted small" style="margin:4px 0 10px">كل كام ساعة نفكّرك تسجّلي مصاريفك ومهامك (من 10 الصبح لـ 10 بالليل).</p>
     <div class="seg">${[[0,"مقفول"],[2,"كل ساعتين"],[3,"كل 3"],[4,"كل 4"],[6,"كل 6"]].map(([n,t])=>`<button data-act="nudge" data-v="${n}" aria-pressed="${((S.nudge||{}).every||0)===n}">${t}</button>`).join("")}</div></div>
@@ -1946,7 +1947,7 @@ document.addEventListener("click", e => {
     case "add-work": workSheet(); break;
     case "azkar": azkarSheet(v); break;
     case "zikr": { const i = +v, L2 = U.az.left; if (L2[i] > 0){ L2[i]--; if (navigator.vibrate) navigator.vibrate(L2[i] ? 15 : [30, 40, 30]); } if (L2.every(n => n === 0)){ S.azkarDone = Object.assign({}, S.azkarDone, {[U.az.kind + dkey()]: true}); save(); } azkarSheet(U.az.kind); break; }
-    case "pray-opt": S.pray = Object.assign({on:true, remind:true, azkar:true, kahf:true}, S.pray); S.pray[v] = S.pray[v] === false; save(); render(); break;
+    case "pray-opt": S.pray = Object.assign({on:true, remind:true, azkar:true, kahf:true, fast:false}, S.pray); S.pray[v] = v === "fast" ? !S.pray.fast : S.pray[v] === false; save(); render(); if (v === "fast") toast(S.pray.fast ? "تمام، هنفكّرك بالليل قبل الاثنين والخميس 🌙" : "اتقفل"); break;
     case "nudge": S.nudge = {every:+v}; save(); render(); toast(+v ? "تمام، هنفكّرك ⏰" : "اتقفل"); break;
     case "loc-gps": {
       if (!navigator.geolocation){ toast("الجهاز ده مش بيدي المكان، اختاري مدينتك من القايمة"); break; }
@@ -2235,6 +2236,17 @@ const HADITH = [
   ["قال النبي ﷺ: «وجُعلت قرة عيني في الصلاة»", "رواه النسائي"],
   ["قال النبي ﷺ: «يا بلال، أقم الصلاة، أرحنا بها»", "رواه أبو داود"]
 ];
+/* period days: no adhan; instead, authentic hadiths on patience with pain and the reward that keeps being written */
+const HADITH_SABR = [
+  ["«ما يصيب المسلم من نصب ولا وصب ولا همّ ولا حزن ولا أذى ولا غمّ، حتى الشوكة يُشاكها، إلا كفّر الله بها من خطاياه»", "متفق عليه"],
+  ["«إذا مرض العبد أو سافر، كُتب له مثل ما كان يعمل مقيمًا صحيحًا»", "رواه البخاري"],
+  ["«عجبًا لأمر المؤمن، إن أمره كله خير… إن أصابته سراء شكر فكان خيرًا له، وإن أصابته ضراء صبر فكان خيرًا له»", "رواه مسلم"],
+  ["قال النبي ﷺ لعائشة رضي الله عنها: «إن هذا أمر كتبه الله على بنات آدم»", "متفق عليه"],
+  ["«من يُرد الله به خيرًا يُصب منه»", "رواه البخاري"],
+  ["«ما يزال البلاء بالمؤمن والمؤمنة في نفسه وولده وماله حتى يلقى الله وما عليه خطيئة»", "رواه الترمذي وقال: حسن صحيح"],
+  ["«ما من مسلم يصيبه أذى، مرض فما سواه، إلا حطّ الله به سيئاته كما تحطّ الشجرة ورقها»", "متفق عليه"]
+];
+const sabrAt = n => { const [t, src] = HADITH_SABR[((n % HADITH_SABR.length) + HADITH_SABR.length) % HADITH_SABR.length]; return `${t} (${src})`; };
 const hadithAt = n => { const [t, src] = HADITH[((n % HADITH.length) + HADITH.length) % HADITH.length]; return `${t} (${src})`; };
 function prayerEvents(from, to){
   const out = [], male = isMale(), G = t => isEN() ? t : gx(t, male);
@@ -2248,6 +2260,15 @@ function prayerEvents(from, to){
         add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, hadithAt(dn * 5 + i), "adhan");
         if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍 لسه فيه وقت`), hadithAt(dn * 5 + i + 3), "remind");
       });
+    }
+    if (isMuslim() && S.pray && S.pray.on && period){
+      const dn = Math.floor(d.getTime() / 864e5);
+      PRAYERS.forEach(([p], i) => add(`sb-${k}-${p}`, t[p], "🤍 أجرك محفوظ", sabrAt(dn * 5 + i), "sabr"));
+    }
+    // Monday & Thursday fasting: a reminder the evening before (not when the period would be on)
+    if (isMuslim() && S.pray && S.pray.fast && (d.getDay() === 0 || d.getDay() === 3)){
+      const next = addDays(d, 1);
+      if (!(S.user.gender !== "m" && cycleOn(dkey(next)))) add(`fast-${k}`, new Date(d.getFullYear(), d.getMonth(), d.getDate(), 21, 0), G(`🌙 بكرة ${d.getDay() === 0 ? "الاثنين" : "الخميس"}، ناوية تصومي؟`), "قال ﷺ: «تُعرض الأعمال يوم الاثنين والخميس، فأحب أن يُعرض عملي وأنا صائم» (رواه الترمذي) · " + G("متنسيش تتسحّري 🤍"), "fast");
     }
     if (isMuslim() && S.pray && S.pray.azkar){
       add(`az-m-${k}`, new Date(t.fajr.getTime() + 20 * 6e4), "📿 أذكار الصباح", G("صباح الخير 🤍 دقيقتين لنفسك، افتحي التطبيق وقوليها"), "azkar");
