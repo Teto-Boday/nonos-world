@@ -8,6 +8,14 @@ const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&l
 /* esc() marks what people wrote (names, diary, messages) so the masculine rewrite below never touches it */
 const esc = s => "\uE000" + escP(s) + "\uE001";
 const uid = () => Math.random().toString(36).slice(2, 9);
+/* clock style: follows the device (12h / 24h) unless chosen in settings */
+const AUTO_H12 = (() => { try { const hc = new Intl.DateTimeFormat(undefined, {hour:"numeric"}).resolvedOptions().hourCycle; return hc ? (hc === "h11" || hc === "h12") : /AM|PM|ص|م/.test(new Date(2020,0,1,15).toLocaleTimeString()); } catch(e){ return false; } })();
+const tf = x => { if (x == null || x === "") return "";
+  let h, m; if (x instanceof Date){ h = x.getHours(); m = x.getMinutes(); } else { const pr = String(x).split(":"); h = +pr[0]; m = +pr[1]; if (isNaN(h)) return String(x); }
+  const clk = (typeof S !== "undefined" && S && S.clock) || "auto", h12 = clk === "12" || (clk !== "24" && AUTO_H12), mm = String(m).padStart(2, "0");
+  if (!h12) return String(h).padStart(2, "0") + ":" + mm;
+  const en = (() => { try { return typeof isEN === "function" && isEN(); } catch(e){ return false; } })();
+  return ((h % 12) || 12) + ":" + mm + " " + (h < 12 ? (en ? "AM" : "ص") : (en ? "PM" : "م")); };
 const dkey = (d = new Date()) => { const z = new Date(d); return z.getFullYear()+"-"+String(z.getMonth()+1).padStart(2,"0")+"-"+String(z.getDate()).padStart(2,"0"); };
 const addDays = (d, n) => { const z = new Date(d); z.setDate(z.getDate()+n); return z; };
 const fromKey = k => { const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d); };
@@ -315,7 +323,7 @@ function blank(){
     moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
     alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false}, loveOff:false, stage:"uni", work:[],
-    pray:{on:true, remind:true, azkar:true, kahf:true, fast:false}, loc:null, nudge:{every:4}, azkarDone:{} };
+    clock:"auto", pray:{on:true, remind:true, azkar:true, kahf:true, fast:false}, loc:null, nudge:{every:4}, azkarDone:{} };
 }
 function normalize(s, gender){
   const b = blank();
@@ -335,7 +343,7 @@ function load(){
 
 /* ================= cloud sync (Firebase) ================= */
 const CLOUD = !!window.fb;
-const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin","loveOff","stage","pray","loc","nudge","azkarDone"], money:["money"], day:["schedule","tasks"],
+const SEC = { prefs:["theme","dark","lang","currency","durations","vacation","alarm","subjects","chatId","lastMorning","lastCare","pin","loveOff","stage","pray","loc","nudge","azkarDone","clock"], money:["money"], day:["schedule","tasks"],
   study:["sessions","exams","grades","work"], mood:["moods"], care:["care","prayers","cycle"], msgs:["msgs","rules"] };
 const GR = {list:[], open:null, msgs:[], unsub:null};
 const CP = {msgs:[], cid:null};
@@ -882,7 +890,7 @@ function homeView(){
 
     <button class="card" data-act="tab" data-v="day" style="text-align:right;border:0">
       <div class="row between"><h3>${L.day}</h3><span class="pill">${doneN}/${today.length} ✅</span></div>
-      <div style="margin-top:8px">${next?`<div class="t"><b>${esc(next.title)}</b></div><div class="muted small num">${next.start} – ${next.end}${next.place?" · "+esc(next.place):""}</div>`:`<div class="muted">مفيش محاضرات تانية النهارده 🎈</div>`}</div>
+      <div style="margin-top:8px">${next?`<div class="t"><b>${esc(next.title)}</b></div><div class="muted small num">${tf(next.start)} – ${tf(next.end)}${next.place?" · "+esc(next.place):""}</div>`:`<div class="muted">مفيش محاضرات تانية النهارده 🎈</div>`}</div>
       <div class="bar" style="margin-top:10px"><i style="width:${today.length?doneN/today.length*100:0}%"></i></div>
     </button>
 
@@ -967,7 +975,7 @@ function dayView(){
   </div>
   <div class="card">
     <div class="row between"><h3>المحاضرات 🎓</h3><button class="btn ghost small" data-act="edit-schedule">الجدول الثابت</button></div>
-    <ul class="list" style="margin-top:10px">${onVacation(dk)?`<li class="empty">إجازة، مفيش محاضرات 🏖️</li>`:lectures.length?lectures.map(l=>`<li class="item"><span class="ic">🎓</span><div class="grow"><div class="t">${esc(l.title)}</div><div class="s num">${l.start} – ${l.end}${l.place?" · "+esc(l.place):""}</div></div></li>`).join(""):`<li class="empty">مفيش محاضرات ${S._dayOff===1?"بكرة":S._dayOff===-1?"امبارح":"النهارده"} 🎈</li>`}</ul>
+    <ul class="list" style="margin-top:10px">${onVacation(dk)?`<li class="empty">إجازة، مفيش محاضرات 🏖️</li>`:lectures.length?lectures.map(l=>`<li class="item"><span class="ic">🎓</span><div class="grow"><div class="t">${esc(l.title)}</div><div class="s num">${tf(l.start)} – ${tf(l.end)}${l.place?" · "+esc(l.place):""}</div></div></li>`).join(""):`<li class="empty">مفيش محاضرات ${S._dayOff===1?"بكرة":S._dayOff===-1?"امبارح":"النهارده"} 🎈</li>`}</ul>
   </div>
   <div class="card">
     <div class="row between"><h3>${L.tasks}</h3><span class="row" style="gap:6px"><span class="pill good">${doneN} ✅</span><span class="pill warn">${lazyN} 🙈</span></span></div>
@@ -986,7 +994,7 @@ function workView(){
   const now = Date.now(), list = (S.work||[]).slice().sort((a,b)=>(a.done-b.done) || ((a.due||"9")<(b.due||"9")?-1:1));
   const left = (S.work||[]).filter(w=>!w.done).length, late = (S.work||[]).filter(w=>!w.done && w.due && new Date(w.due).getTime() < now).length;
   const when = d => { if (!d) return "من غير ميعاد"; const t = new Date(d), days = Math.round((fromKey(dkey(t)) - fromKey(dkey()))/864e5);
-    return (days===0?"النهارده":days===1?"بكرة":days===-1?"امبارح":days>1?`بعد ${days} أيام`:`من ${-days} أيام`) + " · " + t.toTimeString().slice(0,5); };
+    return (days===0?"النهارده":days===1?"بكرة":days===-1?"امبارح":days>1?`بعد ${days} أيام`:`من ${-days} أيام`) + " · " + tf(t); };
   return `<section class="hello"><h1>الشغل 💼</h1><p>${left ? `وراكي <b class="num">${left}</b> ${left===1?"حاجة":"حاجات"}` : "مفيش حاجة وراكي 🎉"}${late ? ` · <span style="color:var(--bad)">${late} ${late===1?"عدّى ميعادها":"عدّى ميعادهم"}</span>` : ""}</p></section>
   <div class="card"><div class="row between"><h3>اللي ورايا</h3><button class="btn small" data-act="add-work">＋ ضيفي شغل</button></div>
     <ul class="list" style="margin-top:10px">${list.length ? list.map(w => { const over = !w.done && w.due && new Date(w.due).getTime() < now;
@@ -1052,7 +1060,7 @@ function friendChatView(f){
   const oid = friendOf(f), on = esc((f.names||{})[oid] || "");
   let last = "", out = "";
   FR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
-    const d = new Date(m.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5);
+    const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
       : `<div class="msg him"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div><button class="x small" data-act="fr-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
@@ -1077,7 +1085,7 @@ function actCard(){
   return `<div class="card"><h3>✨ عملتي إيه النهارده؟</h3>
     <p class="muted small" style="margin:4px 0 10px">دوسي على اللي عملتيه، وصحابك هيشوفوه. اللي مش بتدوسي عليه محدش بيشوفه.</p>
     <div class="acts">${items.map(x => `<button class="actb ${today.some(l=>l.id.startsWith(x.id+":"))?"on":""}" data-act="act-do" data-v="${esc(x.id)}">${esc(x.e)} ${esc(x.t)}</button>`).join("")}<button class="actb add" data-act="act-add">＋ ضيفي</button></div>
-    ${today.length ? `<div class="muted small" style="margin-top:10px">ظاهر لصحابك النهارده:</div><div class="acts" style="margin-top:6px">${today.map(l => `<span class="actb on">${esc(l.e)} ${esc(l.t)} <span class="num muted">${new Date(l.ts).toTimeString().slice(0,5)}</span><button class="x" data-act="act-undo" data-v="${esc(l.id)}" aria-label="شيليها">✕</button></span>`).join("")}</div>` : ""}
+    ${today.length ? `<div class="muted small" style="margin-top:10px">ظاهر لصحابك النهارده:</div><div class="acts" style="margin-top:6px">${today.map(l => `<span class="actb on">${esc(l.e)} ${esc(l.t)} <span class="num muted">${tf(new Date(l.ts))}</span><button class="x" data-act="act-undo" data-v="${esc(l.id)}" aria-label="شيليها">✕</button></span>`).join("")}</div>` : ""}
     ${items.length ? `<button class="btn ghost small" style="margin-top:10px" data-act="act-edit">✏️ عدّلي الحاجات</button>` : ""}
   </div>`;
 }
@@ -1104,7 +1112,7 @@ function friendsView(){
     <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button></li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
   let last = "", out = "";
   GR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
-    const d = new Date(m.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5), mine = m.from === UID;
+    const d = new Date(m.ts), dk = dkey(d), tm = tf(d), mine = m.from === UID;
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     out += mine ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
       : `<div class="msg him"><div class="bub"><small class="from">${esc(m.name || "")}</small>${esc(m.text)}<span class="tm num">${tm}</span></div><button class="x small" data-act="g-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
@@ -1118,7 +1126,7 @@ function friendsView(){
 function coupleView(){
   let last = "", out = "";
   CP.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
-    const d = new Date(m.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5);
+    const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
       : `<div class="msg him"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`;
@@ -1158,7 +1166,7 @@ function diaryView(){
   const list = S.diary.filter(e=>e.chat===S.chatId).sort((a,b)=>a.ts-b.ts);
   let last = "", out = "";
   list.forEach(e => {
-    const d = new Date(e.ts), dk = dkey(d), tm = d.toTimeString().slice(0,5);
+    const d = new Date(e.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     if (e.from === "him"){ out += `<div class="msg him"><div class="bub real"><small class="from">💌 ${P&&P.user&&P.user.gender==="f"?"منها":"منه"} بجد</small>${esc(e.text)}<span class="tm num">${tm}</span></div>${CLOUD?`<button class="x small" data-act="report" data-v="${esc(e.id)}" aria-label="بلّغي" title="بلّغي">🚩</button>`:""}</div>`; return; }
     out += `<div class="msg me"><div class="bub">${esc(e.text)}<span class="tm num">${tm}</span></div></div>`;
@@ -1205,7 +1213,7 @@ function dashboard(o){
     ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.water||0}</b><span>💧 كوباية</span></div><div class="stat"><b class="num">${care.stars||0}/5</b><span>⭐ اهتمام</span></div><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات</span></div></div>${(o.gender !== "m" && cycleOn()) || !isMuslim() ? "" : `<div class="muted small" style="margin-top:8px">الصلاة: <b class="num">${PRAYERS.filter(([p])=>(S.prayers[k]||{})[p]).length}</b> من 5</div>`}</div>`:lock(L.care)}
   </div>
   ${sh("diary")?`<div class="card"><div class="row between"><h3>${L.diary}</h3><button class="btn small" ${send}>ردّ بنفسك 💌</button></div>
-    <div class="chat" style="padding-bottom:0;margin-top:10px">${chat.length?chat.map(e=>{const tm=new Date(e.ts).toTimeString().slice(0,5); const flag = o.admin && e.flagged ? " 🚩" : "";
+    <div class="chat" style="padding-bottom:0;margin-top:10px">${chat.length?chat.map(e=>{const tm=tf(new Date(e.ts)); const flag = o.admin && e.flagged ? " 🚩" : "";
       const del = o.admin ? `<button class="x" data-act="adm-delmsg" data-v="${esc(e.id)}" aria-label="امسح">🗑️</button>` : "";
       return e.from==="him"?`<div class="msg him"><div class="bub real"><small class="from">💌 ${o.admin?"الشريك":"إنت"}${flag}</small>${esc(e.text)}<span class="tm num">${tm}</span></div>${del}</div>`:`<div class="msg me">${del}<div class="bub">${esc(e.text)}${flag}<span class="tm num">${tm}</span></div></div>${e.reply?`<div class="msg him"><div class="bub"><small class="from">🤖 رد أوتوماتيك</small>${esc(e.reply)}</div></div>`:""}`}).join(""):`<div class="empty">مفيش رسايل في الشات ده لسه</div>`}</div></div>`:lock(L.diary)}
   ${sh("study")?`<div class="card"><div class="row between"><h3>${examLabel()}</h3><span class="pill">${L.streak} ${streak()}</span></div>
@@ -1434,7 +1442,7 @@ function settingsView(){
   <div class="card"><div class="row between"><h3>${L.alarm}</h3><button class="btn ghost small" data-act="test-morning">جرّبي</button></div>
     <label class="f" style="margin-top:10px">ميعاد الصحيان<input class="in num" type="time" id="wake" value="${S.alarm.wake}"></label>
     <div class="sectionlbl" style="margin:14px 4px 6px">🔔 التذكيرات</div>
-    <ul class="list">${S.alarm.reminders.map(r=>`<li class="item"><span class="ic">🔔</span><div class="grow"><div class="t">${esc(r.text)}</div><div class="s num">${r.time}</div></div><button class="x" data-act="del-rem" data-v="${r.id}" aria-label="امسحي">✕</button></li>`).join("")}</ul>
+    <ul class="list">${S.alarm.reminders.map(r=>`<li class="item"><span class="ic">🔔</span><div class="grow"><div class="t">${esc(r.text)}</div><div class="s num">${tf(r.time)}</div></div><button class="x" data-act="del-rem" data-v="${r.id}" aria-label="امسحي">✕</button></li>`).join("")}</ul>
     <button class="add" style="margin-top:8px" data-act="add-rem">＋ تذكير جديد</button>
     <div class="notice" style="margin-top:10px">على التابلت بيرنّوا حتى لو التطبيق مقفول. على الكمبيوتر بيرنّوا طول ما البرنامج مفتوح. على الآيفون استخدمي منبّه الآيفون مع Shortcuts (الشرح في موقع التحميل).</div>
   </div>
@@ -1459,6 +1467,8 @@ function settingsView(){
     <div class="seg" style="margin-top:10px"><button data-act="set-cur" data-v="egp" aria-pressed="${S.currency!=="usd"}">جنيه مصري</button><button data-act="set-cur" data-v="usd" aria-pressed="${S.currency==="usd"}">دولار</button></div></div>
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
     <div class="seg"><button data-act="set-rel" data-v="muslim" aria-pressed="${isMuslim()}">مسلمة</button><button data-act="set-rel" data-v="christian" aria-pressed="${!isMuslim()}">مسيحية</button></div></div>
+  <div class="card"><h3>🕐 شكل الساعة</h3><p class="muted small" style="margin:4px 0 10px">"زي الموبايل" بياخد نفس شكل ساعة جهازك.</p>
+    <div class="seg">${[["auto","زي الموبايل"],["12","12 ساعة (2:30 م)"],["24","24 ساعة (14:30)"]].map(([k,t])=>`<button data-act="clock" data-v="${k}" aria-pressed="${(S.clock||"auto")===k}">${t}</button>`).join("")}</div></div>
   <div class="card"><h3>📍 بتدرسي فين؟</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط المذاكرة والجدول على حسابك.</p>
     <div class="seg"><button data-act="set-stage" data-v="uni" aria-pressed="${stage()==="uni"}">جامعة 🎓</button><button data-act="set-stage" data-v="school" aria-pressed="${stage()==="school"}">مدرسة 🎒</button><button data-act="set-stage" data-v="grad" aria-pressed="${stage()==="grad"}">متخرّجة 💼</button></div></div>
   ${partnerCard()}
@@ -1514,7 +1524,7 @@ function authView(){
 
 /* ================= sheets ================= */
 function chatBubbles(list){
-  return list.map(e => { const tm = new Date(e.ts).toTimeString().slice(0,5);
+  return list.map(e => { const tm = tf(new Date(e.ts));
     return `<div class="msg me"><div class="bub">${esc(e.text)}<span class="tm num">${tm}</span></div></div><div class="msg him"><div class="bub">${esc(e.reply||"")}<span class="tm num">${tm}</span></div></div>`; }).join("");
 }
 function oldChatsSheet(){
@@ -1602,7 +1612,7 @@ function allowanceSheet(){
 function scheduleSheet(){
   const rows = S.schedule.slice().sort((a,b)=>a.day-b.day||(a.start<b.start?-1:1));
   sheet(`<h2>الجدول الثابت 🎓</h2>
-  <ul class="list">${rows.length?rows.map(s=>`<li class="item"><div class="grow"><div class="t">${esc(s.title)}</div><div class="s num">${DAYS[s.day]} · ${s.start} – ${s.end}${s.place?" · "+esc(s.place):""}</div></div><button class="x" data-act="del-lec" data-v="${s.id}" aria-label="امسحي">✕</button></li>`).join(""):`<li class="empty">لسه مفيش محاضرات</li>`}</ul>
+  <ul class="list">${rows.length?rows.map(s=>`<li class="item"><div class="grow"><div class="t">${esc(s.title)}</div><div class="s num">${DAYS[s.day]} · ${tf(s.start)} – ${tf(s.end)}${s.place?" · "+esc(s.place):""}</div></div><button class="x" data-act="del-lec" data-v="${s.id}" aria-label="امسحي">✕</button></li>`).join(""):`<li class="empty">لسه مفيش محاضرات</li>`}</ul>
   <form class="form" data-form="lec" style="margin-top:14px">
     <label class="f">اسم المحاضرة أو السكشن<input class="in" id="l-title" required placeholder="محاضرة تشريح"></label>
     <div class="two"><label class="f">اليوم<select class="in" id="l-day">${DAYS.map((d,i)=>`<option value="${i}" ${i===new Date().getDay()?"selected":""}>${d}</option>`).join("")}</select></label>
@@ -1945,6 +1955,7 @@ document.addEventListener("click", e => {
     case "adm-hide-review": if (v) fb.del(`publicReviews/${v}`).then(()=>toast("اتشال من الموقع")).catch(()=>toast("مقدرتش")); break;
     case "adm-fb-del": fb.del(`feedback/${v}`).then(()=>{ U.admin.feedback = U.admin.feedback.filter(x=>x.id!==v); render(); }); break;
     case "set-cur": S.currency = v; save(); render(); break;
+    case "clock": S.clock = v; save(); render(); break;
     case "add-work": workSheet(); break;
     case "azkar": azkarSheet(v); break;
     case "zikr": { const i = +v, L2 = U.az.left; if (L2[i] > 0){ L2[i]--; if (navigator.vibrate) navigator.vibrate(L2[i] ? 15 : [30, 40, 30]); } if (L2.every(n => n === 0)){ S.azkarDone = Object.assign({}, S.azkarDone, {[U.az.kind + dkey()]: true}); save(); } azkarSheet(U.az.kind); break; }
@@ -2170,7 +2181,7 @@ document.addEventListener("submit", e => {
 });
 document.addEventListener("input", e => { if (e.target.id === "adm-q"){ U.admin.q = e.target.value; const pos = e.target.selectionStart; render(); const i = $("#adm-q"); i.focus(); i.setSelectionRange(pos,pos); } });
 document.addEventListener("change", e => {
-  if (e.target.id === "wake"){ S.alarm.wake = e.target.value; save(); toast("هصحّيكي الساعة " + e.target.value + " ⏰"); }
+  if (e.target.id === "wake"){ S.alarm.wake = e.target.value; save(); toast("هصحّيكي الساعة " + tf(e.target.value) + " ⏰"); }
   if (e.target.id === "loc-city" && e.target.value){ const c = CITIES.find(x => x[0] === e.target.value); if (c){ S.loc = {name:c[0], lat:c[1], lng:c[2]}; save(); render(); toast("✅ مواعيد الصلاة بقت على " + c[0]); } }
 });
 document.addEventListener("keydown", e => {
@@ -2183,7 +2194,7 @@ document.addEventListener("input", e => { if (e.target.id === "diarytext" || e.t
 /* ================= prayer times, adhan, azkar, Kahf ================= */
 const myLoc = () => (S && S.loc && typeof S.loc.lat === "number") ? S.loc : {name:"القاهرة", lat:30.0444, lng:31.2357, guess:true};
 const timesFor = (d = new Date()) => { const l = myLoc(); return prayerTimes(d, l.lat, l.lng); };
-const hhmm = d => d.toTimeString().slice(0,5);
+const hhmm = d => tf(d);
 function nextPrayer(){
   const now = new Date();
   for (const off of [0, 1]){ const d = addDays(now, off), t = timesFor(d);
