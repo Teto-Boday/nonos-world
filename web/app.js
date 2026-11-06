@@ -2221,6 +2221,21 @@ function azkarSheet(kind){
     <div class="azkar">${AZKAR[kind].map(([t, n], i) => `<button class="zikr ${left[i] === 0 ? "done" : ""}" data-act="zikr" data-v="${i}"><span class="zt">${escP(t)}</span><span class="zn num">${left[i] === 0 ? "✓" : left[i]}</span></button>`).join("")}</div>
     ${done === left.length ? `<div class="notice" style="margin-top:10px">تقبّل الله 🤍</div>` : ""}`);
 }
+/* hadith about prayer, shown with the adhan and with the "did you pray?" reminder */
+const HADITH = [
+  ["سُئل النبي ﷺ: أي العمل أحب إلى الله؟ قال: «الصلاة على وقتها»", "متفق عليه"],
+  ["«أرأيتم لو أن نهرًا بباب أحدكم يغتسل فيه كل يوم خمسًا، هل يبقى من درنه شيء؟» قالوا: لا، قال: «فذلك مثل الصلوات الخمس، يمحو الله بهن الخطايا»", "متفق عليه"],
+  ["«الصلوات الخمس، والجمعة إلى الجمعة، كفارة لما بينهن ما لم تُغشَ الكبائر»", "رواه مسلم"],
+  ["«أقرب ما يكون العبد من ربه وهو ساجد، فأكثروا الدعاء»", "رواه مسلم"],
+  ["«من صلى البردين دخل الجنة» (الفجر والعصر)", "متفق عليه"],
+  ["«من صلى الصبح فهو في ذمة الله»", "رواه مسلم"],
+  ["«ما من امرئ مسلم تحضره صلاة مكتوبة فيحسن وضوءها وخشوعها وركوعها إلا كانت كفارة لما قبلها من الذنوب ما لم يؤتِ كبيرة، وذلك الدهر كله»", "رواه مسلم"],
+  ["«من صلى العشاء في جماعة فكأنما قام نصف الليل، ومن صلى الصبح في جماعة فكأنما صلى الليل كله»", "رواه مسلم"],
+  ["«أول ما يحاسب به العبد يوم القيامة الصلاة، فإن صلحت صلح سائر عمله، وإن فسدت فسد سائر عمله»", "رواه الطبراني وصححه الألباني"],
+  ["قال النبي ﷺ: «وجُعلت قرة عيني في الصلاة»", "رواه النسائي"],
+  ["قال النبي ﷺ: «يا بلال، أقم الصلاة، أرحنا بها»", "رواه أبو داود"]
+];
+const hadithAt = n => { const [t, src] = HADITH[((n % HADITH.length) + HADITH.length) % HADITH.length]; return `${t} (${src})`; };
 function prayerEvents(from, to){
   const out = [], male = isMale(), G = t => isEN() ? t : gx(t, male);
   for (let day = new Date(from); day.getTime() <= to + 864e5; day = addDays(day, 1)){
@@ -2228,9 +2243,10 @@ function prayerEvents(from, to){
     const period = S.user.gender !== "m" && cycleOn(k);
     const add = (key, at, title, body, kind) => { const ms = at.getTime(); if (ms > from && ms <= to) out.push({key, at:ms, title, body, kind}); };
     if (isMuslim() && S.pray && S.pray.on && !period){
-      PRAYERS.forEach(([p, n]) => {
-        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, "الله أكبر، حيّ على الصلاة 🤍", "adhan");
-        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍`), G("علّمي عليها في التطبيق لما تصلّي"), "remind");
+      const dn = Math.floor(d.getTime() / 864e5);
+      PRAYERS.forEach(([p, n], i) => {
+        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, hadithAt(dn * 5 + i), "adhan");
+        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍 لسه فيه وقت`), hadithAt(dn * 5 + i + 3), "remind");
       });
     }
     if (isMuslim() && S.pray && S.pray.azkar){
