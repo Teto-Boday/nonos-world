@@ -681,7 +681,8 @@ function startupChecks(){
   heartbeat(true);
   try { const k = dkey(), t = timesFor(), now = new Date();
     if (isMuslim() && S.pray && S.pray.azkar !== false && now >= t.fajr && now < t.dhuhr && !(S.azkarDone||{})["m" + k] && localStorage.getItem("nw-azm") !== k){
-      localStorage.setItem("nw-azm", k); setTimeout(() => { if (!$("#layer").innerHTML) azkarSheet("m"); }, 1200); } } catch(e){}
+      const tryAz = (n) => { if (!$("#layer").innerHTML){ try { localStorage.setItem("nw-azm", k); } catch(e){} azkarSheet("m"); } else if (n < 20) setTimeout(() => tryAz(n + 1), 3000); };
+      setTimeout(() => tryAz(0), 1500); } } catch(e){}
   setTimeout(vacationCheck, 300);
   setTimeout(() => { let snooze = 0; try { snooze = +localStorage.getItem("nw-ntfy-snooze") || 0; } catch(e){}
     if (notifNeeded() && Date.now() > snooze && !$("#layer").innerHTML) notifSheet(); }, 2500);
