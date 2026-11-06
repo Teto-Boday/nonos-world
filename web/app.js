@@ -2321,7 +2321,7 @@ function notice(title, body){
 // push to someone's phone even if their app is closed (ntfy)
 const pushGap = {};
 function pushTo(topic, title, body){
-  if (!topic) return; const now = Date.now(); if (pushGap[topic] && now - pushGap[topic] < 20000) return; pushGap[topic] = now;
+  if (!topic) return; const now = Date.now(); if (pushGap[topic] && now - pushGap[topic] < 2500) return; pushGap[topic] = now;
   fetch("https://ntfy.sh/" + topic + "?title=" + encodeURIComponent(title) + "&tags=speech_balloon", {method:"POST", body:String(body).slice(0, 300)}).catch(()=>{});
 }
 async function scheduleNative(){
