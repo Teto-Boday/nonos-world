@@ -676,6 +676,7 @@ function notifSheet(){
 }
 function startupChecks(){
   if (!S || !S.user) return;
+  heartbeat(true);
   setTimeout(vacationCheck, 300);
   setTimeout(() => { let snooze = 0; try { snooze = +localStorage.getItem("nw-ntfy-snooze") || 0; } catch(e){}
     if (notifNeeded() && Date.now() > snooze && !$("#layer").innerHTML) notifSheet(); }, 2500);
@@ -1293,7 +1294,7 @@ function adminView(){
       <div class="card" style="margin-bottom:10px"><h3>💌 رسالة خاصة تظهرله في شاشة الفتح</h3>
         <textarea class="in" id="adm-special" style="margin-top:8px" placeholder="إنتي أغلى وأجمل حاجة حصلتلي في الدنيا، أنا بجد آسف على كل اللي عملته">${escP(u.special||"")}</textarea>
         <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
-      <div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
+      <div class="muted small" style="margin-bottom:8px"><span class="pres ${presence(u).c}"></span>${presence(u).t}</div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
   if (A.gsel){
     const g = A.gsel.startsWith("c:") ? A.gcouple : ((A.groups||[]).find(x=>x.id===A.gsel) || {});
@@ -1326,9 +1327,9 @@ function adminView(){
     <button class="btn block" style="margin-top:10px" data-act="adm-cheer">حفظ التشجيع للكل</button></div>
   <div class="card"><h3>👭 الصحاب</h3><ul class="list" style="margin-top:10px">${(A.friends||[]).length ? A.friends.map(f=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-fopen" data-v="${esc(f.id)}"><span class="ic">${f.status==="ok"?"👭":"⏳"}</span><div class="grow"><div class="t">${Object.values(f.names||{}).map(esc).join(" و ")}</div><div class="s">${f.status==="ok"?"صحاب":"طلب لسه"}</div></div></button></li>`).join("") : `<li class="empty">مفيش صحاب لسه</li>`}</ul></div>
   <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
-  <div class="card"><div class="row between"><h3>👥 الحسابات</h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
+  <div class="card"><div class="row between"><h3>👥 الحسابات <span class="muted small">· 🟢 ${A.users.filter(u=>presence(u).c==="on").length} فاتحين دلوقتي · 🔴 ${A.users.filter(u=>presence(u).c==="off").length} غايبين أسبوع</span></h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
-    <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t">${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">@${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}</div></div></button></li>`).join("")}</ul></div>`;
+    <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t"><span class="pres ${presence(u).c}" title="${presence(u).t}"></span>${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">${presence(u).t} · @${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}</div></div></button></li>`).join("")}</ul></div>`;
 }
 async function loadAdmin(){
   const A = U.admin;
@@ -1342,6 +1343,22 @@ async function loadAdmin(){
   } catch(e){ A.users = []; A.reports = []; toast("مش قادر أحمّل البيانات"); }
   if (S.tab === "admin") render();
 }
+/* who's around: green = open now, red = not opened for a week */
+function presence(u){
+  const t = u && u.seen || 0, ago = Date.now() - t;
+  if (!t) return {c:"off", t:"لسه مفتحش"};
+  if (ago < 6 * 6e4) return {c:"on", t:"فاتح دلوقتي"};
+  const m = Math.round(ago / 6e4), h = Math.round(ago / 36e5), d = Math.floor(ago / 864e5);
+  return {c: d >= 7 ? "off" : "mid", t: m < 60 ? `من ${m} دقيقة` : h < 24 ? `من ${h} ساعة` : d === 1 ? "من يوم" : d === 2 ? "من يومين" : `من ${d} أيام`};
+}
+let lastBeat = 0;
+function heartbeat(force){
+  if (!CLOUD || !UID || !ME || document.visibilityState !== "visible") return;
+  const now = Date.now(); if (!force && now - lastBeat < 3 * 6e4) return; lastBeat = now;
+  fb.set(`users/${UID}`, {seen:now}).catch(()=>{});
+}
+setInterval(heartbeat, 6e4);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") heartbeat(); });
 async function adminExport(){
   toast("بنجمّع البيانات… استنى شوية");
   try {

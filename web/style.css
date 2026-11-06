@@ -263,3 +263,6 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .admtbl th{color:var(--mu);font-weight:700}
 .item .check{border:0;background:transparent;font-size:20px;cursor:pointer;padding:0 4px}
 .item.done .t{text-decoration:line-through;opacity:.6}
+.pres{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:6px;vertical-align:middle;background:#c9c3cc}
+.pres.on{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.22)}
+.pres.off{background:#ef4444}
