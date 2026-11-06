@@ -679,6 +679,9 @@ function notifSheet(){
 function startupChecks(){
   if (!S || !S.user) return;
   heartbeat(true);
+  try { const k = dkey(), t = timesFor(), now = new Date();
+    if (isMuslim() && S.pray && S.pray.azkar !== false && now >= t.fajr && now < t.dhuhr && !(S.azkarDone||{})["m" + k] && localStorage.getItem("nw-azm") !== k){
+      localStorage.setItem("nw-azm", k); setTimeout(() => { if (!$("#layer").innerHTML) azkarSheet("m"); }, 1200); } } catch(e){}
   setTimeout(vacationCheck, 300);
   setTimeout(() => { let snooze = 0; try { snooze = +localStorage.getItem("nw-ntfy-snooze") || 0; } catch(e){}
     if (notifNeeded() && Date.now() > snooze && !$("#layer").innerHTML) notifSheet(); }, 2500);
@@ -2230,8 +2233,7 @@ function prayerEvents(from, to){
       });
     }
     if (isMuslim() && S.pray && S.pray.azkar){
-      const [wh, wm] = (S.alarm.wake || "07:30").split(":").map(Number), wake = new Date(d.getFullYear(), d.getMonth(), d.getDate(), wh, wm + 15);
-      add(`az-m-${k}`, wake > t.fajr ? wake : new Date(t.fajr.getTime() + 30 * 6e4), "📿 أذكار الصباح", G("دقيقتين لنفسك، افتحي التطبيق وقوليها 🤍"), "azkar");
+      add(`az-m-${k}`, new Date(t.fajr.getTime() + 20 * 6e4), "📿 أذكار الصباح", G("صباح الخير 🤍 دقيقتين لنفسك، افتحي التطبيق وقوليها"), "azkar");
       add(`az-e-${k}`, new Date(t.asr.getTime() + 30 * 6e4), "📿 أذكار المساء", G("متنسيش أذكار المساء 🤍"), "azkar");
     }
     if (isMuslim() && S.pray && S.pray.kahf && d.getDay() === 5 && !period) add(`kahf-${k}`, new Date(d.getFullYear(), d.getMonth(), d.getDate(), 10, 0), "📖 النهارده الجمعة", G("متنسيش تقري سورة الكهف 🤍"), "kahf");
