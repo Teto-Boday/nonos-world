@@ -1336,7 +1336,13 @@ function adminView(){
       <div class="card" style="margin-bottom:10px"><h3>💌 رسالة خاصة تظهرله في شاشة الفتح</h3>
         <textarea class="in" id="adm-special" style="margin-top:8px" placeholder="إنتي أغلى وأجمل حاجة حصلتلي في الدنيا، أنا بجد آسف على كل اللي عملته">${escP(u.special||"")}</textarea>
         <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
-      <div class="muted small" style="margin-bottom:8px"><span class="pres ${presence(u).c}"></span>${presence(u).t}</div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
+      <div class="muted small" style="margin-bottom:8px"><span class="pres ${presence(u).c}"></span>${presence(u).t}</div>
+    <div class="admctl">
+      <form class="row" data-form="adm-pass" data-v="${esc(u.id)}"><input class="in" id="ap-new" dir="ltr" minlength="6" maxlength="40" required placeholder="باسورد جديد" aria-label="باسورد جديد" autocomplete="off"><button class="btn small" type="submit">🔑 غيّر الباسورد</button></form>
+      <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required pattern="[A-Za-z0-9_.]{3,20}" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
+      <form class="row" data-form="adm-link" data-v="${esc(u.id)}"><select class="in" id="al-who" aria-label="اربطه بمين"><option value="">💞 اربطه بـ…</option>${A.users.filter(x=>x.id!==u.id && x.id!==u.partner).map(x=>`<option value="${esc(x.id)}">${x.gender==="m"?"🧢":"🎀"} ${esc(x.name)} (@${esc(x.username)})${x.partner?" · مربوط":""}</option>`).join("")}</select><button class="btn small" type="submit">اربط</button></form>
+      <p class="muted small">الباسورد واليوزر بيتغيّروا خلال 5 دقايق. ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
+    </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
   if (A.gsel){
     const g = A.gsel.startsWith("c:") ? A.gcouple : ((A.groups||[]).find(x=>x.id===A.gsel) || {});
@@ -2187,6 +2193,19 @@ document.addEventListener("submit", e => {
       break;
     }
     case "work": { const t = val("w-title"); if (!t) return; const due = (document.getElementById("w-due")||{}).value || ""; S.work = (S.work||[]).concat({id:uid(), title:t, due, done:false}); save(); closeSheet(); render(); toast("اتضاف 💼"); break; }
+    case "adm-pass": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), pw = val("ap-new"); if (!u || pw.length < 6) return toast("الباسورد 6 حروف على الأقل");
+      fb.add("resetRequests", {username:u.username, contact:"صاحب التطبيق", note:"اتغيّر من لوحة التحكم", status:"approved", temp:pw, at:Date.now()})
+        .then(()=>{ $("#ap-new").value = ""; toast(`✅ باسورد @${u.username} هيتغيّر خلال 5 دقايق`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
+    case "adm-uname": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), n = val("au-new").toLowerCase(); if (!u || !/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
+      if (U.admin.users.some(x=>x.username===n && x.id!==id)) return toast("اليوزر ده متاخد");
+      fb.set(`usernameRequests/${id}`, {username:n, status:"new", at:Date.now()}, false)
+        .then(()=>{ $("#au-new").value = ""; toast(`✅ هيتغيّر لـ @${n} خلال 5 دقايق`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
+    case "adm-link": { const A = U.admin, a = A.users.find(x=>x.id===f.dataset.v), bId = val("al-who"), bU = A.users.find(x=>x.id===bId); if (!a || !bU) return toast("اختار حد");
+      const ops = [];
+      if (a.partner && a.partner !== bU.id){ ops.push(fb.set(`users/${a.partner}`, {partner:null})); const o = A.users.find(x=>x.id===a.partner); if (o) o.partner = null; }
+      if (bU.partner && bU.partner !== a.id){ ops.push(fb.set(`users/${bU.partner}`, {partner:null})); const o = A.users.find(x=>x.id===bU.partner); if (o) o.partner = null; }
+      ops.push(fb.set(`users/${a.id}`, {partner:bU.id}), fb.set(`users/${bU.id}`, {partner:a.id}), fb.del(`linkRequests/${a.id}`).catch(()=>{}), fb.del(`linkRequests/${bU.id}`).catch(()=>{}));
+      Promise.all(ops).then(()=>{ a.partner = bU.id; bU.partner = a.id; render(); toast(`💞 ${a.name} و ${bU.name} اتربطوا`); }).catch(()=>toast("مقدرتش أربطهم")); break; }
     case "uname": {
       const n = val("un-new").toLowerCase();
       if (!/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");

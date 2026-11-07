@@ -106,7 +106,7 @@ service cloud.firestore {
     // a user asks to change their username; the GitHub Action checks it's free and applies it
     match /usernameRequests/{uid} {
       allow read, delete: if signed() && (me() == uid || admin());
-      allow create, update: if signed() && me() == uid && !banned()
+      allow create, update: if signed() && (admin() || (me() == uid && !banned()))
         && request.resource.data.keys().hasOnly(['username', 'status', 'at'])
         && request.resource.data.status == 'new'
         && request.resource.data.username is string
@@ -114,7 +114,7 @@ service cloud.firestore {
     }
 
     match /resetRequests/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['username', 'contact', 'note', 'status', 'at'])
+      allow create: if admin() || request.resource.data.keys().hasOnly(['username', 'contact', 'note', 'status', 'at'])
         && request.resource.data.status == 'new'
         && request.resource.data.username is string && request.resource.data.username.size() <= 20
         && request.resource.data.contact is string && request.resource.data.contact.size() <= 80
