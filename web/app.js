@@ -533,7 +533,7 @@ async function boot(u){
     if (S.tab === "diary" && U.dmode === "me" && !$("#layer").innerHTML){ keepTyping(render); scrollChat(); }
   }));
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
-  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
+  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; if (d.adminMsg) showAdminMsg(); try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   GR.list = []; GR.open = null; GR.msgs = [];
   unsubs.push(fb.listenWhere("groups", "members", "array-contains", UID, list => {
@@ -689,6 +689,7 @@ function notifSheet(){
 function startupChecks(){
   if (!S || !S.user) return;
   heartbeat(true);
+  showAdminMsg();
   try { const k = dkey(), t = timesFor(), now = new Date();
     if (isMuslim() && S.pray && S.pray.azkar !== false && now >= t.fajr && now < t.dhuhr && !(S.azkarDone||{})["m" + k] && localStorage.getItem("nw-azm") !== k){
       const tryAz = (n) => { if (!$("#layer").innerHTML){ try { localStorage.setItem("nw-azm", k); } catch(e){} azkarSheet("m"); } else if (n < 20) setTimeout(() => tryAz(n + 1), 3000); };
@@ -1344,6 +1345,7 @@ function adminView(){
       <form class="row" data-form="adm-pass" data-v="${esc(u.id)}"><input class="in" id="ap-new" dir="ltr" minlength="6" maxlength="40" required placeholder="باسورد جديد" aria-label="باسورد جديد" autocomplete="off"><button class="btn small" type="submit">🔑 غيّر الباسورد</button></form>
       <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required pattern="[A-Za-z0-9_.]{3,20}" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
       <form class="row" data-form="adm-link" data-v="${esc(u.id)}"><select class="in" id="al-who" aria-label="اربطه بمين"><option value="">💞 اربطه بـ…</option>${A.users.filter(x=>x.id!==u.id && x.id!==u.partner).map(x=>`<option value="${esc(x.id)}">${x.gender==="m"?"🧢":"🎀"} ${esc(x.name)} (@${esc(x.username)})${x.partner?" · مربوط":""}</option>`).join("")}</select><button class="btn small" type="submit">اربط</button></form>
+      <form class="row" data-form="adm-notify" data-v="${esc(u.id)}"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة"><button class="btn small" type="submit">🔔 ابعت</button></form>
       <div class="item"><div class="grow"><div class="t">💌 عامله زي المرتبط</div><div class="s">${u.forceLove ? "بيوصله كلام حب حتى لو مش مرتبط" : "مقفول، بياخد تشجيع بس لو مش مرتبط"}</div></div><button class="switch" data-act="adm-forcelove" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.forceLove}" aria-label="عامله زي المرتبط"><i></i></button></div>
       <p class="muted small">الباسورد واليوزر بيتغيّروا خلال 5 دقايق. ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
     </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
@@ -1379,6 +1381,10 @@ function adminView(){
     <button class="btn block" style="margin-top:10px" data-act="adm-cheer">حفظ التشجيع للكل</button></div>
   <div class="card"><h3>👭 الصحاب</h3><ul class="list" style="margin-top:10px">${(A.friends||[]).length ? A.friends.map(f=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-fopen" data-v="${esc(f.id)}"><span class="ic">${f.status==="ok"?"👭":"⏳"}</span><div class="grow"><div class="t">${Object.values(f.names||{}).map(esc).join(" و ")}</div><div class="s">${f.status==="ok"?"صحاب":"طلب لسه"}</div></div></button></li>`).join("") : `<li class="empty">مفيش صحاب لسه</li>`}</ul></div>
   <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
+  <div class="card"><h3>📣 ابعت رسالة للكل</h3><p class="muted small" style="margin:4px 0 10px">بتوصل إشعار للي عامل ntfy، وبتظهر جوه التطبيق للكل أول ما يفتحوه.</p>
+    <form class="form" data-form="adm-bcast"><input class="in" id="ab-title" maxlength="60" placeholder="العنوان (اختياري)" aria-label="العنوان"><textarea class="in" id="ab-text" rows="3" required maxlength="500" placeholder="الرسالة" aria-label="الرسالة"></textarea>
+    <div class="seg"><button type="button" data-act="bc-to" data-v="all" aria-pressed="${(U.bcTo||"all")==="all"}">الكل</button><button type="button" data-act="bc-to" data-v="f" aria-pressed="${U.bcTo==="f"}">🎀 البنات</button><button type="button" data-act="bc-to" data-v="m" aria-pressed="${U.bcTo==="m"}">🧢 الولاد</button></div>
+    <button class="btn" type="submit">📣 ابعت</button></form></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات <span class="muted small">· 🟢 ${A.users.filter(u=>presence(u).c==="on").length} فاتحين دلوقتي · 🔴 ${A.users.filter(u=>presence(u).c==="off").length} غايبين أسبوع</span></h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
     <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t"><span class="pres ${presence(u).c}" title="${presence(u).t}"></span>${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">${presence(u).t} · @${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}</div></div></button></li>`).join("")}</ul></div>`;
@@ -1414,6 +1420,20 @@ function heartbeat(force){
 setInterval(heartbeat, 6e4);
 setInterval(() => { if (S && !$("#layer").innerHTML && (S.tab === "mate" || (S.tab === "diary" && U.dmode !== "me"))) keepTyping(render); }, 6e4);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") heartbeat(); });
+/* owner → users: an in-app note (shown once on next open) + a push for those who set up ntfy */
+async function adminSend(list, title, text){
+  const at = Date.now(), msg = {title, text, at};
+  await Promise.all(list.map(u => fb.set(`users/${u.id}`, {adminMsg:msg}).catch(()=>{})));
+  list.forEach((u, i) => { if (u.ntfy) setTimeout(() => fetch(`https://ntfy.sh/${u.ntfy}?title=${encodeURIComponent(title)}&tags=love_letter`, {method:"POST", body:text}).catch(()=>{}), i * 300); });
+  return list.length;
+}
+function showAdminMsg(){
+  const m = ME && ME.adminMsg; if (!m || !m.at) return;
+  let seen = 0; try { seen = +localStorage.getItem("nw-amsg-" + UID) || 0; } catch(e){}
+  if (seen >= m.at) return;
+  const tryShow = n => { if (!$("#layer").innerHTML){ try { localStorage.setItem("nw-amsg-" + UID, String(m.at)); } catch(e){} message("💌", (m.title ? m.title + "\n\n" : "") + m.text, "Nono's World 🌍"); } else if (n < 30) setTimeout(() => tryShow(n + 1), 2000); };
+  setTimeout(() => tryShow(0), 1200);
+}
 async function adminExport(){
   toast("بنجمّع البيانات… استنى شوية");
   try {
@@ -1901,6 +1921,7 @@ document.addEventListener("click", e => {
     case "adm-export": adminExport(); break;
     case "adm-forcelove": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.forceLove;
       fb.set(`users/${v}`, {forceLove:on}).then(()=>{ u.forceLove = on; render(); toast(on ? `💌 ${u.name} هيوصله كلام حب` : `${u.name} رجع تشجيع بس`); }).catch(()=>toast("مقدرتش")); break; }
+    case "bc-to": U.bcTo = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "adm-cheer": { const lines = id => (($("#" + id)||{}).value || "").split("\n").map(x=>x.trim()).filter(Boolean).slice(0, 200);
       const d = {f:lines("cfg-cheer-f"), m:lines("cfg-cheer-m"), at:Date.now()};
       fb.set("config/cheer", d, false).then(()=>{ CFG.cheer = d; toast("اتحفظ، وهيظهر للكل 💪"); }).catch(()=>toast("مقدرتش أحفظ، اتأكد إنك نشرت القواعد الجديدة")); break; }
@@ -2199,6 +2220,11 @@ document.addEventListener("submit", e => {
       break;
     }
     case "work": { const t = val("w-title"); if (!t) return; const due = (document.getElementById("w-due")||{}).value || ""; S.work = (S.work||[]).concat({id:uid(), title:t, due, done:false}); save(); closeSheet(); render(); toast("اتضاف 💼"); break; }
+    case "adm-notify": { const u = U.admin.users.find(x=>x.id===f.dataset.v), t = val("an-text"); if (!u || !t) return;
+      adminSend([u], "💌 رسالة من Nono's World", t).then(n => { $("#an-text").value = ""; toast(`✅ اتبعتت لـ ${u.name}${u.ntfy ? "" : " (هتظهرله أول ما يفتح، علشان معملش ntfy)"}`); }); break; }
+    case "adm-bcast": { const t = val("ab-text"), title = val("ab-title") || "📣 Nono's World"; if (!t) return; const to = U.bcTo || "all";
+      const list = U.admin.users.filter(u => !u.banned && (to === "all" || (u.gender||"f") === to));
+      adminSend(list, title, t).then(() => { $("#ab-text").value = ""; $("#ab-title").value = ""; toast(`✅ اتبعتت لـ ${list.length} حساب`); }); break; }
     case "adm-pass": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), pw = val("ap-new"); if (!u || pw.length < 6) return toast("الباسورد 6 حروف على الأقل");
       fb.add("resetRequests", {username:u.username, contact:"صاحب التطبيق", note:"اتغيّر من لوحة التحكم", status:"approved", temp:pw, at:Date.now()})
         .then(()=>{ $("#ap-new").value = ""; toast(`✅ باسورد @${u.username} هيتغيّر خلال 5 دقايق`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
