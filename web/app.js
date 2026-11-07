@@ -360,7 +360,9 @@ const CHEER_F = ["إنتي أقوى بكتير مما تتخيلي 💪","خطو
 const CHEER_M = ["إنت أقوى بكتير مما تتخيل 💪","خطوة صغيرة النهارده أحسن من ولا حاجة 🌱","إنت قدها، وأكتر من قدها","افتكر قد إيه وصلت، وكمّل 🔥","مش لازم تكون مثالي، كفاية إنك بتحاول","كل يوم بتتعلم حاجة جديدة، وده إنجاز","ارتاح لو تعبت، بس متستسلمش","إنت تستاهل كل حاجة حلوة","النهارده فرصة جديدة، استغلها يا بطل","فخورين بيك، حتى في الأيام الصعبة","ركّز في هدفك، والباقي هييجي ☀️","صدّق في نفسك، إنت تقدر","إنت أشطر من الامتحان ده، ومن أي ضغط","اهتم بنفسك، إنت أهم حاجة","حلمك يستاهل التعب، كمّل يا وحش 💪"];
 const CHEER_EN = ["You're way stronger than you think 💪","A small step today beats no step at all 🌱","You've got this, and then some","Look how far you've come, keep going","You don't have to be perfect, trying is enough","Rest if you're tired, just don't give up","You deserve every good thing 🤍","Today is a fresh chance, use it","Believe in yourself the way you believe in the people you love","Your dream is worth the effort, keep going"];
 const hasMate = () => !CLOUD || !!(P && P.linked);
-const loveOn = () => hasMate() && !(S && S.loveOff);
+/* the owner can let someone get the love notes as if linked (users/{uid}.forceLove) */
+const mateLike = () => hasMate() || !!(CLOUD && ME && ME.forceLove);
+const loveOn = () => mateLike() && !(S && S.loveOff);
 const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"];
 const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
 const morningPick = () => loveOn() ? pick(S.msgs.morning) : (isEN() ? "Good morning ☀️ a new day, a new chance" : pick(S.user && S.user.gender === "m" ? MORNING_CHEER_M : MORNING_CHEER_F));
@@ -878,6 +880,7 @@ function homeView(){
   const care = S.care[k] || {water:0,sleep:0};
   const st = streak(), good = examGood();
   const upcoming = S.exams.filter(e=>e.date>=k).sort((a,b)=>a.date<b.date?-1:1)[0];
+  if (S._loveMode !== loveOn()){ S._love = null; S._loveMode = loveOn(); }
   const love = S._love || (S._love = pick(loveOn() ? lovePool() : cheerPool()));
   return `
   ${ME && ME.special ? `<div class="card special"><div class="lbl">${isEN() ? "Just for you" : "ليكي مخصوص"}</div><p>${esc(ME.special)}</p></div>` : ""}
@@ -890,7 +893,7 @@ function homeView(){
     <p style="margin:6px 0 4px;font-weight:700;font-size:17px">${esc(S._pmsg || (S._pmsg = pick(MS("period"))))}</p>
     <p class="muted small" style="margin:0">💡 ${CARE_TIPS[new Date().getDate() % CARE_TIPS.length]}</p></div>` : ""}
   ${notifNeeded() ? `<button class="card tint" data-act="notif" style="text-align:right;border:0;width:100%"><div class="row between"><h3>🔔 فعّلي الإشعارات</h3><span class="pill">دقيقة</span></div><div class="muted small" style="margin-top:4px">علشان الرسايل توصلك حتى لو التطبيق مقفول</div></button>` : ""}
-  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${hasMate() ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
+  <div class="letter"><div class="row between"><span class="lbl">${loveOn() ? L.love : "💪 كلمة حلوة"}</span><span class="row" style="gap:4px"><button class="x" data-act="new-love" aria-label="رسالة تانية">🔄</button>${mateLike() ? `<span class="love-sw-l" aria-hidden="true">💌</span><button class="switch sm" data-act="love-toggle" role="switch" aria-checked="${loveOn()}" title="${loveOn() ? "اقفلي رسايل الحب" : "رجّعي رسايل الحب"}" aria-label="رسايل الحب"><i></i></button>` : ""}</span></div><p>${esc(love)}</p></div>
 
   <div class="card">
     <div class="row between"><h2>${L.mood} النهارده</h2>${mood?`<span class="pill">${MOODS.find(m=>m.k===mood).e} ${MOODS.find(m=>m.k===mood).t}</span>`:""}</div>
@@ -1341,6 +1344,7 @@ function adminView(){
       <form class="row" data-form="adm-pass" data-v="${esc(u.id)}"><input class="in" id="ap-new" dir="ltr" minlength="6" maxlength="40" required placeholder="باسورد جديد" aria-label="باسورد جديد" autocomplete="off"><button class="btn small" type="submit">🔑 غيّر الباسورد</button></form>
       <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required pattern="[A-Za-z0-9_.]{3,20}" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
       <form class="row" data-form="adm-link" data-v="${esc(u.id)}"><select class="in" id="al-who" aria-label="اربطه بمين"><option value="">💞 اربطه بـ…</option>${A.users.filter(x=>x.id!==u.id && x.id!==u.partner).map(x=>`<option value="${esc(x.id)}">${x.gender==="m"?"🧢":"🎀"} ${esc(x.name)} (@${esc(x.username)})${x.partner?" · مربوط":""}</option>`).join("")}</select><button class="btn small" type="submit">اربط</button></form>
+      <div class="item"><div class="grow"><div class="t">💌 عامله زي المرتبط</div><div class="s">${u.forceLove ? "بيوصله كلام حب حتى لو مش مرتبط" : "مقفول، بياخد تشجيع بس لو مش مرتبط"}</div></div><button class="switch" data-act="adm-forcelove" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.forceLove}" aria-label="عامله زي المرتبط"><i></i></button></div>
       <p class="muted small">الباسورد واليوزر بيتغيّروا خلال 5 دقايق. ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
     </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
@@ -1895,6 +1899,8 @@ document.addEventListener("click", e => {
     case "adm-gback": { const A = U.admin, back = A.gback; A.gsel = null; A.gmsgs = null; A.gback = null; if (back) adminOpen(back); else render(); break; }
     case "adm-gdel": { const A = U.admin, gid = A.gsel; fb.del(`${A.gpath}/${v}`).then(()=>{ A.gmsgs = A.gmsgs.filter(m=>m.id!==v); render(); toast("اتمسحت"); }).catch(()=>toast("مقدرتش")); break; }
     case "adm-export": adminExport(); break;
+    case "adm-forcelove": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.forceLove;
+      fb.set(`users/${v}`, {forceLove:on}).then(()=>{ u.forceLove = on; render(); toast(on ? `💌 ${u.name} هيوصله كلام حب` : `${u.name} رجع تشجيع بس`); }).catch(()=>toast("مقدرتش")); break; }
     case "adm-cheer": { const lines = id => (($("#" + id)||{}).value || "").split("\n").map(x=>x.trim()).filter(Boolean).slice(0, 200);
       const d = {f:lines("cfg-cheer-f"), m:lines("cfg-cheer-m"), at:Date.now()};
       fb.set("config/cheer", d, false).then(()=>{ CFG.cheer = d; toast("اتحفظ، وهيظهر للكل 💪"); }).catch(()=>toast("مقدرتش أحفظ، اتأكد إنك نشرت القواعد الجديدة")); break; }
