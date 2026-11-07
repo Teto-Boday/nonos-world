@@ -700,16 +700,17 @@ function startupChecks(){
 }
 
 /* ================= derived ================= */
-function periodRange(){
+/* off = 0 is the current week/month, -1 the one before, and so on: old entries are never removed, they're just in an earlier period */
+function periodRange(off = 0){
   const t = new Date();
   if (S.money.period === "week"){ // Egyptian week starts Saturday
-    const back = (t.getDay() + 1) % 7; const st = addDays(new Date(t.getFullYear(),t.getMonth(),t.getDate()), -back);
+    const back = (t.getDay() + 1) % 7; const st = addDays(new Date(t.getFullYear(),t.getMonth(),t.getDate()), -back + off * 7);
     return {start:st, end:addDays(st,6)};
   }
-  return {start:new Date(t.getFullYear(),t.getMonth(),1), end:new Date(t.getFullYear(),t.getMonth()+1,0)};
+  return {start:new Date(t.getFullYear(),t.getMonth()+off,1), end:new Date(t.getFullYear(),t.getMonth()+off+1,0)};
 }
-function moneyInfo(){
-  const {start,end} = periodRange(); const sk = dkey(start), ek = dkey(end), tk = dkey();
+function moneyInfo(off = 0){
+  const {start,end} = periodRange(off); const sk = dkey(start), ek = dkey(end), tk = off ? ek : dkey();
   const list = S.money.expenses.filter(e => e.date >= sk && e.date <= ek);
   const spent = list.reduce((a,e)=>a+e.amt,0), todaySpent = list.filter(e=>e.date===tk).reduce((a,e)=>a+e.amt,0);
   const incomes = (S.money.incomes || []).filter(e => e.date >= sk && e.date <= ek), added = incomes.reduce((a,e)=>a+e.amt,0);
@@ -925,28 +926,35 @@ function homeView(){
 }
 
 function moneyView(){
-  const mi = moneyInfo(), {start,end} = periodRange();
+  const off = Math.min(0, S._monOff || 0), past = off < 0, wk = S.money.period === "week";
+  const mi = moneyInfo(off), {start,end} = periodRange(off);
+  const hasOlder = S.money.expenses.concat(S.money.incomes || []).some(e => e.date < dkey(start));
   const byCat = CATS.map(c=>({...c, sum: mi.list.filter(e=>e.cat===c.k).reduce((a,e)=>a+e.amt,0)})).filter(c=>c.sum>0).sort((a,b)=>b.sum-a.sum);
   const pct = S.money.allowance ? Math.min(100, mi.spent/S.money.allowance*100) : 0;
   const groups = {};
   mi.list.slice().sort((a,b)=>a.date<b.date?1:-1).forEach(e => (groups[e.date] = groups[e.date] || []).push(e));
   return `
-  <section class="hello"><h1>${L.money}</h1><p>${S.money.period==="week"?"الأسبوع ده":"شهر "+MONTHS[start.getMonth()]} · فاضل <span class="num">${mi.daysLeft}</span> يوم</p></section>
+  <section class="hello"><h1>${L.money}</h1><p>${past ? (wk ? (off===-1?"الأسبوع اللي فات":prettyDate(start)+" – "+prettyDate(end)) : "شهر "+MONTHS[start.getMonth()]+(start.getFullYear()!==new Date().getFullYear()?" "+start.getFullYear():"")) : (wk?"الأسبوع ده":"شهر "+MONTHS[start.getMonth()])+` · فاضل <span class="num">${mi.daysLeft}</span> يوم`}</p></section>
+  ${hasOlder || past ? `<div class="seg" style="margin-bottom:12px">
+    <button data-act="monoff" data-v="${off-1}" ${hasOlder?"":"disabled"}>‹ ${wk?"الأسبوع اللي قبله":"الشهر اللي قبله"}</button>
+    <button data-act="monoff" data-v="0" aria-pressed="${!past}">${wk?"الأسبوع ده":"الشهر ده"}</button>
+    <button data-act="monoff" data-v="${off+1}" ${past?"":"disabled"}>${wk?"الأسبوع اللي بعده":"الشهر اللي بعده"} ›</button>
+  </div>` : ""}
   <div class="card tint">
     <div class="row between"><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span><button class="btn ghost small" data-act="allowance">المصروف: <span class="num">${fmt(S.money.allowance)}</span></button></div>
     <div class="big num" style="margin-top:10px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div>
     <div class="bar" style="margin:12px 0 6px"><i style="width:${pct}%"></i></div>
     <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(mi.total)}</b>${mi.added ? ` <span class="income-tag">(+<span class="num">${fmt(mi.added)}</span> جالك)</span>` : ""}</span></div>
   </div>
-  <div class="card">
+  ${past ? "" : `<div class="card">
     <div class="row between"><h3>${L.daily}</h3><span class="muted small">علشان الفلوس تكفّي لآخر ${S.money.period==="week"?"الأسبوع":"الشهر"}</span></div>
     <div class="row between" style="margin-top:6px">
       <div><div class="big num" style="font-size:30px">${fmt(Math.max(0,mi.todayLeft))}</div><div class="muted small">تقدري تصرفيهم النهارده</div></div>
       <div style="text-align:left"><div class="num" style="font-weight:700">${fmt(mi.todaySpent)} / ${fmt(mi.daily)}</div><div class="muted small">صرفتي النهارده</div></div>
     </div>
     ${mi.todaySpent > mi.daily && mi.daily>0 ? `<div class="notice" style="margin-top:10px">صرفتي النهارده أكتر من المسموح بـ <b class="num">${fmt(mi.todaySpent-mi.daily)}</b> ${CUR()}، بكرة نهدّي شوية 🙈</div>`:""}
-  </div>
-  <div class="two"><button class="btn" data-act="add-exp">＋ صرفت حاجة</button><button class="btn ghost" data-act="add-inc">💰 جالي فلوس</button></div>
+  </div>`}
+  ${past ? `<button class="btn ghost block" data-act="monoff" data-v="0">رجوع ل${wk?"لأسبوع ده":"لشهر ده"}</button>` : `<div class="two"><button class="btn" data-act="add-exp">＋ صرفت حاجة</button><button class="btn ghost" data-act="add-inc">💰 جالي فلوس</button></div>`}
   ${mi.incomes.length ? `<div class="card"><h3>💰 فلوس جاتلك</h3><ul class="list" style="margin-top:10px">${mi.incomes.slice().sort((a,b)=>a.date<b.date?1:-1).map(e=>`<li class="item income"><span class="ic">💰</span><div class="grow"><div class="t">${esc(e.note || "فلوس زيادة")}</div><div class="s">${e.date===dkey()?"النهارده":prettyDate(fromKey(e.date))}</div></div><b class="num">+${fmt(e.amt)}</b><button class="x" data-act="del-inc" data-v="${e.id}" aria-label="امسحي">✕</button></li>`).join("")}</ul></div>` : ""}
   ${byCat.length?`<div class="card"><h3>صرفتي على إيه؟</h3>
     <div class="cat-bar" style="margin:10px 0">${byCat.map(c=>`<i style="width:${c.sum/mi.spent*100}%;background:${c.c}" title="${c.t}"></i>`).join("")}</div>
@@ -955,7 +963,7 @@ function moneyView(){
     ${Object.keys(groups).length? Object.entries(groups).map(([d,arr])=>`
       <div class="sectionlbl" style="margin:12px 4px 6px">${d===dkey()?"النهارده":prettyDate(fromKey(d))} · <span class="num">${fmt(arr.reduce((a,e)=>a+e.amt,0))}</span></div>
       <ul class="list">${arr.map(e=>{const c=CATS.find(x=>x.k===e.cat)||CATS[7];return `<li class="item"><span class="ic">${c.e}</span><div class="grow"><div class="t">${esc(e.note||c.t)}</div><div class="s">${c.t}</div></div><b class="num">${fmt(e.amt)}</b><button class="x" data-act="del-exp" data-v="${e.id}" aria-label="امسحي">✕</button></li>`}).join("")}</ul>`).join("")
-    : `<div class="empty">لسه مصرفتيش حاجة ✨</div>`}
+    : `<div class="empty">${past?"مفيش مصاريف في الفترة دي":"لسه مصرفتيش حاجة ✨"}</div>`}
   </div>`;
 }
 
@@ -1797,6 +1805,7 @@ document.addEventListener("click", e => {
     case "allowance": S._period = S.money.period; allowanceSheet(); break;
     case "aperiod": S._period = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "dayoff": S._dayOff = +v; render(); break;
+    case "monoff": S._monOff = Math.min(0, +v || 0); render(); break;
     case "task": {
       const t = S.tasks.find(x=>x.id===v); if (!t) break;
       const was = t.status; t.status = was === b.dataset.s ? null : b.dataset.s; save(); render();
