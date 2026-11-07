@@ -280,3 +280,4 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .zikr.done .zn{background:#22c55e}
 .seg button:disabled{opacity:.35}
 .admctl{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.admctl .row .in{flex:1;min-width:0}
+.splash-special{max-height:42vh;overflow:auto;white-space:pre-line}.card.special p{white-space:pre-line}
