@@ -191,7 +191,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
 "بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
 "تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
-"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","افتحيه":"افتحه","حابة":"حابب","ناوية":"ناوي","تصومي":"تصوم","تتسحّري":"تتسحّر","تقوليه":"تقوله","صلّيتي":"صلّيت","معلّمتيش":"معلّمتش","تقري":"تقرا","قوليها":"قولها","وقوليها":"وقولها","تحددي":"تحدد","اختاري":"اختار","تسجّلي":"تسجّل","تعرفي":"تعرف","معاكي":"معاك","تنسي":"تنسى","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
+"تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","ردّك":"ردّك","ابعتي":"ابعت","افتحيه":"افتحه","حابة":"حابب","ناوية":"ناوي","تصومي":"تصوم","تتسحّري":"تتسحّر","تقوليه":"تقوله","صلّيتي":"صلّيت","معلّمتيش":"معلّمتش","تقري":"تقرا","قوليها":"قولها","وقوليها":"وقولها","تحددي":"تحدد","اختاري":"اختار","تسجّلي":"تسجّل","تعرفي":"تعرف","معاكي":"معاك","تنسي":"تنسى","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
 "خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
 "شغّليها":"شغّلها","شوفي":"شوف","صاحبة":"صاحب","ضيفي":"ضيف","عارفة":"عارف","عايزة":"عايز","عايزه":"عايز","عدّيتي":"عدّيت","عليكي":"عليك","علّمي":"علّم","عملتي":"عملت",
 "عملتيها":"عملتها","عيّطي":"عيّط","فاكرة":"فاكر","فرحانة":"فرحان","قاعدة":"قاعد","قوليلي":"قولّي","قومي":"قوم","كسلتي":"كسلت","كسولة":"كسول","كلّمي":"كلّم","كمّلي":"كمّل",
@@ -1275,6 +1275,7 @@ function prayersBlock(k){
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
     ${nx ? `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>` : ""}
     <div class="prayers">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}<small class="num ptime">${hhmm(tt[p])}</small></button>`).join("")}</div>
+    ${k === dkey() ? `<div class="hadith">📜 ${esc(hadithAt(Math.floor(Date.now() / 864e5) * 3 + new Date().getHours() % 3))}</div>` : ""}
     ${k === dkey() ? `<div class="row wrap" style="gap:8px;margin-top:8px"><button class="btn ghost small" data-act="azkar" data-v="${azkarNow()}">📿 ${azkarNow() === "m" ? "أذكار الصباح" : "أذكار المساء"}</button>${fri ? `<a class="btn ghost small" style="text-decoration:none" href="https://quran.com/ar/18" target="_blank" rel="noopener">📖 سورة الكهف</a>` : ""}</div>` : ""}`;
 }
 function cycleBlock(){
@@ -1345,7 +1346,8 @@ function adminView(){
       <form class="row" data-form="adm-pass" data-v="${esc(u.id)}"><input class="in" id="ap-new" dir="ltr" minlength="6" maxlength="40" required placeholder="باسورد جديد" aria-label="باسورد جديد" autocomplete="off"><button class="btn small" type="submit">🔑 غيّر الباسورد</button></form>
       <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required pattern="[A-Za-z0-9_.]{3,20}" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
       <form class="row" data-form="adm-link" data-v="${esc(u.id)}"><select class="in" id="al-who" aria-label="اربطه بمين"><option value="">💞 اربطه بـ…</option>${A.users.filter(x=>x.id!==u.id && x.id!==u.partner).map(x=>`<option value="${esc(x.id)}">${x.gender==="m"?"🧢":"🎀"} ${esc(x.name)} (@${esc(x.username)})${x.partner?" · مربوط":""}</option>`).join("")}</select><button class="btn small" type="submit">اربط</button></form>
-      <form class="row" data-form="adm-notify" data-v="${esc(u.id)}"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة"><button class="btn small" type="submit">🔔 ابعت</button></form>
+      <form class="form" data-form="adm-notify" data-v="${esc(u.id)}" style="gap:6px"><div class="row"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة" style="flex:1;min-width:0"><button class="btn small" type="submit">🔔 ابعت</button></div>
+        <label class="row muted small" style="gap:8px;align-items:center"><input type="checkbox" id="an-reply" checked> 💬 يقدر يرد عليها</label></form>
       <div class="item"><div class="grow"><div class="t">💌 عامله زي المرتبط</div><div class="s">${u.forceLove ? "بيوصله كلام حب حتى لو مش مرتبط" : "مقفول، بياخد تشجيع بس لو مش مرتبط"}</div></div><button class="switch" data-act="adm-forcelove" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.forceLove}" aria-label="عامله زي المرتبط"><i></i></button></div>
       <p class="muted small">الباسورد واليوزر بيتغيّروا خلال 5 دقايق. ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
     </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
@@ -1367,7 +1369,7 @@ function adminView(){
       ${r.status==="approved"?`<div class="s">⏳ هيتغيّر خلال 5 لـ 15 دقيقة لـ: <b class="num" dir="ltr">${esc(r.temp||"")}</b></div>`:r.status==="done"?`<div class="s">✅ اتغيّر: <b class="num" dir="ltr">${esc(r.temp||"")}</b> ابعتهولها</div>`:r.status==="notfound"?`<div class="s">❓ اليوزر ده مش موجود</div>`:""}</div>
       ${r.status==="new"&&u?`<button class="mini" data-act="adm-reset" data-v="${esc(r.id)}">اعمل باسورد مؤقت</button>`:""}<button class="x" data-act="adm-rdel" data-v="${esc(r.id)}" aria-label="امسح">✕</button></li>`}).join(""):`<li class="empty">مفيش طلبات</li>`}</ul>
     <p class="muted small" style="margin:8px 0 0">⚠️ اتأكد إن اللي طالب هو صاحب الحساب فعلًا قبل ما تعمل الباسورد.</p></div>
-  <div class="card"><h3>⭐ التقييمات والآراء</h3><ul class="list" style="margin-top:10px">${(A.feedback||[]).length ? A.feedback.map(f=>`<li class="item"><span class="ic">${f.kind==="complaint"?"😟":f.kind==="idea"?"💡":"⭐"}</span><div class="grow"><div class="t">${esc(f.text||"")}</div><div class="s">${f.stars ? "⭐".repeat(f.stars) + " · " : ""}${esc(f.name||"")} · ${f.kind==="complaint"?"شكوى":f.kind==="idea"?"اقتراح":"رأي"}</div></div>${f.kind==="review"?`<button class="mini" data-act="adm-hide-review" data-v="${esc(f.uid||"")}">شيله من الموقع</button>`:""}<button class="x" data-act="adm-fb-del" data-v="${esc(f.id)}" aria-label="امسح">✕</button></li>`).join("") : `<li class="empty">لسه مفيش</li>`}</ul></div>
+  <div class="card"><h3>⭐ التقييمات والآراء والردود</h3><ul class="list" style="margin-top:10px">${(A.feedback||[]).length ? A.feedback.map(f=>`<li class="item"><span class="ic">${f.kind==="reply"?"💬":f.kind==="complaint"?"😟":f.kind==="idea"?"💡":"⭐"}</span><div class="grow"><div class="t">${esc(f.text||"")}</div><div class="s">${f.stars ? "⭐".repeat(f.stars) + " · " : ""}${esc(f.name||"")} · ${f.kind==="reply"?`رد على رسالتك${f.re?" «"+esc(f.re)+"»":""}`:f.kind==="complaint"?"شكوى":f.kind==="idea"?"اقتراح":"رأي"}</div></div>${f.kind==="review"?`<button class="mini" data-act="adm-hide-review" data-v="${esc(f.uid||"")}">شيله من الموقع</button>`:""}<button class="x" data-act="adm-fb-del" data-v="${esc(f.id)}" aria-label="امسح">✕</button></li>`).join("") : `<li class="empty">لسه مفيش</li>`}</ul></div>
   <div class="card"><h3>🚩 محتاج مراجعة</h3><ul class="list" style="margin-top:10px">${A.reports.length?A.reports.map(r=>`<li class="item"><span class="ic">${r.kind==="auto"?"🤖":"🚩"}</span><div class="grow"><div class="t">${esc(r.text||"")}</div><div class="s">${r.kind==="auto"?"الفلتر علّمها":"بلاغ"} · كتبها ${esc((A.users.find(x=>x.id===r.author)||{}).name||"?")}</div></div>
     <button class="mini" data-act="adm-open" data-v="${esc(r.owner||"")}">افتح</button><button class="mini" data-act="adm-rmmsg" data-v="${esc(r.id)}">🗑️ امسح الرسالة</button><button class="x" data-act="adm-dismiss" data-v="${esc(r.id)}" aria-label="تجاهل">✕</button></li>`).join(""):`<li class="empty">مفيش حاجة ✨</li>`}</ul></div>
   <div class="card"><h3>💬 جروبات الصحاب</h3><ul class="list" style="margin-top:10px">${(A.groups||[]).length ? A.groups.map(g=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-gopen" data-v="${esc(g.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${esc(g.name||"")}</div><div class="s">${(g.members||[]).length} أعضاء${g.lastText?" · "+esc(g.lastText):""}</div></div></button></li>`).join("") : `<li class="empty">مفيش جروبات لسه</li>`}</ul></div>
@@ -1384,6 +1386,7 @@ function adminView(){
   <div class="card"><h3>📣 ابعت رسالة للكل</h3><p class="muted small" style="margin:4px 0 10px">بتوصل إشعار للي عامل ntfy، وبتظهر جوه التطبيق للكل أول ما يفتحوه.</p>
     <form class="form" data-form="adm-bcast"><input class="in" id="ab-title" maxlength="60" placeholder="العنوان (اختياري)" aria-label="العنوان"><textarea class="in" id="ab-text" rows="3" required maxlength="500" placeholder="الرسالة" aria-label="الرسالة"></textarea>
     <div class="seg"><button type="button" data-act="bc-to" data-v="all" aria-pressed="${(U.bcTo||"all")==="all"}">الكل</button><button type="button" data-act="bc-to" data-v="f" aria-pressed="${U.bcTo==="f"}">🎀 البنات</button><button type="button" data-act="bc-to" data-v="m" aria-pressed="${U.bcTo==="m"}">🧢 الولاد</button></div>
+    <label class="row" style="gap:8px;align-items:center"><input type="checkbox" id="ab-reply" ${U.bcReply?"checked":""}> 💬 يقدروا يردّوا عليها (مش مجرد إعلان)</label>
     <button class="btn" type="submit">📣 ابعت</button></form></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات <span class="muted small">· 🟢 ${A.users.filter(u=>presence(u).c==="on").length} فاتحين دلوقتي · 🔴 ${A.users.filter(u=>presence(u).c==="off").length} غايبين أسبوع</span></h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
@@ -1421,8 +1424,8 @@ setInterval(heartbeat, 6e4);
 setInterval(() => { if (S && !$("#layer").innerHTML && (S.tab === "mate" || (S.tab === "diary" && U.dmode !== "me"))) keepTyping(render); }, 6e4);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") heartbeat(); });
 /* owner → users: an in-app note (shown once on next open) + a push for those who set up ntfy */
-async function adminSend(list, title, text){
-  const at = Date.now(), msg = {title, text, at};
+async function adminSend(list, title, text, canReply){
+  const at = Date.now(), msg = {title, text, at, reply:!!canReply};
   await Promise.all(list.map(u => fb.set(`users/${u.id}`, {adminMsg:msg}).catch(()=>{})));
   list.forEach((u, i) => { if (u.ntfy) setTimeout(() => fetch(`https://ntfy.sh/${u.ntfy}?title=${encodeURIComponent(title)}&tags=love_letter`, {method:"POST", body:text}).catch(()=>{}), i * 300); });
   return list.length;
@@ -1431,7 +1434,9 @@ function showAdminMsg(){
   const m = ME && ME.adminMsg; if (!m || !m.at) return;
   let seen = 0; try { seen = +localStorage.getItem("nw-amsg-" + UID) || 0; } catch(e){}
   if (seen >= m.at) return;
-  const tryShow = n => { if (!$("#layer").innerHTML){ try { localStorage.setItem("nw-amsg-" + UID, String(m.at)); } catch(e){} message("💌", (m.title ? m.title + "\n\n" : "") + m.text, "Nono's World 🌍"); } else if (n < 30) setTimeout(() => tryShow(n + 1), 2000); };
+  const tryShow = n => { if (!$("#layer").innerHTML){ try { localStorage.setItem("nw-amsg-" + UID, String(m.at)); } catch(e){} if (m.reply) sheet(`<div class="popmsg"><div class="em">💌</div>${m.title ? `<b>${esc(m.title)}</b>` : ""}<p>${esc(m.text)}</p><small>Nono's World 🌍</small></div>
+        <form class="form" data-form="amsg-reply" data-v="${esc(m.title||"")}"><textarea class="in" id="amr-text" rows="2" maxlength="300" placeholder="اكتبي ردّك…" aria-label="ردّك"></textarea><button class="btn" type="submit">ابعتي الرد 💬</button><button class="btn ghost" type="button" data-act="close">بعدين</button></form>`);
+      else message("💌", (m.title ? m.title + "\n\n" : "") + m.text, "Nono's World 🌍"); } else if (n < 30) setTimeout(() => tryShow(n + 1), 2000); };
   setTimeout(() => tryShow(0), 1200);
 }
 async function adminExport(){
@@ -2221,10 +2226,12 @@ document.addEventListener("submit", e => {
     }
     case "work": { const t = val("w-title"); if (!t) return; const due = (document.getElementById("w-due")||{}).value || ""; S.work = (S.work||[]).concat({id:uid(), title:t, due, done:false}); save(); closeSheet(); render(); toast("اتضاف 💼"); break; }
     case "adm-notify": { const u = U.admin.users.find(x=>x.id===f.dataset.v), t = val("an-text"); if (!u || !t) return;
-      adminSend([u], "💌 رسالة من Nono's World", t).then(n => { $("#an-text").value = ""; toast(`✅ اتبعتت لـ ${u.name}${u.ntfy ? "" : " (هتظهرله أول ما يفتح، علشان معملش ntfy)"}`); }); break; }
+      adminSend([u], "💌 رسالة من Nono's World", t, !!($("#an-reply")||{}).checked).then(n => { $("#an-text").value = ""; toast(`✅ اتبعتت لـ ${u.name}${u.ntfy ? "" : " (هتظهرله أول ما يفتح، علشان معملش ntfy)"}`); }); break; }
     case "adm-bcast": { const t = val("ab-text"), title = val("ab-title") || "📣 Nono's World"; if (!t) return; const to = U.bcTo || "all";
       const list = U.admin.users.filter(u => !u.banned && (to === "all" || (u.gender||"f") === to));
-      adminSend(list, title, t).then(() => { $("#ab-text").value = ""; $("#ab-title").value = ""; toast(`✅ اتبعتت لـ ${list.length} حساب`); }); break; }
+      U.bcReply = !!($("#ab-reply")||{}).checked; adminSend(list, title, t, U.bcReply).then(() => { $("#ab-text").value = ""; $("#ab-title").value = ""; toast(`✅ اتبعتت لـ ${list.length} حساب`); }); break; }
+    case "amsg-reply": { const t = val("amr-text"); if (!t) return;
+      fb.add("feedback", {uid:UID, name:ME.name, kind:"reply", re:(f.dataset.v || "").slice(0, 60), text:t, at:Date.now()}).then(()=>{ closeSheet(); toast("اتبعت ردّك 💌"); }).catch(()=>toast("مقدرتش أبعت، اتأكدي من النت")); break; }
     case "adm-pass": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), pw = val("ap-new"); if (!u || pw.length < 6) return toast("الباسورد 6 حروف على الأقل");
       fb.add("resetRequests", {username:u.username, contact:"صاحب التطبيق", note:"اتغيّر من لوحة التحكم", status:"approved", temp:pw, at:Date.now()})
         .then(()=>{ $("#ap-new").value = ""; toast(`✅ باسورد @${u.username} هيتغيّر خلال 5 دقايق`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
@@ -2374,12 +2381,12 @@ function prayerEvents(from, to){
 /* iPhone: the app can't ring when it's closed, so the next day and a half goes to ntfy as delayed pushes */
 function schedulePushIOS(){
   if (!CLOUD || !ME || !ME.ntfy || DEVICE() !== "ios" || !notifDone()) return;
-  const now = Date.now(); let h = 0; try { h = +localStorage.getItem("nw-ntfy-h") || 0; } catch(e){}
+  const now = Date.now(); let h = 0; try { h = +localStorage.getItem("nw-ntfy-h2") || 0; } catch(e){}
   if (h > now + 12 * 36e5) return;
   const from = Math.max(h, now + 6e4), to = now + 36 * 36e5;
   prayerEvents(from, to).filter(e => e.kind !== "remind").slice(0, 40).forEach(e =>
     fetch(`https://ntfy.sh/${ME.ntfy}?title=${encodeURIComponent(e.title)}&delay=${Math.floor(e.at / 1000)}&tags=${e.kind === "adhan" ? "mosque" : "bell"}`, {method:"POST", body:e.body}).catch(()=>{}));
-  try { localStorage.setItem("nw-ntfy-h", String(to)); } catch(e){}
+  try { localStorage.setItem("nw-ntfy-h2", String(to)); } catch(e){}
 }
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
