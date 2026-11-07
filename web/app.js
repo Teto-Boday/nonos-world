@@ -1349,7 +1349,7 @@ function adminView(){
       <form class="form" data-form="adm-notify" data-v="${esc(u.id)}" style="gap:6px"><div class="row"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة" style="flex:1;min-width:0"><button class="btn small" type="submit">🔔 ابعت</button></div>
         <label class="row muted small" style="gap:8px;align-items:center"><input type="checkbox" id="an-reply" checked> 💬 يقدر يرد عليها</label></form>
       <div class="item"><div class="grow"><div class="t">💌 عامله زي المرتبط</div><div class="s">${u.forceLove ? "بيوصله كلام حب حتى لو مش مرتبط" : "مقفول، بياخد تشجيع بس لو مش مرتبط"}</div></div><button class="switch" data-act="adm-forcelove" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.forceLove}" aria-label="عامله زي المرتبط"><i></i></button></div>
-      <p class="muted small">الباسورد واليوزر بيتغيّروا خلال 5 دقايق. ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
+      <p class="muted small">الباسورد واليوزر والمسح بيتنفّذوا لما تدوس "⚡ نفّذ دلوقتي" (أو لوحدهم كل كام ساعة). ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
     </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
   if (A.gsel){
@@ -1383,6 +1383,7 @@ function adminView(){
     <button class="btn block" style="margin-top:10px" data-act="adm-cheer">حفظ التشجيع للكل</button></div>
   <div class="card"><h3>👭 الصحاب</h3><ul class="list" style="margin-top:10px">${(A.friends||[]).length ? A.friends.map(f=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-fopen" data-v="${esc(f.id)}"><span class="ic">${f.status==="ok"?"👭":"⏳"}</span><div class="grow"><div class="t">${Object.values(f.names||{}).map(esc).join(" و ")}</div><div class="s">${f.status==="ok"?"صحاب":"طلب لسه"}</div></div></button></li>`).join("") : `<li class="empty">مفيش صحاب لسه</li>`}</ul></div>
   <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
+  <div class="card"><div class="row between"><div><h3>⚡ نفّذ الطلبات دلوقتي</h3><p class="muted small" style="margin:4px 0 0">تغيير الباسورد واليوزر ومسح الحسابات. افتح الصفحة ودوس <b dir="ltr">Run workflow</b> مرتين، وبعد دقيقة يكون اتنفّذ.</p></div><a class="btn small" style="text-decoration:none" href="https://github.com/Teto-Boday/nonos-world/actions/workflows/reset.yml" target="_blank" rel="noopener">⚡ نفّذ دلوقتي</a></div></div>
   <div class="card"><h3>📣 ابعت رسالة للكل</h3><p class="muted small" style="margin:4px 0 10px">بتوصل إشعار للي عامل ntfy، وبتظهر جوه التطبيق للكل أول ما يفتحوه.</p>
     <form class="form" data-form="adm-bcast"><input class="in" id="ab-title" maxlength="60" placeholder="العنوان (اختياري)" aria-label="العنوان"><textarea class="in" id="ab-text" rows="3" required maxlength="500" placeholder="الرسالة" aria-label="الرسالة"></textarea>
     <div class="seg"><button type="button" data-act="bc-to" data-v="all" aria-pressed="${(U.bcTo||"all")==="all"}">الكل</button><button type="button" data-act="bc-to" data-v="f" aria-pressed="${U.bcTo==="f"}">🎀 البنات</button><button type="button" data-act="bc-to" data-v="m" aria-pressed="${U.bcTo==="m"}">🧢 الولاد</button></div>
@@ -1542,7 +1543,7 @@ function settingsView(){
   </div>
   ${CLOUD && ME ? `<div class="card"><h3>👤 غيّري اليوزر نيم</h3>
     <p class="muted small" style="margin:6px 0 10px">اليوزر الحالي: <b dir="ltr">@${esc(ME.username||"")}</b></p>
-    ${U.unReq && U.unReq.status === "new" ? `<div class="notice">⏳ بيتغيّر لـ <b dir="ltr">@${esc(U.unReq.username)}</b> خلال دقايق. بعدها هتدخلي بيه المرة الجاية.</div>`
+    ${U.unReq && U.unReq.status === "new" ? `<div class="notice">⏳ بيتغيّر لـ <b dir="ltr">@${esc(U.unReq.username)}</b> خلال شوية (ممكن ياخد كام ساعة). بعدها هتدخلي بيه المرة الجاية.</div>`
       : `${U.unReq && U.unReq.status === "taken" ? `<div class="notice" style="color:var(--bad)">❌ <b dir="ltr">@${esc(U.unReq.username)}</b> متاخد، جرّبي اسم تاني</div>` : ""}
     <form class="row" data-form="uname"><input class="in" id="un-new" dir="ltr" required placeholder="newname" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي" autocomplete="off" aria-label="اليوزر الجديد"><button class="btn small" type="submit">غيّري</button></form>`}
   </div>` : ""}
@@ -1937,10 +1938,10 @@ document.addEventListener("click", e => {
       const d = {f:lines("cfg-love-f"), m:lines("cfg-love-m"), at:Date.now()};
       fb.set("config/love", d, false).then(()=>{ CFG.love = d; toast("اتحفظت، وهتظهر للكل 💌"); }).catch(()=>toast("مقدرتش أحفظ، اتأكد إنك نشرت القواعد الجديدة")); break; }
     case "adm-deluser": { const u = (U.admin.users||[]).find(x=>x.id===v); if (!u || v === UID) break;
-      sheet(`<h2>🗑️ تمسح حساب ${esc(u.name||"")}؟</h2><p class="muted">@${esc(u.username||"")}</p><p>الحساب وكل بياناته هيتمسحوا <b>نهائي</b> ومش هيرجعوا: الفلوس والمهام والمذاكرة والمود ودفتر حكاياتي والرسايل. وهيتفك الربط مع شريكه ويخرج من الجروبات.</p><p class="muted small">هيتقفل على طول، ويتمسح خالص خلال 5 دقايق.</p><div class="form"><button class="btn danger" data-act="adm-deluser-ok" data-v="${esc(u.id)}">أيوه امسحه نهائي</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
+      sheet(`<h2>🗑️ تمسح حساب ${esc(u.name||"")}؟</h2><p class="muted">@${esc(u.username||"")}</p><p>الحساب وكل بياناته هيتمسحوا <b>نهائي</b> ومش هيرجعوا: الفلوس والمهام والمذاكرة والمود ودفتر حكاياتي والرسايل. وهيتفك الربط مع شريكه ويخرج من الجروبات.</p><p class="muted small">هيتقفل على طول، ويتمسح خالص لما تدوس "⚡ نفّذ دلوقتي".</p><div class="form"><button class="btn danger" data-act="adm-deluser-ok" data-v="${esc(u.id)}">أيوه امسحه نهائي</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
     case "adm-deluser-ok": { const A = U.admin, u = (A.users||[]).find(x=>x.id===v); if (!u) break;
       Promise.all([fb.set(`users/${v}`, {banned:true, deleting:true}), fb.set(`deleteRequests/${v}`, {username:u.username||"", name:u.name||"", at:Date.now(), status:"new"}, false)])
-        .then(() => { A.users = A.users.filter(x=>x.id!==v); A.sel = null; A.st = null; closeSheet(); render(); toast("اتقفل، وهيتمسح خالص خلال 5 دقايق 🗑️"); })
+        .then(() => { A.users = A.users.filter(x=>x.id!==v); A.sel = null; A.st = null; closeSheet(); render(); toast("اتقفل 🗑️ دوس \"⚡ نفّذ دلوقتي\" علشان يتمسح خالص"); })
         .catch(() => toast("مقدرتش، اتأكد إنك نشرت قواعد Firebase الجديدة")); break; }
     case "adm-delgroup": { const g = (U.admin.groups||[]).find(x=>x.id===U.admin.gsel); if (!g) break;
       sheet(`<h2>🗑️ تمسح جروب ${esc(g.name||"")}؟</h2><p>الجروب وكل رسايله هيتمسحوا نهائي، والأعضاء مش هيشوفوه تاني.</p><div class="form"><button class="btn danger" data-act="adm-delgroup-ok">أيوه امسحه</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
@@ -2234,11 +2235,11 @@ document.addEventListener("submit", e => {
       fb.add("feedback", {uid:UID, name:ME.name, kind:"reply", re:(f.dataset.v || "").slice(0, 60), text:t, at:Date.now()}).then(()=>{ closeSheet(); toast("اتبعت ردّك 💌"); }).catch(()=>toast("مقدرتش أبعت، اتأكدي من النت")); break; }
     case "adm-pass": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), pw = val("ap-new"); if (!u || pw.length < 6) return toast("الباسورد 6 حروف على الأقل");
       fb.add("resetRequests", {username:u.username, contact:"صاحب التطبيق", note:"اتغيّر من لوحة التحكم", status:"approved", temp:pw, at:Date.now()})
-        .then(()=>{ $("#ap-new").value = ""; toast(`✅ باسورد @${u.username} هيتغيّر خلال 5 دقايق`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
+        .then(()=>{ $("#ap-new").value = ""; toast(`✅ اتسجّل، دوس "⚡ نفّذ دلوقتي" علشان يتغيّر على طول`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
     case "adm-uname": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), n = val("au-new").toLowerCase(); if (!u || !/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
       if (U.admin.users.some(x=>x.username===n && x.id!==id)) return toast("اليوزر ده متاخد");
       fb.set(`usernameRequests/${id}`, {username:n, status:"new", at:Date.now()}, false)
-        .then(()=>{ $("#au-new").value = ""; toast(`✅ هيتغيّر لـ @${n} خلال 5 دقايق`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
+        .then(()=>{ $("#au-new").value = ""; toast(`✅ اتسجّل، دوس "⚡ نفّذ دلوقتي" علشان يتغيّر على طول`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
     case "adm-link": { const A = U.admin, a = A.users.find(x=>x.id===f.dataset.v), bId = val("al-who"), bU = A.users.find(x=>x.id===bId); if (!a || !bU) return toast("اختار حد");
       const ops = [];
       if (a.partner && a.partner !== bU.id){ ops.push(fb.set(`users/${a.partner}`, {partner:null})); const o = A.users.find(x=>x.id===a.partner); if (o) o.partner = null; }
@@ -2250,7 +2251,7 @@ document.addEventListener("submit", e => {
       if (!/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
       if (n === ME.username) return toast("ده اليوزر بتاعك أصلًا 😅");
       fb.set(`usernameRequests/${UID}`, {username:n, status:"new", at:Date.now()}, false)
-        .then(() => { U.unReq = {username:n, status:"new"}; render(); toast("تمام، هيتغيّر خلال دقايق ⏳"); })
+        .then(() => { U.unReq = {username:n, status:"new"}; render(); toast("تمام، هيتغيّر خلال شوية ⏳"); })
         .catch(() => toast("مقدرتش، جرّبي تاني"));
       break;
     }
