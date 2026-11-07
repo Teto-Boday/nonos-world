@@ -1,5 +1,7 @@
 // English wording for the app. Keys are the Arabic text exactly as it appears in app.js.
 export const EN = {
+"اللي قبله":"Previous","اللي بعده":"Next",
+"من الأسبوع اللي قبله":"from last week","من الشهر اللي قبله":"from last month",
 "الأسبوع اللي قبله":"Previous week","الأسبوع اللي بعده":"Next week","الشهر اللي قبله":"Previous month","الشهر اللي بعده":"Next month","الأسبوع اللي فات":"Last week","الشهر ده":"This month","رجوع للأسبوع ده":"Back to this week","رجوع للشهر ده":"Back to this month","مفيش مصاريف في الفترة دي":"No spending in this period",
 "حد":"Sun","اتنين":"Mon","تلات":"Tue","أربع":"Wed","خميس":"Thu","جمعة":"Fri","سبت":"Sat",
 "الأحد":"Sunday","الاتنين":"Monday","التلات":"Tuesday","الأربع":"Wednesday","الخميس":"Thursday","الجمعة":"Friday","السبت":"Saturday",

@@ -709,18 +709,33 @@ function periodRange(off = 0){
   }
   return {start:new Date(t.getFullYear(),t.getMonth()+off,1), end:new Date(t.getFullYear(),t.getMonth()+off+1,0)};
 }
+/* money left over from the period before moves into this one (from the first period she logged anything in; overspending isn't carried) */
+function carryIn(off = 0){
+  const all = S.money.expenses.concat(S.money.incomes || []); if (!all.length) return 0;
+  const first = all.reduce((m,e) => e.date < m ? e.date : m, all[0].date);
+  let o = off - 1, n = 0; while (n++ < 600 && dkey(periodRange(o).start) > first) o--;
+  if (dkey(periodRange(o).end) < first) o++;
+  let carry = 0;
+  for (; o < off; o++){ const r = periodSums(o); carry = Math.max(0, S.money.allowance + r.added + carry - r.spent); }
+  return carry;
+}
+function periodSums(off){
+  const {start,end} = periodRange(off), sk = dkey(start), ek = dkey(end);
+  const list = S.money.expenses.filter(e => e.date >= sk && e.date <= ek), incomes = (S.money.incomes || []).filter(e => e.date >= sk && e.date <= ek);
+  return {list, incomes, spent: list.reduce((a,e)=>a+e.amt,0), added: incomes.reduce((a,e)=>a+e.amt,0)};
+}
 function moneyInfo(off = 0){
   const {start,end} = periodRange(off); const sk = dkey(start), ek = dkey(end), tk = off ? ek : dkey();
   const list = S.money.expenses.filter(e => e.date >= sk && e.date <= ek);
   const spent = list.reduce((a,e)=>a+e.amt,0), todaySpent = list.filter(e=>e.date===tk).reduce((a,e)=>a+e.amt,0);
   const incomes = (S.money.incomes || []).filter(e => e.date >= sk && e.date <= ek), added = incomes.reduce((a,e)=>a+e.amt,0);
-  const total = S.money.allowance + added, left = total - spent;
+  const carried = carryIn(off), total = S.money.allowance + added + carried, left = total - spent;
   const daysLeft = Math.round((end - fromKey(tk))/864e5) + 1;
   const leftStartToday = left + todaySpent;
   const daily = Math.max(0, leftStartToday / Math.max(1,daysLeft));
   const ratio = total ? left / total : 0;
   const state = !total ? "ok" : left <= 0 ? "out" : ratio < 0.3 ? "near" : "ok";
-  return {list, incomes, added, total, spent, left, daily, todaySpent, daysLeft, state, todayLeft: daily - todaySpent};
+  return {list, incomes, added, carried, total, spent, left, daily, todaySpent, daysLeft, state, todayLeft: daily - todaySpent};
 }
 const dur = m => (m === "focus" ? S.durations.focus : S.durations.rest) * 60;
 const newTimer = (m, subject) => ({mode:m, total:dur(m), remain:dur(m), subject});
@@ -930,21 +945,21 @@ function moneyView(){
   const mi = moneyInfo(off), {start,end} = periodRange(off);
   const hasOlder = S.money.expenses.concat(S.money.incomes || []).some(e => e.date < dkey(start));
   const byCat = CATS.map(c=>({...c, sum: mi.list.filter(e=>e.cat===c.k).reduce((a,e)=>a+e.amt,0)})).filter(c=>c.sum>0).sort((a,b)=>b.sum-a.sum);
-  const pct = S.money.allowance ? Math.min(100, mi.spent/S.money.allowance*100) : 0;
+  const pct = mi.total ? Math.min(100, mi.spent/mi.total*100) : 0;
   const groups = {};
   mi.list.slice().sort((a,b)=>a.date<b.date?1:-1).forEach(e => (groups[e.date] = groups[e.date] || []).push(e));
   return `
   <section class="hello"><h1>${L.money}</h1><p>${past ? (wk ? (off===-1?"الأسبوع اللي فات":prettyDate(start)+" – "+prettyDate(end)) : "شهر "+MONTHS[start.getMonth()]+(start.getFullYear()!==new Date().getFullYear()?" "+start.getFullYear():"")) : (wk?"الأسبوع ده":"شهر "+MONTHS[start.getMonth()])+` · فاضل <span class="num">${mi.daysLeft}</span> يوم`}</p></section>
   ${hasOlder || past ? `<div class="seg" style="margin-bottom:12px">
-    <button data-act="monoff" data-v="${off-1}" ${hasOlder?"":"disabled"}>‹ ${wk?"الأسبوع اللي قبله":"الشهر اللي قبله"}</button>
+    <button data-act="monoff" data-v="${off-1}" ${hasOlder?"":"disabled"}>› اللي قبله</button>
     <button data-act="monoff" data-v="0" aria-pressed="${!past}">${wk?"الأسبوع ده":"الشهر ده"}</button>
-    <button data-act="monoff" data-v="${off+1}" ${past?"":"disabled"}>${wk?"الأسبوع اللي بعده":"الشهر اللي بعده"} ›</button>
+    <button data-act="monoff" data-v="${off+1}" ${past?"":"disabled"}>اللي بعده ‹</button>
   </div>` : ""}
   <div class="card tint">
     <div class="row between"><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span><button class="btn ghost small" data-act="allowance">المصروف: <span class="num">${fmt(S.money.allowance)}</span></button></div>
     <div class="big num" style="margin-top:10px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div>
     <div class="bar" style="margin:12px 0 6px"><i style="width:${pct}%"></i></div>
-    <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(mi.total)}</b>${mi.added ? ` <span class="income-tag">(+<span class="num">${fmt(mi.added)}</span> جالك)</span>` : ""}</span></div>
+    <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(mi.total)}</b>${mi.added ? ` <span class="income-tag">(+<span class="num">${fmt(mi.added)}</span> جالك)</span>` : ""}${mi.carried ? ` <span class="income-tag">(+<span class="num">${fmt(mi.carried)}</span> ${wk?"من الأسبوع اللي قبله":"من الشهر اللي قبله"})</span>` : ""}</span></div>
   </div>
   ${past ? "" : `<div class="card">
     <div class="row between"><h3>${L.daily}</h3><span class="muted small">علشان الفلوس تكفّي لآخر ${S.money.period==="week"?"الأسبوع":"الشهر"}</span></div>
