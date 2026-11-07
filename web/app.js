@@ -1395,14 +1395,13 @@ function adminView(){
 }
 async function loadAdmin(){
   const A = U.admin;
-  try {
-    A.users = (await fb.list("users", 1000)).filter(u=>!u.deleting).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    A.reports = await fb.list("reports", 200);
-    A.feedback = await fb.list("feedback", 100, "at").catch(()=>[]);
-    A.resets = await fb.list("resetRequests", 100).catch(()=>[]);
-    A.groups = await fb.list("groups", 300).catch(()=>[]);
-    A.friends = await fb.list("friends", 500).catch(()=>[]);
-  } catch(e){ A.users = []; A.reports = []; toast("مش قادر أحمّل البيانات"); }
+  // everything in parallel, each with a time limit, so one slow list never blocks the panel
+  const lim = (pr, ms = 12000) => Promise.race([pr, new Promise((_, j) => setTimeout(() => j(new Error("timeout")), ms))]);
+  const get = (p, n, o) => lim(fb.list(p, n, o)).catch(() => null);
+  const [users, reports, feedback, resets, groups, friends] = await Promise.all([get("users", 1000), get("reports", 200), get("feedback", 100, "at"), get("resetRequests", 100), get("groups", 300), get("friends", 500)]);
+  if (!users) toast("النت بطيء، مقدرتش أحمّل الحسابات، اسحب لتحت أو دوس 🔄");
+  A.users = (users || []).filter(u=>!u.deleting).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  A.reports = reports || []; A.feedback = feedback || []; A.resets = resets || []; A.groups = groups || []; A.friends = friends || [];
   if (S.tab === "admin") render();
 }
 /* green dot + "open now" for partner and friends */
