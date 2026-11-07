@@ -1347,7 +1347,7 @@ function adminView(){
       <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required pattern="[A-Za-z0-9_.]{3,20}" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
       <form class="row" data-form="adm-link" data-v="${esc(u.id)}"><select class="in" id="al-who" aria-label="اربطه بمين"><option value="">💞 اربطه بـ…</option>${A.users.filter(x=>x.id!==u.id && x.id!==u.partner).map(x=>`<option value="${esc(x.id)}">${x.gender==="m"?"🧢":"🎀"} ${esc(x.name)} (@${esc(x.username)})${x.partner?" · مربوط":""}</option>`).join("")}</select><button class="btn small" type="submit">اربط</button></form>
       <form class="form" data-form="adm-notify" data-v="${esc(u.id)}" style="gap:6px"><div class="row"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة" style="flex:1;min-width:0"><button class="btn small" type="submit">🔔 ابعت</button></div>
-        <label class="row muted small" style="gap:8px;align-items:center"><input type="checkbox" id="an-reply" checked> 💬 يقدر يرد عليها</label></form>
+        <div class="item"><div class="grow"><div class="t">💬 يقدر يرد عليها</div><div class="s">${U.anReply !== false ? "هيظهرله مكان يكتب فيه رد" : "إعلان بس، من غير رد"}</div></div><button type="button" class="switch" data-act="an-reply" role="switch" aria-checked="${U.anReply !== false}" aria-label="يقدر يرد"><i></i></button></div></form>
       <div class="item"><div class="grow"><div class="t">💌 عامله زي المرتبط</div><div class="s">${u.forceLove ? "بيوصله كلام حب حتى لو مش مرتبط" : "مقفول، بياخد تشجيع بس لو مش مرتبط"}</div></div><button class="switch" data-act="adm-forcelove" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.forceLove}" aria-label="عامله زي المرتبط"><i></i></button></div>
       <p class="muted small">الباسورد واليوزر والمسح بيتنفّذوا لما تدوس "⚡ نفّذ دلوقتي" (أو لوحدهم كل كام ساعة). ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
     </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
@@ -1387,7 +1387,7 @@ function adminView(){
   <div class="card"><h3>📣 ابعت رسالة للكل</h3><p class="muted small" style="margin:4px 0 10px">بتوصل إشعار للي عامل ntfy، وبتظهر جوه التطبيق للكل أول ما يفتحوه.</p>
     <form class="form" data-form="adm-bcast"><input class="in" id="ab-title" maxlength="60" placeholder="العنوان (اختياري)" aria-label="العنوان"><textarea class="in" id="ab-text" rows="3" required maxlength="500" placeholder="الرسالة" aria-label="الرسالة"></textarea>
     <div class="seg"><button type="button" data-act="bc-to" data-v="all" aria-pressed="${(U.bcTo||"all")==="all"}">الكل</button><button type="button" data-act="bc-to" data-v="f" aria-pressed="${U.bcTo==="f"}">🎀 البنات</button><button type="button" data-act="bc-to" data-v="m" aria-pressed="${U.bcTo==="m"}">🧢 الولاد</button></div>
-    <label class="row" style="gap:8px;align-items:center"><input type="checkbox" id="ab-reply" ${U.bcReply?"checked":""}> 💬 يقدروا يردّوا عليها (مش مجرد إعلان)</label>
+    <div class="item"><div class="grow"><div class="t">💬 يقدروا يردّوا عليها</div><div class="s">${U.bcReply ? "هيظهرلهم مكان يكتبوا فيه رد" : "إعلان بس، من غير رد"}</div></div><button type="button" class="switch" data-act="bc-reply" role="switch" aria-checked="${!!U.bcReply}" aria-label="يقدروا يردّوا"><i></i></button></div>
     <button class="btn" type="submit">📣 ابعت</button></form></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات <span class="muted small">· 🟢 ${A.users.filter(u=>presence(u).c==="on").length} فاتحين دلوقتي · 🔴 ${A.users.filter(u=>presence(u).c==="off").length} غايبين أسبوع</span></h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
@@ -1927,6 +1927,9 @@ document.addEventListener("click", e => {
     case "adm-export": adminExport(); break;
     case "adm-forcelove": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.forceLove;
       fb.set(`users/${v}`, {forceLove:on}).then(()=>{ u.forceLove = on; render(); toast(on ? `💌 ${u.name} هيوصله كلام حب` : `${u.name} رجع تشجيع بس`); }).catch(()=>toast("مقدرتش")); break; }
+    case "bc-reply": case "an-reply": {
+      const on = act === "bc-reply" ? (U.bcReply = !U.bcReply) : (U.anReply = U.anReply === false);
+      b.setAttribute("aria-checked", on); const sub = b.parentElement.querySelector(".s"); if (sub) sub.textContent = on ? (act === "bc-reply" ? "هيظهرلهم مكان يكتبوا فيه رد" : "هيظهرله مكان يكتب فيه رد") : "إعلان بس، من غير رد"; break; }
     case "bc-to": U.bcTo = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "adm-cheer": { const lines = id => (($("#" + id)||{}).value || "").split("\n").map(x=>x.trim()).filter(Boolean).slice(0, 200);
       const d = {f:lines("cfg-cheer-f"), m:lines("cfg-cheer-m"), at:Date.now()};
@@ -2227,10 +2230,10 @@ document.addEventListener("submit", e => {
     }
     case "work": { const t = val("w-title"); if (!t) return; const due = (document.getElementById("w-due")||{}).value || ""; S.work = (S.work||[]).concat({id:uid(), title:t, due, done:false}); save(); closeSheet(); render(); toast("اتضاف 💼"); break; }
     case "adm-notify": { const u = U.admin.users.find(x=>x.id===f.dataset.v), t = val("an-text"); if (!u || !t) return;
-      adminSend([u], "💌 رسالة من Nono's World", t, !!($("#an-reply")||{}).checked).then(n => { $("#an-text").value = ""; toast(`✅ اتبعتت لـ ${u.name}${u.ntfy ? "" : " (هتظهرله أول ما يفتح، علشان معملش ntfy)"}`); }); break; }
+      adminSend([u], "💌 رسالة من Nono's World", t, U.anReply !== false).then(n => { $("#an-text").value = ""; toast(`✅ اتبعتت لـ ${u.name}${u.ntfy ? "" : " (هتظهرله أول ما يفتح، علشان معملش ntfy)"}`); }); break; }
     case "adm-bcast": { const t = val("ab-text"), title = val("ab-title") || "📣 Nono's World"; if (!t) return; const to = U.bcTo || "all";
       const list = U.admin.users.filter(u => !u.banned && (to === "all" || (u.gender||"f") === to));
-      U.bcReply = !!($("#ab-reply")||{}).checked; adminSend(list, title, t, U.bcReply).then(() => { $("#ab-text").value = ""; $("#ab-title").value = ""; toast(`✅ اتبعتت لـ ${list.length} حساب`); }); break; }
+      adminSend(list, title, t, !!U.bcReply).then(() => { $("#ab-text").value = ""; $("#ab-title").value = ""; toast(`✅ اتبعتت لـ ${list.length} حساب`); }); break; }
     case "amsg-reply": { const t = val("amr-text"); if (!t) return;
       fb.add("feedback", {uid:UID, name:ME.name, kind:"reply", re:(f.dataset.v || "").slice(0, 60), text:t, at:Date.now()}).then(()=>{ closeSheet(); toast("اتبعت ردّك 💌"); }).catch(()=>toast("مقدرتش أبعت، اتأكدي من النت")); break; }
     case "adm-pass": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), pw = val("ap-new"); if (!u || pw.length < 6) return toast("الباسورد 6 حروف على الأقل");
