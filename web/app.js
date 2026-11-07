@@ -1273,9 +1273,9 @@ function prayersBlock(k){
     <div class="notice" style="margin-top:8px;line-height:1.9">🤍 ${sabrAt(fromKey(k).getDate() + new Date().getHours())}</div>`;
   const tt = timesFor(fromKey(k)), nx = k === dkey() ? nextPrayer() : null, fri = new Date().getDay() === 5 && k === dkey();
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
-    ${nx ? `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>` : ""}
+    ${nx ? (isEN() ? `<div class="muted small" style="margin:2px 4px 6px">🕌 Next: <b>${nx.n}</b> at <b class="num">${hhmm(nx.at)}</b> · in ${inMins(nx.at - Date.now())}</div>` : `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>`) : ""}
     <div class="prayers">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}<small class="num ptime">${hhmm(tt[p])}</small></button>`).join("")}</div>
-    ${k === dkey() ? `<div class="hadith">📜 ${esc(hadithAt(Math.floor(Date.now() / 864e5) * 3 + new Date().getHours() % 3))}</div>` : ""}
+    ${k === dkey() && !isEN() ? `<div class="hadith">📜 ${esc(hadithAt(Math.floor(Date.now() / 864e5) * 3 + new Date().getHours() % 3))}</div>` : ""}
     ${k === dkey() ? `<div class="row wrap" style="gap:8px;margin-top:8px"><button class="btn ghost small" data-act="azkar" data-v="${azkarNow()}">📿 ${azkarNow() === "m" ? "أذكار الصباح" : "أذكار المساء"}</button>${fri ? `<a class="btn ghost small" style="text-decoration:none" href="https://quran.com/ar/18" target="_blank" rel="noopener">📖 سورة الكهف</a>` : ""}</div>` : ""}`;
 }
 function cycleBlock(){
@@ -1493,7 +1493,7 @@ function settingsView(){
   return `<section class="hello"><h1>الإعدادات ⚙️</h1><p>${esc(S.user.name)} · @${esc(S.user.username)}</p></section>
   ${IS_ADMIN ? `<button class="btn block" style="margin-bottom:12px" data-act="tab" data-v="admin">👑 لوحة التحكم</button>` : ""}
   <div class="card"><h3>الثيم 🎨</h3>
-    <div class="themes" style="margin-top:10px">${THEMES.map(t=>`<button data-act="theme" data-v="${t.k}" aria-pressed="${S.theme===t.k}"><span class="sw" style="background:linear-gradient(135deg,${t.a},${t.a2})"></span>${t.n}</button>`).join("")}</div>
+    <div class="themes" style="margin-top:10px">${THEMES.map(t=>`<button data-act="theme" data-v="${t.k}" aria-pressed="${S.theme===t.k}"><span class="sw" style="background:linear-gradient(135deg,${t.a},${t.a2})"></span>${isEN() ? t.n : "\uE000" + t.n + "\uE001"}</button>`).join("")}</div>
     <div class="sectionlbl" style="margin:14px 4px 6px">🌙 الوضع الليلي</div>
     <div class="seg"><button data-act="dark" data-v="off" aria-pressed="${S.dark==="off"}">مقفول</button><button data-act="dark" data-v="auto" aria-pressed="${S.dark==="auto"}">لوحده بالليل</button><button data-act="dark" data-v="on" aria-pressed="${S.dark==="on"}">على طول</button></div>
   </div>
@@ -1530,7 +1530,7 @@ function settingsView(){
   <div class="card"><h3>📍 بتدرسي فين؟</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط المذاكرة والجدول على حسابك.</p>
     <div class="seg"><button data-act="set-stage" data-v="uni" aria-pressed="${stage()==="uni"}">جامعة 🎓</button><button data-act="set-stage" data-v="school" aria-pressed="${stage()==="school"}">مدرسة 🎒</button><button data-act="set-stage" data-v="grad" aria-pressed="${stage()==="grad"}">متخرّجة 💼</button></div></div>
   ${partnerCard()}
-  ${CLOUD && ME ? `<div class="card"><h3>🔔 الإشعارات والتطبيق مقفول</h3><p class="muted small" style="margin:4px 0 0">رسايل ${ME.gender==="m" ? "\uE000شريكتك\uE001" : "شريكك"} والجروبات والتنبيهات توصلك حتى لو التطبيق مقفول خالص.</p>
+  ${CLOUD && ME ? `<div class="card"><h3>🔔 الإشعارات والتطبيق مقفول</h3><p class="muted small" style="margin:4px 0 0">${isEN() ? "Messages from your partner, groups and alerts reach you even when the app is fully closed." : `رسايل ${ME.gender==="m" ? "\uE000شريكتك\uE001" : "شريكك"} والجروبات والتنبيهات توصلك حتى لو التطبيق مقفول خالص.`}</p>
     <ol class="small" style="margin:8px 0 0;padding-inline-start:18px;line-height:1.9"><li>نزّل تطبيق <b>ntfy</b> (موجود على Google Play وApp Store ومتاح للكمبيوتر).</li><li>دوس <b>+</b> واكتب الاسم ده بالظبط:</li></ol>
     <div class="item" style="margin-top:6px"><div class="grow t num" dir="ltr" style="word-break:break-all">${esc(ME.ntfy||"")}</div><button class="mini" data-act="copy" data-v="${esc(ME.ntfy||"")}">نسخ</button></div>
     <p class="muted small" style="margin:8px 0 0">متقولش الاسم ده لحد، ده بتاعك إنت بس.</p>
@@ -2286,7 +2286,7 @@ function nextPrayer(){
     for (const [p, n] of PRAYERS) if (t[p] > now) return {p, n, at:t[p]}; }
   return null;
 }
-const inMins = ms => { const m = Math.max(0, Math.round(ms / 6e4)), h = Math.floor(m / 60), r = m % 60; return h ? `${h} ساعة${r ? ` و${r} دقيقة` : ""}` : `${r} دقيقة`; };
+const inMins = ms => { const m = Math.max(0, Math.round(ms / 6e4)), h = Math.floor(m / 60), r = m % 60; if (isEN()) return h ? `${h}h${r ? ` ${r}m` : ""}` : `${r}m`; return h ? `${h} ساعة${r ? ` و${r} دقيقة` : ""}` : `${r} دقيقة`; };
 const AZKAR = {
   m:[
     ["آية الكرسي: اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ", 1],
