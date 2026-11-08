@@ -38,7 +38,7 @@ export function prayerTimes(date, lat, lng){
   }
   // hours are UTC at the given longitude → local clock time of that day
   const tz = -new Date(y, m - 1, d, 12).getTimezoneOffset() / 60;
-  const adj = { fajr:0, sunrise:0, dhuhr:1, asr:0, maghrib:1, isha:0 }; // a minute of safety, as Egyptian calendars do
+  const adj = { fajr:0, sunrise:0, dhuhr:0, asr:0, maghrib:0, isha:0 }; // matches the Egyptian Survey Authority's published times
   const out = {};
   for (const k in t){
     const h = t[k] + tz - lng / 15, mins = Math.round(h * 60) + adj[k];

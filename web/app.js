@@ -2339,10 +2339,10 @@ const HADITH = [
   ["«أرأيتم لو أن نهرًا بباب أحدكم يغتسل فيه كل يوم خمسًا، هل يبقى من درنه شيء؟» قالوا: لا، قال: «فذلك مثل الصلوات الخمس، يمحو الله بهن الخطايا»", "متفق عليه"],
   ["«الصلوات الخمس، والجمعة إلى الجمعة، كفارة لما بينهن ما لم تُغشَ الكبائر»", "رواه مسلم"],
   ["«أقرب ما يكون العبد من ربه وهو ساجد، فأكثروا الدعاء»", "رواه مسلم"],
-  ["«من صلى البردين دخل الجنة» (الفجر والعصر)", "متفق عليه"],
-  ["«من صلى الصبح فهو في ذمة الله»", "رواه مسلم"],
+  ["«من صلى البردين دخل الجنة» (الفجر والعصر)", "متفق عليه", ["fajr","asr"]],
+  ["«من صلى الصبح فهو في ذمة الله»", "رواه مسلم", ["fajr"]],
   ["«ما من امرئ مسلم تحضره صلاة مكتوبة فيحسن وضوءها وخشوعها وركوعها إلا كانت كفارة لما قبلها من الذنوب ما لم يؤتِ كبيرة، وذلك الدهر كله»", "رواه مسلم"],
-  ["«من صلى العشاء في جماعة فكأنما قام نصف الليل، ومن صلى الصبح في جماعة فكأنما صلى الليل كله»", "رواه مسلم"],
+  ["«من صلى العشاء في جماعة فكأنما قام نصف الليل، ومن صلى الصبح في جماعة فكأنما صلى الليل كله»", "رواه مسلم", ["fajr","isha"]],
   ["«أول ما يحاسب به العبد يوم القيامة الصلاة، فإن صلحت صلح سائر عمله، وإن فسدت فسد سائر عمله»", "رواه الطبراني وصححه الألباني"],
   ["قال النبي ﷺ: «وجُعلت قرة عيني في الصلاة»", "رواه النسائي"],
   ["قال النبي ﷺ: «يا بلال، أقم الصلاة، أرحنا بها»", "رواه أبو داود"]
@@ -2358,7 +2358,8 @@ const HADITH_SABR = [
   ["«ما من مسلم يصيبه أذى، مرض فما سواه، إلا حطّ الله به سيئاته كما تحطّ الشجرة ورقها»", "متفق عليه"]
 ];
 const sabrAt = n => { const [t, src] = HADITH_SABR[((n % HADITH_SABR.length) + HADITH_SABR.length) % HADITH_SABR.length]; return `${t} (${src})`; };
-const hadithAt = n => { const [t, src] = HADITH[((n % HADITH.length) + HADITH.length) % HADITH.length]; return `${t} (${src})`; };
+// a hadith about a specific prayer (Fajr, Asr, Isha) only shows with that prayer; the rest fit any time
+const hadithAt = (n, p) => { const L = HADITH.filter(h => p ? !h[2] || h[2].includes(p) : !h[2]); const [t, src] = L[((n % L.length) + L.length) % L.length]; return `${t} (${src})`; };
 function prayerEvents(from, to){
   const out = [], male = isMale(), G = t => isEN() ? t : gx(t, male);
   for (let day = new Date(from); day.getTime() <= to + 864e5; day = addDays(day, 1)){
@@ -2368,8 +2369,8 @@ function prayerEvents(from, to){
     if (isMuslim() && S.pray && S.pray.on && !period){
       const dn = Math.floor(d.getTime() / 864e5);
       PRAYERS.forEach(([p, n], i) => {
-        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, hadithAt(dn * 5 + i), "adhan");
-        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍 لسه فيه وقت`), hadithAt(dn * 5 + i + 3), "remind");
+        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, hadithAt(dn * 5 + i, p), "adhan");
+        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍 لسه فيه وقت`), hadithAt(dn * 5 + i + 3, p), "remind");
       });
     }
     if (isMuslim() && S.pray && S.pray.on && period){
@@ -2403,7 +2404,7 @@ function schedulePushIOS(){
   if (h > now + 12 * 36e5) return;
   const from = Math.max(h, now + 6e4), to = now + 36 * 36e5;
   prayerEvents(from, to).filter(e => e.kind !== "remind").slice(0, 40).forEach(e =>
-    fetch(`https://ntfy.sh/${ME.ntfy}?title=${encodeURIComponent(e.title)}&delay=${Math.floor(e.at / 1000)}&tags=${e.kind === "adhan" ? "mosque" : "bell"}`, {method:"POST", body:e.body}).catch(()=>{}));
+    fetch(`https://ntfy.sh/${ME.ntfy}?title=${encodeURIComponent(e.title)}&delay=${Math.floor(e.at / 1000)}`, {method:"POST", body:e.body}).catch(()=>{}));
   try { localStorage.setItem("nw-ntfy-h2", String(to)); } catch(e){}
   ME.ntfyH = to; fb.set(`users/${UID}`, {ntfyH:to}).catch(()=>{});
 }
