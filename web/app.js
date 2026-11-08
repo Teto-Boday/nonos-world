@@ -1344,7 +1344,7 @@ function adminView(){
       <div class="muted small" style="margin-bottom:8px"><span class="pres ${presence(u).c}"></span>${presence(u).t}</div>
     <div class="admctl">
       <form class="row" data-form="adm-pass" data-v="${esc(u.id)}"><input class="in" id="ap-new" dir="ltr" minlength="6" maxlength="40" required placeholder="باسورد جديد" aria-label="باسورد جديد" autocomplete="off"><button class="btn small" type="submit">🔑 غيّر الباسورد</button></form>
-      <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required pattern="[A-Za-z0-9_.]{3,20}" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
+      <form class="row" data-form="adm-uname" data-v="${esc(u.id)}"><input class="in" id="au-new" dir="ltr" required autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${esc(u.username||"")}" aria-label="يوزر نيم جديد" autocomplete="off"><button class="btn small" type="submit">👤 غيّر اليوزر</button></form>
       <form class="row" data-form="adm-link" data-v="${esc(u.id)}"><select class="in" id="al-who" aria-label="اربطه بمين"><option value="">💞 اربطه بـ…</option>${A.users.filter(x=>x.id!==u.id && x.id!==u.partner).map(x=>`<option value="${esc(x.id)}">${x.gender==="m"?"🧢":"🎀"} ${esc(x.name)} (@${esc(x.username)})${x.partner?" · مربوط":""}</option>`).join("")}</select><button class="btn small" type="submit">اربط</button></form>
       <form class="form" data-form="adm-notify" data-v="${esc(u.id)}" style="gap:6px"><div class="row"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة" style="flex:1;min-width:0"><button class="btn small" type="submit">🔔 ابعت</button></div>
         <div class="item"><div class="grow"><div class="t">💬 يقدر يرد عليها</div><div class="s">${U.anReply !== false ? "هيظهرله مكان يكتب فيه رد" : "إعلان بس، من غير رد"}</div></div><button type="button" class="switch" data-act="an-reply" role="switch" aria-checked="${U.anReply !== false}" aria-label="يقدر يرد"><i></i></button></div></form>
@@ -1544,7 +1544,7 @@ function settingsView(){
     <p class="muted small" style="margin:6px 0 10px">اليوزر الحالي: <b dir="ltr">@${esc(ME.username||"")}</b></p>
     ${U.unReq && U.unReq.status === "new" ? `<div class="notice">⏳ بيتغيّر لـ <b dir="ltr">@${esc(U.unReq.username)}</b> خلال شوية (ممكن ياخد كام ساعة). بعدها هتدخلي بيه المرة الجاية.</div>`
       : `${U.unReq && U.unReq.status === "taken" ? `<div class="notice" style="color:var(--bad)">❌ <b dir="ltr">@${esc(U.unReq.username)}</b> متاخد، جرّبي اسم تاني</div>` : ""}
-    <form class="row" data-form="uname"><input class="in" id="un-new" dir="ltr" required placeholder="newname" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي" autocomplete="off" aria-label="اليوزر الجديد"><button class="btn small" type="submit">غيّري</button></form>`}
+    <form class="row" data-form="uname"><input class="in" id="un-new" dir="ltr" required placeholder="newname" maxlength="24" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="اليوزر الجديد"><button class="btn small" type="submit">غيّري</button></form>`}
   </div>` : ""}
   ${CLOUD ? `<div class="card"><h3>🔑 غيّري الباسورد</h3>
     <form class="form" data-form="pass" style="margin-top:10px">
@@ -1576,7 +1576,7 @@ function authView(){
     <p class="center muted" style="margin:-8px 0 0">${login?"وحشتينا! ادخلي 💗":"اعملي حسابك وابدئي دنيتك 🌸"}</p>
     <form class="card form" data-form="auth">
       ${login?"":`<label class="f">اسمك (هنناديكي بيه)<input class="in" id="a-name" required placeholder="${U.ag==="m"?"محمد":"نونو"}"></label>`}
-      <label class="f">اسم المستخدم (بالإنجليزي)<input class="in" id="a-user" required autocomplete="username" dir="ltr" placeholder="nono" pattern="[A-Za-z0-9_.]{3,20}" title="من 3 لـ 20 حرف إنجليزي"></label>
+      <label class="f">اسم المستخدم (بالإنجليزي)<input class="in" id="a-user" required autocomplete="username" dir="ltr" placeholder="nono" maxlength="24" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
       <label class="f">الباسورد<span class="pwwrap"><input class="in" id="a-pass" type="password" required minlength="6" autocomplete="${login?"current-password":"new-password"}" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">${EYE_SHUT}</button></span></label>
       ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>
       <div class="seg" role="group" aria-label="بتدرسي فين"><button type="button" data-act="astage" data-v="uni" aria-pressed="${U.stage==="uni"}">جامعة 🎓</button><button type="button" data-act="astage" data-v="school" aria-pressed="${U.stage==="school"}">مدرسة 🎒</button><button type="button" data-act="astage" data-v="grad" aria-pressed="${U.stage==="grad"}">متخرّجة 💼</button></div>
@@ -1649,7 +1649,7 @@ function forgotSheet(){
   ${supportBox(true)}
   <p class="muted small center" style="margin:10px 0">أو ابعتي الطلب من هنا 👇</p>
   <form class="form" data-form="forgot">
-    <label class="f">اسم المستخدم<input class="in" id="fg-user" required dir="ltr" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}"></label>
+    <label class="f">اسم المستخدم<input class="in" id="fg-user" required dir="ltr" maxlength="24" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
     <label class="f">نوصلك إزاي؟ (رقم واتساب مثلًا)<input class="in" id="fg-contact" required maxlength="80" dir="ltr"></label>
     <label class="f">حاجة تأكد إنه حسابك (اختياري)<input class="in" id="fg-note" maxlength="140" placeholder="اسمك في التطبيق، اسم شريكك…"></label>
     <button class="btn" type="submit" id="fg-btn">ابعتي الطلب</button>
@@ -2066,6 +2066,7 @@ document.addEventListener("submit", e => {
   const f = e.target.closest("[data-form]"); if (!f) return;
   e.preventDefault();
   const val = id => (document.getElementById(id)?.value || "").trim();
+  const uval = id => val(id).replace(/[\s\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, "").toLowerCase();
   const k = dkey();
   switch(f.dataset.form){
     case "task": { const t = val("newtask"); if (!t) return; const d = dkey(addDays(new Date(), S._dayOff||0)); S.tasks.push({id:uid(),date:d,title:t,status:null}); save(); render(); setTimeout(()=>$("#newtask")?.focus(),30); break; }
@@ -2221,7 +2222,7 @@ document.addEventListener("submit", e => {
       break;
     }
     case "auth": {
-      const user = val("a-user"), pass = (document.getElementById("a-pass")||{}).value || ""; if (!user || !pass) return;
+      const user = uval("a-user"), pass = (document.getElementById("a-pass")||{}).value || ""; if (!user || !pass) return;
       if (!CLOUD){
         if (U.authMode === "login"){ S.user = {name: (U.lastName || "نونو"), username:user, gender:"f"}; }
         else { const g = U.ag || "f"; S.user = {name: val("a-name") || "نونو", username:user, gender:g}; S.theme = g === "m" ? "leil" : "basbousa"; }
@@ -2236,7 +2237,7 @@ document.addEventListener("submit", e => {
     }
     case "code": { const c = val("pcode"); if (c) sendCode(c); break; }
     case "forgot": {
-      const u = val("fg-user").toLowerCase(), c = val("fg-contact"); if (!u || !c) return;
+      const u = uval("fg-user"), c = val("fg-contact"); if (!u || !c) return;
       const fbtn = $("#fg-btn"); if (fbtn){ fbtn.disabled = true; fbtn.textContent = isEN() ? "One sec…" : "لحظة…"; }
       fb.add("resetRequests", {username:u, contact:c, note:val("fg-note"), status:"new"}).then(()=>{ closeSheet(); message("💌", "الطلب وصل، هيكلّمك قريب ويبعتلك باسورد مؤقت", "🔑"); }).catch(()=>{ toast("مقدرتش أبعت الطلب، اتأكدي من النت"); const fb2 = $("#fg-btn"); if (fb2){ fb2.disabled = false; fb2.textContent = isEN() ? "Send request" : "ابعتي الطلب"; } });
       break;
@@ -2252,7 +2253,7 @@ document.addEventListener("submit", e => {
     case "adm-pass": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), pw = val("ap-new"); if (!u || pw.length < 6) return toast("الباسورد 6 حروف على الأقل");
       fb.add("resetRequests", {username:u.username, contact:"صاحب التطبيق", note:"اتغيّر من لوحة التحكم", status:"approved", temp:pw, at:Date.now()})
         .then(()=>{ $("#ap-new").value = ""; toast(`✅ اتسجّل، دوس "⚡ نفّذ دلوقتي" علشان يتغيّر على طول`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
-    case "adm-uname": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), n = val("au-new").toLowerCase(); if (!u || !/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
+    case "adm-uname": { const id = f.dataset.v, u = U.admin.users.find(x=>x.id===id), n = uval("au-new"); if (!u || !/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
       if (U.admin.users.some(x=>x.username===n && x.id!==id)) return toast("اليوزر ده متاخد");
       fb.set(`usernameRequests/${id}`, {username:n, status:"new", at:Date.now()}, false)
         .then(()=>{ $("#au-new").value = ""; toast(`✅ اتسجّل، دوس "⚡ نفّذ دلوقتي" علشان يتغيّر على طول`); }).catch(()=>toast("مقدرتش، اتأكد إنك نشرت القواعد الجديدة")); break; }
@@ -2263,7 +2264,7 @@ document.addEventListener("submit", e => {
       ops.push(fb.set(`users/${a.id}`, {partner:bU.id}), fb.set(`users/${bU.id}`, {partner:a.id}), fb.del(`linkRequests/${a.id}`).catch(()=>{}), fb.del(`linkRequests/${bU.id}`).catch(()=>{}));
       Promise.all(ops).then(()=>{ a.partner = bU.id; bU.partner = a.id; render(); toast(`💞 ${a.name} و ${bU.name} اتربطوا`); }).catch(()=>toast("مقدرتش أربطهم")); break; }
     case "uname": {
-      const n = val("un-new").toLowerCase();
+      const n = uval("un-new");
       if (!/^[a-z0-9_.]{3,20}$/.test(n)) return toast("اليوزر من 3 لـ 20 حرف إنجليزي أو رقم");
       if (n === ME.username) return toast("ده اليوزر بتاعك أصلًا 😅");
       fb.set(`usernameRequests/${UID}`, {username:n, status:"new", at:Date.now()}, false)
