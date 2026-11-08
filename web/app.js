@@ -1553,9 +1553,19 @@ function settingsView(){
       <div class="notice" id="pw-err" style="display:none;color:var(--bad);font-weight:700"></div>
       <button class="btn" type="submit">غيّري</button>
     </form></div>` : ""}
-  <div class="card row between"><span class="muted small">دوسي 5 مرات على اسم التطبيق فوق… 🤫</span><button class="btn ghost small" data-act="logout">خروج</button></div>`;
+  <div class="card row between"><span class="muted small">دوسي 5 مرات على اسم التطبيق فوق… 🤫</span><button class="btn ghost small" data-act="logout">خروج</button></div>
+  <div class="card">${supportBox(true)}${creditLine()}</div>`;
 }
 
+const SUPPORT_NUM = "+20 100 495 6321", SUPPORT_WA = "https://wa.me/201004956321", SUPPORT_TEL = "tel:+201004956321";
+function supportBox(compact){
+  const en = isEN();
+  return `<div class="support${compact?" compact":""}"><div class="s-t">\uE000${en ? "💬 Contact support" : "💬 التواصل مع الدعم"}\uE001 <bdi dir="ltr" style="unicode-bidi:isolate;font-weight:800">${SUPPORT_NUM}</bdi></div>
+  <div class="row" style="gap:8px;justify-content:center"><a class="btn small" style="text-decoration:none" href="${SUPPORT_WA}" target="_blank" rel="noopener">\uE000${en ? "WhatsApp" : "واتساب"}\uE001 🟢</a><a class="btn ghost small" style="text-decoration:none" href="${SUPPORT_TEL}">\uE000${en ? "Call" : "اتصال"}\uE001 📞</a></div></div>`;
+}
+function creditLine(){
+  return `<p class="credit">\uE000${isEN() ? "Designed by Mohamed Salah 🤍 for the love of his life & his wife" : "من تصميم محمد صلاح 🤍 لحياته وزوجته"}\uE001</p>`;
+}
 function authView(){
   const login = U.authMode === "login";
   return `
@@ -1577,6 +1587,8 @@ function authView(){
     </form>
     <button class="btn ghost" data-act="authmode">${login?"معنديش حساب، أعمل واحد":"عندي حساب، أدخل"}</button>
     ${CLOUD && login ? `<button class="btn ghost" data-act="forgot" style="background:none">نسيتي الباسورد؟ 🔑</button>` : ""}
+    ${supportBox()}
+    ${creditLine()}
   </div>`;
 }
 
@@ -1634,6 +1646,8 @@ function vacationSheet(){
 function forgotSheet(){
   sheet(`<h2>🔑 نسيتي الباسورد؟</h2>
   <p class="muted small" style="margin:-6px 0 12px">ابعتي طلب لصاحب التطبيق، وهيتأكد إنه حسابك ويبعتلك باسورد مؤقت.</p>
+  ${supportBox(true)}
+  <p class="muted small center" style="margin:10px 0">أو ابعتي الطلب من هنا 👇</p>
   <form class="form" data-form="forgot">
     <label class="f">اسم المستخدم<input class="in" id="fg-user" required dir="ltr" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}"></label>
     <label class="f">نوصلك إزاي؟ (رقم واتساب مثلًا)<input class="in" id="fg-contact" required maxlength="80" dir="ltr"></label>

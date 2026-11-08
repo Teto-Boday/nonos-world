@@ -88,7 +88,7 @@ export const EN = {
 "لحد إمتى؟":"Until when?","لو مش عارفة سيبيها فاضية":"leave empty if not sure","ابدئي الإجازة":"Start holiday",
 "ابعتي طلب لصاحب التطبيق، وهيتأكد إنه حسابك ويبعتلك باسورد مؤقت":"Send a request to the app owner. They'll check it's you and send a temporary password",
 "نوصلك إزاي؟":"How can we reach you?","رقم واتساب مثلًا":"e.g. WhatsApp number","حاجة تأكد إنه حسابك":"Something that proves it's your account","اختياري":"optional",
-"اسمك في التطبيق، اسم شريكك…":"your name in the app, your partner's name…","ابعتي الطلب":"Send request","المبلغ":"Amount","ملاحظة":"Note","لو حابة":"optional","قهوة مع البنات":"Coffee with friends",
+"اسمك في التطبيق، اسم شريكك…":"your name in the app, your partner's name…","ابعتي الطلب":"Send request","أو ابعتي الطلب من هنا 👇":"Or send a request here 👇","المبلغ":"Amount","ملاحظة":"Note","لو حابة":"optional","قهوة مع البنات":"Coffee with friends",
 "سجّلي":"Save","معاكي كام؟":"How much do you have?","كل شهر":"Monthly","كل أسبوع":"Weekly","لسه مفيش محاضرات":"No lectures yet","اسم المحاضرة أو السكشن":"Lecture or section name",
 "محاضرة تشريح":"Anatomy lecture","اليوم":"Day","المكان":"Place","مدرج":"Hall","ضيفي للجدول":"Add to schedule","امتحان جاي":"Upcoming exam","المادة":"Subject","النوع":"Type","التاريخ":"Date",
 "سجّلي درجتك":"Add your grade","جبتي كام؟":"Your score","من كام؟":"Out of","خلّصتي من مهماتك":"of tasks done","مذاكرة":"studying","جنيه صرفتيهم":"EGP spent","أكتر مود":"Top mood",

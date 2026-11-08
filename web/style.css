@@ -283,3 +283,8 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .splash-special{max-height:42vh;overflow:auto;white-space:pre-line}.card.special p{white-space:pre-line}
 .popmsg p{white-space:pre-line}
 .hadith{margin-top:10px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb, var(--accent) 8%, transparent);font-size:14px;line-height:1.9}
+
+.support{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding:12px;border-radius:16px;background:var(--card,rgba(255,255,255,.06));border:1px dashed var(--line,rgba(150,150,170,.35));width:100%;box-sizing:border-box}
+.support.compact{padding:10px;border:none;background:transparent}
+.support .s-t{font-weight:700;font-size:.95rem}
+.credit{text-align:center;font-size:.85rem;opacity:.75;margin:10px 0 0}
