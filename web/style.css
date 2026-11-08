@@ -230,6 +230,8 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .card.special{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;text-align:center}
 .card.special .lbl{font-size:12px;font-weight:700;opacity:.9}
 .card.special p{margin:6px 0 0;font-family:var(--display);font-size:19px;font-weight:700;line-height:1.5}
+.splash-credit{font-weight:500;font-size:12.5px;opacity:.8;margin-top:4px}
+.splash-brand{white-space:nowrap}
 .splash-ded{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-weight:700;font-size:14px;opacity:.85;letter-spacing:.3px}
 .splash-special{margin:4px 0 2px;font-family:var(--display);font-size:20px;font-weight:700;line-height:1.5;max-width:360px}
 .big-stars button{width:52px;height:52px;font-size:28px}

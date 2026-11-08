@@ -826,7 +826,7 @@ function splashView(){
   const sub = special ? escP(special) : en ? (boy ? "Your world is ready and waiting for you" : "Everything you love is waiting for you here")
                  : (boy ? "دنيتك جاهزة ومستنياك" : "كل حاجة بتحبيها مستنياكي هنا");
   return `<div class="splash ${boy ? "boy" : "girl"}" role="status" aria-live="polite">
-    <div class="splash-ded">${en ? "Dedicated to my love" : "إهداء إلى حبيبتي"}</div>
+    <div class="splash-ded">${en ? "Dedicated to my love" : "إهداء إلى حبيبتي"}<div class="splash-credit">${en ? "Designed by Mohamed Salah for the love of his life & his wife" : "من تصميم محمد صلاح لحياته وزوجته"}</div></div>
     <div class="splash-in"><img src="icon-192.png" alt="" class="splash-logo">
     <div class="splash-brand">Nono's World</div>
     <h1 class="splash-title">${title}</h1><p class="splash-sub">${sub}</p>
@@ -1564,7 +1564,7 @@ function supportBox(compact){
   <div class="row" style="gap:8px;justify-content:center"><a class="btn small" style="text-decoration:none" href="${SUPPORT_WA}" target="_blank" rel="noopener">\uE000${en ? "WhatsApp" : "واتساب"}\uE001 🟢</a><a class="btn ghost small" style="text-decoration:none" href="${SUPPORT_TEL}">\uE000${en ? "Call" : "اتصال"}\uE001 📞</a></div></div>`;
 }
 function creditLine(){
-  return `<p class="credit">\uE000${isEN() ? "Designed by Mohamed Salah 🤍 for the love of his life & his wife" : "من تصميم محمد صلاح 🤍 لحياته وزوجته"}\uE001</p>`;
+  return `<p class="credit">\uE000${isEN() ? "Designed by Mohamed Salah for the love of his life & his wife" : "من تصميم محمد صلاح لحياته وزوجته"}\uE001</p>`;
 }
 function authView(){
   const login = U.authMode === "login";
