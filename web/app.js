@@ -1533,8 +1533,8 @@ function settingsView(){
     <div class="seg" style="margin-top:10px"><button data-act="set-lang" data-v="ar" aria-pressed="${!isEN()}">\uE000عربي\uE001</button><button data-act="set-lang" data-v="en" aria-pressed="${isEN()}">\uE000English\uE001</button></div></div>
   ${CLOUD ? `<div class="card row between"><div><h3>⭐ قيّمي التطبيق</h3><div class="muted small">رأيك أو اقتراح أو شكوى</div></div><button class="btn small" data-act="feedback">اكتبي</button></div>` : ""}
   <div class="card"><h3>💗 ادعم Nono's World</h3><p class="muted small" style="margin:4px 0 10px">التطبيق مجاني ومن غير إعلانات، ودعمك بيخلّيه يكمّل. أي مبلغ يفرق.</p>
-    <div class="row wrap" style="gap:8px"><a class="btn small" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener">ادعم بإنستاباي</a><button class="btn ghost small" data-act="copy" data-v="teto.2362006@instapay">انسخ عنوان إنستاباي</button><button class="btn ghost small" data-act="copy" data-v="01031544361">انسخ رقم فودافون كاش</button></div>
-    <p class="muted small" style="margin:10px 0 0">إنستاباي: <bdi dir="ltr">teto.2362006@instapay</bdi> · إنستاباي أو فودافون كاش: <bdi dir="ltr">01031544361</bdi></p>
+    <div class="row wrap" style="gap:8px"><a class="btn small" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener">ادعم بإنستاباي</a><button class="btn ghost small" data-act="copy" data-v="01031544361">انسخ رقم فودافون كاش</button></div>
+    <p class="muted small" style="margin:10px 0 0">فودافون كاش: <bdi dir="ltr">01031544361</bdi></p>
     <p class="muted small" style="margin:6px 0 0">من تصميم محمد صلاح · ومن تصميمه كمان: <a href="https://teto-boday.github.io/tuba/" target="_blank" rel="noopener">طُوبَى</a></p></div>
   <div class="card"><h3>💵 العملة</h3>
     <div class="seg" style="margin-top:10px"><button data-act="set-cur" data-v="egp" aria-pressed="${S.currency!=="usd"}">جنيه مصري</button><button data-act="set-cur" data-v="usd" aria-pressed="${S.currency==="usd"}">دولار</button></div></div>
