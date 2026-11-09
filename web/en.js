@@ -110,5 +110,6 @@ export const EN = {
 "تمام، الإجازة هتخلص":"OK, the holiday ends","اهتم بيها أكتر":"care for her more","اتضاف الرد":"Reply added","اتحفظ الرقم السري":"PIN saved","الرقم غلط":"Wrong PIN","اتحفظت الرسايل":"Messages saved",
 "رجعت ذكرياتك":"Memories restored","النسخة دي مش سليمة، جرّبي تنسخيها تاني":"That backup isn't valid, try copying it again","اسم المستخدم من 3 لـ 20 حرف إنجليزي أو رقم":"Username: 3–20 English letters or numbers",
 "الطلب وصل، هيكلّمك قريب ويبعتلك باسورد مؤقت":"Request received, you'll get a temporary password soon","مقدرتش أبعت الطلب، اتأكدي من النت":"Couldn't send the request, check your internet",
-"اتغيّر الباسورد":"Password changed","الباسورد الحالي غلط":"Current password is wrong","هصحّيكي الساعة":"I'll wake you at","حصلت مشكلة في التحميل، جرّبي تاني":"Loading failed, try again"
+"اتغيّر الباسورد":"Password changed","الباسورد الحالي غلط":"Current password is wrong","هصحّيكي الساعة":"I'll wake you at","حصلت مشكلة في التحميل، جرّبي تاني":"Loading failed, try again",
+"💗 ادعم Nono's World":"💗 Support Nono's World","التطبيق مجاني ومن غير إعلانات، ودعمك بيخلّيه يكمّل. أي مبلغ يفرق.":"The app is free and ad-free. Your support keeps it going, any amount helps.","ادعم بإنستاباي":"Support via InstaPay","انسخ عنوان إنستاباي":"Copy InstaPay address","انسخ رقم فودافون كاش":"Copy Vodafone Cash number","إنستاباي:":"InstaPay:","إنستاباي أو فودافون كاش:":"InstaPay or Vodafone Cash:","من تصميم محمد صلاح · ومن تصميمه كمان:":"Designed by Mohamed Salah · Also by him:","طُوبَى":"Tuba","اتنسخ ✅":"Copied ✅"
 };

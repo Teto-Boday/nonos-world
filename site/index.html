@@ -183,13 +183,7 @@ html.boy .blobs i:nth-child(3){background:#dbe6f5}
 .gpick button{border:0;background:none;border-radius:14px;padding:9px 18px;font:inherit;font-weight:700;font-size:16px;color:var(--muted);cursor:pointer}
 .gpick button[aria-pressed="true"]{background:var(--pink);color:#fff}
 /* faq */
-.give{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:900px;margin:0 auto}
-.give .g{background:var(--surface);border-radius:22px;padding:18px;box-shadow:0 3px 0 #f6cddb;display:flex;flex-direction:column;gap:8px;text-align:center;align-items:center}
-.give .g h3{font-size:20px}
-.give .g p{margin:0;color:var(--muted)}
-.give .g .btn{margin-top:auto}
 .more{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
-@media (max-width:760px){.give{grid-template-columns:1fr}}
 .faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
 .faq details{background:var(--surface);border-radius:20px;padding:14px 18px;box-shadow:0 3px 0 #f6cddb}
 .faq summary{font-weight:700;cursor:pointer;font-size:17px}
@@ -447,15 +441,9 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
     </div>
   </section>
 
-  <section class="block" id="support">
+  <section class="block" id="maker">
     <div class="wrap">
-      <div class="sec-title reveal"><h2><span data-l="ar">ادعم Nono's World 💗</span><span data-l="en">Support Nono's World 💗</span></h2><p><span data-l="ar">التطبيق مجاني ومن غير إعلانات، ودعمك بيخلّيه يكمّل. أي مبلغ يفرق.</span><span data-l="en">The app is free and ad-free. Your support keeps it going, any amount helps.</span></p></div>
-      <div class="give reveal">
-        <div class="g"><h3><span data-l="ar">إنستاباي (رابط)</span><span data-l="en">InstaPay (link)</span></h3><p><span data-l="ar">اضغط وابعت أي مبلغ</span><span data-l="en">Tap and send any amount</span></p><a class="btn" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener"><span data-l="ar">ادعم بإنستاباي</span><span data-l="en">Support via InstaPay</span></a></div>
-        <div class="g"><h3><span data-l="ar">إنستاباي</span><span data-l="en">InstaPay</span></h3><p><bdi dir="ltr">teto.2362006@instapay</bdi></p><p><bdi dir="ltr">01031544361</bdi></p><button class="btn ghost" type="button" data-copy="teto.2362006@instapay" style="border:0;font:inherit;cursor:pointer"><span data-l="ar">انسخ العنوان</span><span data-l="en">Copy address</span></button></div>
-        <div class="g"><h3><span data-l="ar">فودافون كاش</span><span data-l="en">Vodafone Cash</span></h3><p><bdi dir="ltr">01031544361</bdi></p><button class="btn ghost" type="button" data-copy="01031544361" style="border:0;font:inherit;cursor:pointer"><span data-l="ar">انسخ الرقم</span><span data-l="en">Copy number</span></button></div>
-      </div>
-      <div class="sec-title reveal" style="margin-top:46px;margin-bottom:10px"><h2 style="font-size:clamp(22px,3.4vw,30px)"><span data-l="ar">من نفس المصمم: محمد صلاح</span><span data-l="en">More by the same designer: Mohamed Salah</span></h2></div>
+      <div class="sec-title reveal" style="margin-bottom:10px"><h2 style="font-size:clamp(22px,3.4vw,30px)"><span data-l="ar">من نفس المصمم: محمد صلاح</span><span data-l="en">More by the same designer: Mohamed Salah</span></h2></div>
       <div class="more reveal">
         <a class="btn ghost" href="https://teto-boday.github.io/tuba/" target="_blank" rel="noopener">🌿 <span data-l="ar">طُوبَى: مقاطع إسلامية وقرآن وأذكار</span><span data-l="en">Tuba: Islamic clips, Quran & azkar</span></a>
       </div>
@@ -584,15 +572,6 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
     els.forEach(function(el){ var r = el.getBoundingClientRect(); if (r.top > innerHeight){ el.classList.add("pending"); io.observe(el); } });
   }
 })();
-</script>
-<script>
-document.querySelectorAll("[data-copy]").forEach(function (b) {
-  b.addEventListener("click", function () {
-    var v = b.getAttribute("data-copy");
-    var done = function () { var o = b.innerHTML; b.textContent = "✓ " + v; setTimeout(function () { b.innerHTML = o; }, 1600); };
-    if (navigator.clipboard) navigator.clipboard.writeText(v).then(done, done); else done();
-  });
-});
 </script>
 </body>
 </html>
