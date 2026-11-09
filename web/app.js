@@ -1581,9 +1581,8 @@ function donateBox(){
   <div class="row wrap" style="gap:8px;justify-content:center"><a class="btn small" style="text-decoration:none" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener">\uE000${en ? "Support via InstaPay" : "ادعم بإنستاباي"}\uE001</a><button class="btn ghost small" data-act="copy" data-v="01031544361">\uE000${en ? "Vodafone Cash" : "فودافون كاش"}\uE001 <bdi dir="ltr">01031544361</bdi></button></div></div>`;
 }
 function worksBox(){
-  const en = isEN(), android = /Android/i.test(navigator.userAgent);
-  const tuba = android ? "https://github.com/Teto-Boday/tuba/releases/latest/download/Tuba.apk" : "https://teto-boday.github.io/tuba/#download";
-  return `<div style="text-align:center;margin-top:8px"><p class="muted small" style="margin:0 0 8px">\uE000${en ? "More of my work (tap to download):" : "ومن أعمالي كمان (دوس وحمّله):"}\uE001</p>
+  const en = isEN(), tuba = "https://teto-boday.github.io/tuba/";
+  return `<div style="text-align:center;margin-top:8px"><p class="muted small" style="margin:0 0 8px">\uE000${en ? "More of my work (tap to see it):" : "ومن أعمالي كمان (دوس وشوفه):"}\uE001</p>
   <a class="btn ghost small" style="text-decoration:none" href="${tuba}" target="_blank" rel="noopener">🌿 \uE000${en ? "Tuba: Quran, azkar, prayer times & Islamic clips" : "طُوبَى: قرآن وأذكار ومواقيت صلاة ومقاطع إسلامية"}\uE001</a></div>`;
 }
 function creditLine(){
