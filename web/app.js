@@ -1532,10 +1532,6 @@ function settingsView(){
   <div class="card"><h3>🌐 Language / اللغة</h3>
     <div class="seg" style="margin-top:10px"><button data-act="set-lang" data-v="ar" aria-pressed="${!isEN()}">\uE000عربي\uE001</button><button data-act="set-lang" data-v="en" aria-pressed="${isEN()}">\uE000English\uE001</button></div></div>
   ${CLOUD ? `<div class="card row between"><div><h3>⭐ قيّمي التطبيق</h3><div class="muted small">رأيك أو اقتراح أو شكوى</div></div><button class="btn small" data-act="feedback">اكتبي</button></div>` : ""}
-  <div class="card"><h3>💗 ادعم Nono's World</h3><p class="muted small" style="margin:4px 0 10px">التطبيق مجاني ومن غير إعلانات، ودعمك بيخلّيه يكمّل. أي مبلغ يفرق.</p>
-    <div class="row wrap" style="gap:8px"><a class="btn small" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener">ادعم بإنستاباي</a><button class="btn ghost small" data-act="copy" data-v="01031544361">انسخ رقم فودافون كاش</button></div>
-    <p class="muted small" style="margin:10px 0 0">فودافون كاش: <bdi dir="ltr">01031544361</bdi></p>
-    <p class="muted small" style="margin:6px 0 0">من تصميم محمد صلاح · ومن تصميمه كمان: <a href="https://teto-boday.github.io/tuba/" target="_blank" rel="noopener">طُوبَى</a></p></div>
   <div class="card"><h3>💵 العملة</h3>
     <div class="seg" style="margin-top:10px"><button data-act="set-cur" data-v="egp" aria-pressed="${S.currency!=="usd"}">جنيه مصري</button><button data-act="set-cur" data-v="usd" aria-pressed="${S.currency==="usd"}">دولار</button></div></div>
   <div class="card"><h3>الديانة</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط الكلام والتذكيرات اللي تناسبك.</p>
@@ -1568,7 +1564,7 @@ function settingsView(){
       <div class="notice" id="pw-err" style="display:none;color:var(--bad);font-weight:700"></div>
       <button class="btn" type="submit">غيّري</button>
     </form></div>` : ""}
-  <div class="card">${supportBox(true)}${creditLine()}</div>
+  <div class="card">${supportBox(true)}${donateBox()}${creditLine()}${worksBox()}</div>
   <div class="center" style="margin:6px 0 4px"><button class="btn ghost small" data-act="logout">🚪 تسجيل خروج</button></div>`;
 }
 
@@ -1577,6 +1573,18 @@ function supportBox(compact){
   const en = isEN();
   return `<div class="support${compact?" compact":""}"><div class="s-t">\uE000${en ? "💬 Contact support" : "💬 التواصل مع الدعم"}\uE001 <bdi dir="ltr" style="unicode-bidi:isolate;font-weight:800">${SUPPORT_NUM}</bdi></div>
   <div class="row" style="gap:8px;justify-content:center"><a class="btn small" style="text-decoration:none" href="${SUPPORT_WA}" target="_blank" rel="noopener">\uE000${en ? "WhatsApp" : "واتساب"}\uE001 🟢</a><a class="btn ghost small" style="text-decoration:none" href="${SUPPORT_TEL}">\uE000${en ? "Call" : "اتصال"}\uE001 📞</a></div></div>`;
+}
+function donateBox(){
+  const en = isEN();
+  return `<div class="donate" style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(127,127,127,.2);text-align:center"><div class="s-t">\uE000${en ? "💗 Support Nono's World" : "💗 ادعم Nono's World"}\uE001</div>
+  <p class="muted small" style="margin:4px 0 10px">\uE000${en ? "The app is free and ad-free. Your support keeps it going, any amount helps." : "التطبيق مجاني ومن غير إعلانات، ودعمك بيخلّيه يكمّل. أي مبلغ يفرق."}\uE001</p>
+  <div class="row wrap" style="gap:8px;justify-content:center"><a class="btn small" style="text-decoration:none" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener">\uE000${en ? "Support via InstaPay" : "ادعم بإنستاباي"}\uE001</a><button class="btn ghost small" data-act="copy" data-v="01031544361">\uE000${en ? "Vodafone Cash" : "فودافون كاش"}\uE001 <bdi dir="ltr">01031544361</bdi></button></div></div>`;
+}
+function worksBox(){
+  const en = isEN(), android = /Android/i.test(navigator.userAgent);
+  const tuba = android ? "https://github.com/Teto-Boday/tuba/releases/latest/download/Tuba.apk" : "https://teto-boday.github.io/tuba/#download";
+  return `<div style="text-align:center;margin-top:8px"><p class="muted small" style="margin:0 0 8px">\uE000${en ? "More of my work (tap to download):" : "ومن أعمالي كمان (دوس وحمّله):"}\uE001</p>
+  <a class="btn ghost small" style="text-decoration:none" href="${tuba}" target="_blank" rel="noopener">🌿 \uE000${en ? "Tuba: Quran, azkar, prayer times & Islamic clips" : "طُوبَى: قرآن وأذكار ومواقيت صلاة ومقاطع إسلامية"}\uE001</a></div>`;
 }
 function creditLine(){
   return `<p class="credit">\uE000${isEN() ? "Designed by Mohamed Salah" : "من تصميم محمد صلاح"}\uE001</p>`;
