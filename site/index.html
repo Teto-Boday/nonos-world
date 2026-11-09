@@ -160,6 +160,9 @@ section.block{padding:70px 0}
 .ded-foot{font-family:var(--display);font-weight:700;color:var(--pink);font-size:18px;margin-bottom:6px}
 #gender .g-m{display:none}
 @media (max-width:600px){#gender{display:none}}
+section[id]{scroll-margin-top:80px}
+.hbtns .chipbtn{white-space:nowrap}.hbtns .sh{display:none}
+@media (max-width:440px){.hbtns{gap:5px}.hbtns .chipbtn{padding:6px 9px;font-size:13px}.hbtns .lg{display:none}.hbtns .sh{display:inline}.logo{font-size:18px;gap:6px}.logo img{width:32px;height:32px}}
 html.boy #gender .g-f{display:none}
 html.boy #gender .g-m{display:inline}
 html.boy{--pink:#2f6fc0;--pink2:#7fb0ea;--mauve:#5b7bd6;--soft:#e3edfb;--bg:#f3f7fd}
@@ -217,6 +220,7 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
     <div class="hbtns">
       <button class="chipbtn" id="gender" aria-label="بنت أو ولد"><span class="g-f">🎀 <span data-l="ar">بنت</span><span data-l="en">Girl</span></span><span class="g-m">🧢 <span data-l="ar">ولد</span><span data-l="en">Guy</span></span></button>
       <button class="chipbtn" id="lang">English</button>
+      <a class="chipbtn" href="#maker"><span data-l="ar"><span class="lg">عملنا إيه تاني؟</span><span class="sh">أعمالنا</span></span><span data-l="en">More by us</span></a>
       <a class="chipbtn solid" href="#download"><span data-l="ar">حمّلي</span><span data-l="en">Download</span></a>
     </div>
   </div>
@@ -369,6 +373,15 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
   </section>
 
 
+  <section class="block" id="maker">
+    <div class="wrap">
+      <div class="sec-title reveal" style="margin-bottom:10px"><h2 style="font-size:clamp(22px,3.4vw,30px)"><span data-l="ar">من نفس المصمم: محمد صلاح</span><span data-l="en">More by the same designer: Mohamed Salah</span></h2></div>
+      <div class="more reveal">
+        <a class="btn ghost" href="https://teto-boday.github.io/tuba/" target="_blank" rel="noopener">🌿 <span data-l="ar">طُوبَى: مقاطع إسلامية وقرآن وأذكار</span><span data-l="en">Tuba: Islamic clips, Quran & azkar</span></a>
+      </div>
+    </div>
+  </section>
+
   <section class="block" id="download">
     <div class="wrap">
       <div class="sec-title reveal"><h2><span data-l="ar">حمّليه على جهازك 💗</span><span data-l="en">Get it on your device 💗</span></h2>
@@ -437,15 +450,6 @@ footer{text-align:center;color:var(--muted);padding:40px 20px 60px}
         <details><summary><span data-l="ar">بياناتي في أمان؟</span><span data-l="en">Is my data safe?</span></summary><p><span data-l="ar" data-boy="بياناتك متحفوظة أونلاين على حسابك، وشريكتك بتشوف اللي إنت سامح بيه بس. وصاحب التطبيق يقدر يوصلها لأغراض الإدارة ومنع الإساءة.">بياناتك متحفوظة أونلاين على حسابك، وشريكك بيشوف اللي إنتي سامحة بيه بس. وصاحب التطبيق يقدر يوصلها لأغراض الإدارة ومنع الإساءة.</span><span data-l="en">Your data is stored online on your account, and your partner sees only what you allow. The app owner can access it to run the app and stop abuse.</span></p></details>
         <details><summary><span data-l="ar">نسيت الباسورد؟</span><span data-l="en">Forgot your password?</span></summary><p><span data-l="ar" data-boy="دوس &quot;نسيت الباسورد؟&quot; في صفحة الدخول، وصاحب التطبيق هيتأكد إنه حسابك ويبعتلك باسورد مؤقت.">دوسي "نسيت الباسورد؟" في صفحة الدخول، وصاحب التطبيق هيتأكد إنه حسابك ويبعتلك باسورد مؤقت.</span><span data-l="en">Tap "Forgot password?" on the sign-in page. The app owner will check it's you and send a temporary password.</span></p></details>
         <details><summary><span data-l="ar">فيه إنجليزي؟</span><span data-l="en">Is there Arabic and English?</span></summary><p><span data-l="ar">أيوه، من الإعدادات تقدري تقلبيه English.</span><span data-l="en">Yes, switch between Arabic and English in Settings.</span></p></details>
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="maker">
-    <div class="wrap">
-      <div class="sec-title reveal" style="margin-bottom:10px"><h2 style="font-size:clamp(22px,3.4vw,30px)"><span data-l="ar">من نفس المصمم: محمد صلاح</span><span data-l="en">More by the same designer: Mohamed Salah</span></h2></div>
-      <div class="more reveal">
-        <a class="btn ghost" href="https://teto-boday.github.io/tuba/" target="_blank" rel="noopener">🌿 <span data-l="ar">طُوبَى: مقاطع إسلامية وقرآن وأذكار</span><span data-l="en">Tuba: Islamic clips, Quran & azkar</span></a>
       </div>
     </div>
   </section>
