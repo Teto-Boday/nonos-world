@@ -1281,7 +1281,7 @@ function prayersBlock(k){
   if (!isMuslim()) return "";
   const pr = S.prayers[k] || {}, n = PRAYERS.filter(([p])=>pr[p]).length;
   if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>
-    <div class="notice" style="margin-top:8px;line-height:1.9">🤍 ${sabrAt(fromKey(k).getDate() + new Date().getHours())}</div>`;
+    <div class="notice copyable" style="margin-top:8px;line-height:1.9">🤍 ${sabrAt(fromKey(k).getDate() + new Date().getHours())}</div>`;
   const tt = timesFor(fromKey(k)), nx = k === dkey() ? nextPrayer() : null, fri = new Date().getDay() === 5 && k === dkey();
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
     ${nx ? (isEN() ? `<div class="muted small" style="margin:2px 4px 6px">🕌 Next: <b>${nx.n}</b> at <b class="num">${hhmm(nx.at)}</b> · in ${inMins(nx.at - Date.now())}</div>` : `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>`) : ""}
@@ -2528,3 +2528,11 @@ window.addEventListener("online", checkUpdate);
 const flushNow = () => { try { if (pushTimer && S && UID){ clearTimeout(pushTimer); pushTimer = null; pushNow(); } } catch(e){} };
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushNow(); });
 window.addEventListener("pagehide", flushNow);
+
+// no-copy: block copying and the long-press menu, except in hadiths and text fields
+(function(){
+  const SEL = "input,textarea,[contenteditable],.hadith,.copyable";
+  const inOk = n => { while (n && n.nodeType !== 1) n = n.parentNode; return !!(n && n.closest && n.closest(SEL)); };
+  const ok = e => { if (e.type === "copy" || e.type === "cut") { const s = getSelection(); return inOk(e.target) || (s && s.rangeCount > 0 && inOk(s.anchorNode) && inOk(s.focusNode)); } return inOk(e.target); };
+  ["copy","cut","contextmenu","dragstart"].forEach(ev => document.addEventListener(ev, e => { if (!ok(e)) e.preventDefault(); }));
+})();
