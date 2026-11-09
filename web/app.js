@@ -533,7 +533,7 @@ async function boot(u){
     if (S.tab === "diary" && U.dmode === "me" && !$("#layer").innerHTML){ keepTyping(render); scrollChat(); }
   }));
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
-  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; ME = d; if (d.adminMsg) showAdminMsg(); try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
+  unsubs.push(fb.listen(`users/${UID}`, d => { if (!d) return; const before = ME.partner; const spBefore = ME.special; ME = d; if (d.adminMsg) showAdminMsg(); if (d.special && d.special !== spBefore && S) showSpecial(); try { localStorage.setItem(meKey, JSON.stringify(d)); } catch(e){} S.user = {name:d.name, username:d.username, gender:d.gender, religion:d.religion || "muslim"};
     if (d.banned){ render(); return; } if (before !== d.partner) setupPartner(); }));
   GR.list = []; GR.open = null; GR.msgs = [];
   unsubs.push(fb.listenWhere("groups", "members", "array-contains", UID, list => {
@@ -686,9 +686,20 @@ function notifSheet(){
     ${d === "ios" || d === "android" ? `<button class="btn ghost small block" style="margin-bottom:8px" data-act="notif-test">🧪 ابعتيلي إشعار تجربة</button>` : ""}
     <div class="form"><button class="btn" data-act="notif-ok">✅ عملتها</button>${d === "ios" || d === "android" ? `<button class="btn ghost" data-act="notif-later">بعدين</button>` : ""}</div>`);
 }
+/* the personal message written from the admin panel pops up on the first open of each day (and again whenever it changes) */
+function showSpecial(){
+  const t = ME && ME.special; if (!t) return;
+  const key = "nw-sp-" + UID, mark = dkey() + "|" + t.length + "|" + t.slice(0, 40);
+  try { if (localStorage.getItem(key) === mark) return; } catch(e){}
+  const tryShow = n => { if (!$("#layer").innerHTML){ try { localStorage.setItem(key, mark); } catch(e){}
+      message("💌", t, isEN() ? "Just for you 🤍" : (isMale() ? "ليك مخصوص 🤍" : "ليكي مخصوص 🤍")); }
+    else if (n < 30) setTimeout(() => tryShow(n + 1), 2000); };
+  setTimeout(() => tryShow(0), 700);
+}
 function startupChecks(){
   if (!S || !S.user) return;
   heartbeat(true);
+  showSpecial();
   showAdminMsg();
   try { const k = dkey(), t = timesFor(), now = new Date();
     if (isMuslim() && S.pray && S.pray.azkar !== false && now >= t.fajr && now < t.dhuhr && !(S.azkarDone||{})["m" + k] && localStorage.getItem("nw-azm") !== k){
