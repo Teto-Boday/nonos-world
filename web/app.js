@@ -362,6 +362,7 @@ const CHEER_EN = ["You're way stronger than you think 💪","A small step today 
 const hasMate = () => !CLOUD || !!(P && P.linked);
 /* the owner can let someone get the love notes as if linked (users/{uid}.forceLove) */
 const mateLike = () => hasMate() || !!(CLOUD && ME && ME.forceLove);
+const dReplyOn = () => !(S && S.dReply === false); /* زرار في دفتر حكاياتي: اللي عايز البرنامج يرد عليه أو لأ */
 const loveOn = () => mateLike() && !(S && S.loveOff);
 const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"];
 const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
@@ -1210,7 +1211,7 @@ function diaryView(){
     out += `<div class="msg me"><div class="bub">${esc(e.text)}<span class="tm num">${tm}</span></div></div>`;
     out += e.reply
       ? `<div class="msg him"><div class="bub">${esc(e.reply)}<span class="tm num">${tm}</span></div></div>`
-      : `<div class="msg him"><div class="bub typing" aria-label="بيكتب"><i></i><i></i><i></i></div></div>`;
+      : e.pending ? `<div class="msg him"><div class="bub typing" aria-label="بيكتب"><i></i><i></i><i></i></div></div>` : "";
   });
   if (CLOUD && U.dmode === "friends") return friendsView();
   if (CLOUD && U.dmode === "us" && P && P.linked) return coupleView();
@@ -1218,7 +1219,7 @@ function diaryView(){
   return `
   ${CLOUD ? diarySwitch() : ""}
   <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user ? (S.share.diary === false ? "الدفتر ده ليكي إنتي بس 🔒" : esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك")+" 🤍") : (CLOUD ? "الدفتر ده بتاعك 🤍" : "هو سامعك 🤍")}</p>${priv}</section>
-  <div class="row"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button></div>
+  <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button><button class="btn ghost small" data-act="d-reply" aria-pressed="${dReplyOn()}">${dReplyOn() ? "💬 الرد التلقائي شغّال" : "🔕 من غير رد تلقائي"}</button></div>
   <div class="chat" id="chat">${out || `<div class="empty">لسه مفيش حكايات… ابدئي إنتي 📔</div>`}</div>
   <form class="composer" data-form="diary">
     <textarea class="in" id="diarytext" rows="1" placeholder="احكي يا ${esc(S.user.name)}…" aria-label="اكتبي حكايتك"></textarea>
@@ -1617,7 +1618,7 @@ function authView(){
 /* ================= sheets ================= */
 function chatBubbles(list){
   return list.map(e => { const tm = tf(new Date(e.ts));
-    return `<div class="msg me"><div class="bub">${esc(e.text)}<span class="tm num">${tm}</span></div></div><div class="msg him"><div class="bub">${esc(e.reply||"")}<span class="tm num">${tm}</span></div></div>`; }).join("");
+    return `<div class="msg me"><div class="bub">${esc(e.text)}<span class="tm num">${tm}</span></div></div>${e.reply ? `<div class="msg him"><div class="bub">${esc(e.reply)}<span class="tm num">${tm}</span></div></div>` : ""}`; }).join("");
 }
 function oldChatsSheet(){
   const groups = {};
@@ -1924,6 +1925,7 @@ document.addEventListener("click", e => {
     case "replies-help": repliesHelp(); break;
     case "durations": durationsSheet(); break;
     case "dpreset": { const [f,r] = v.split(","); $("#d-focus").value = f; $("#d-rest").value = r; break; }
+    case "d-reply": S.dReply = !dReplyOn(); save(); render(); toast(S.dReply ? "رجّعنا الرد التلقائي 💬" : "خلاص، الدفتر من غير ردود 📔"); break;
     case "vacation": if (onVacation()){ S.vacation = {on:false}; save(); render(); toast("رجعنا للمذاكرة 📚"); } else vacationSheet(); break;
     case "vac-back": S.vacation = {on:false}; save(); closeSheet(); render(); toast("يلا بينا 📚💪"); break;
     case "vac-still": S.vacation.checked = dkey(); save(); closeSheet(); render(); toast("ماشي، هسألك تاني بعد أسبوعين 😏"); break;
@@ -2120,6 +2122,10 @@ document.addEventListener("submit", e => {
     case "diary": {
       const t = val("diarytext"); if (!t) return;
       const cat = diaryReply(t), id = uid();
+      if (!dReplyOn()){ S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null}); save(); render(); scrollChat();
+        if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
+        if (CLOUD && cat === "d_sad") notifyPartner(`${S.user.name} كتب/كتبت حكاية زعلانة 📔 كلّمه/كلّمها 🤍`);
+        setTimeout(()=>$("#diarytext")?.focus(),30); break; }
       const pool = cat.startsWith("rule:") ? ((S.rules||[]).concat(globalRules()).find(r=>"rule:"+r.id===cat)||{}).replies : MS(cat);
       const ans = pick(pool && pool.length ? pool : MS("d_other"));
       S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null, pending:ans}); save(); render(); scrollChat();
