@@ -328,7 +328,7 @@ function blank(){
 function normalize(s, gender){
   const b = blank();
   for (const k in b) if (s[k] === undefined || s[k] === null && k !== "pin" && k !== "lastMorning" && k !== "timer") s[k] = b[k];
-  const dm = defMsgs(gender, s.religionHint); for (const k in dm) if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
+  const dm = defMsgs(gender, s.religionHint); for (const k in dm) if (k.startsWith("d_")) { if (!Array.isArray(s.msgs[k])) s.msgs[k] = []; } else if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
   // love messages: lists nobody edited (only old default lines) move to the new, longer default list
   if (Array.isArray(s.msgs.love)){ const known = new Set(LOVE_OLD.concat(dm.love || [], DEFAULT_MSGS.love, DEFAULT_MSGS_M.love));
     if (s.msgs.love.every(t => known.has(t)) && JSON.stringify(s.msgs.love) !== JSON.stringify(dm.love)) s.msgs.love = (dm.love || []).slice(); }
@@ -362,7 +362,15 @@ const CHEER_EN = ["You're way stronger than you think 💪","A small step today 
 const hasMate = () => !CLOUD || !!(P && P.linked);
 /* the owner can let someone get the love notes as if linked (users/{uid}.forceLove) */
 const mateLike = () => hasMate() || !!(CLOUD && ME && ME.forceLove);
-const dReplyOn = () => !(S && S.dReply === false); /* زرار في دفتر حكاياتي: اللي عايز البرنامج يرد عليه أو لأ */
+/* دفتر حكاياتي: من غير رد تلقائي في الأول. لما يرتبط بحد، الرد بيتفتح (وفيه زرار يقفله)،
+   والردود فاضية خالص: بس اللي الشريك كتبه بنفسه، مفيش ردود جاهزة */
+const dReplyOn = () => hasMate() && !(S && S.dReply === false);
+let DEF_D = null;
+const defDiaryLines = () => { const at = (CFG.msgs || {}).at || 0; if (DEF_D && DEF_D._at === at) return DEF_D; DEF_D = new Set(); DEF_D._at = at;
+  for (const g of ["f","m"]) for (const l of ["ar","en"]) { const m = defMsgs(g, "", l); for (const k in m) if (k.startsWith("d_")) m[k].forEach(t => DEF_D.add(t)); }
+  for (const g of ["f","m"]) { const gl = (CFG.msgs || {})[g] || {}; for (const k in gl) if (k.startsWith("d_")) (gl[k] || []).forEach(t => DEF_D.add(t)); }
+  return DEF_D; };
+const dLines = k => ((S && S.msgs && S.msgs[k]) || []).filter(t => t && !defDiaryLines().has(t));
 const loveOn = () => mateLike() && !(S && S.loveOff);
 const MORNING_CHEER_F = ["صباح الخير ☀️ يوم جديد وفرصة جديدة","صباح الفل، قومي اشربي مية وابدئي يومك 💧","يلا قومي، النهارده هيبقى يوم حلو 🌸"];
 const MORNING_CHEER_M = ["صباح الخير يا بطل ☀️ يوم جديد وفرصة جديدة","صباح الفل، قوم اشرب مية وابدأ يومك 💧","يلا قوم، النهارده هيبقى يوم حلو 🔥"];
@@ -1219,7 +1227,7 @@ function diaryView(){
   return `
   ${CLOUD ? diarySwitch() : ""}
   <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user ? (S.share.diary === false ? "الدفتر ده ليكي إنتي بس 🔒" : esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك")+" 🤍") : (CLOUD ? "الدفتر ده بتاعك 🤍" : "هو سامعك 🤍")}</p>${priv}</section>
-  <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button><button class="btn ghost small" data-act="d-reply" aria-pressed="${dReplyOn()}">${dReplyOn() ? "💬 الرد التلقائي شغّال" : "🔕 من غير رد تلقائي"}</button></div>
+  <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button>${hasMate() ? `<button class="btn ghost small" data-act="d-reply" aria-pressed="${dReplyOn()}">${dReplyOn() ? "💬 الرد التلقائي شغّال" : "🔕 من غير رد تلقائي"}</button>` : ""}</div>
   <div class="chat" id="chat">${out || `<div class="empty">لسه مفيش حكايات… ابدئي إنتي 📔</div>`}</div>
   <form class="composer" data-form="diary">
     <textarea class="in" id="diarytext" rows="1" placeholder="احكي يا ${esc(S.user.name)}…" aria-label="اكتبي حكايتك"></textarea>
@@ -1797,7 +1805,7 @@ function secretSheet(){
   <h3 style="margin-bottom:8px">الرسايل العامة</h3>
   <p class="muted small" style="margin:-6px 0 12px">كل سطر رسالة لوحدها. التطبيق بيختار منهم عشوائي.</p>
   <form class="form" data-form="msgs">
-    ${MSG_GROUPS.map(([t,k])=>`<label class="f">${t}<textarea class="in" data-msg="${k}" rows="4">${esc(S.msgs[k].join("\n"))}</textarea></label>`).join("")}
+    ${MSG_GROUPS.map(([t,k])=>`<label class="f">${t}<textarea class="in" data-msg="${k}" rows="4"${k.startsWith("d_") ? ` placeholder="فاضي، اكتب ردّك هنا (كل سطر رد)"` : ""}>${esc((k.startsWith("d_") ? dLines(k) : (S.msgs[k]||[])).join("\n"))}</textarea></label>`).join("")}
     <button class="btn" type="submit">حفظ الرسايل</button>
     <button class="btn ghost" type="button" data-act="reset-msgs">رجّع الرسايل الأصلية</button>
     ${U.edit === "mate" || U.edit === "global" ? "" : `<button class="btn ghost" type="button" data-act="change-pin">غيّر الرقم السري</button>`}
@@ -2122,12 +2130,16 @@ document.addEventListener("submit", e => {
     case "diary": {
       const t = val("diarytext"); if (!t) return;
       const cat = diaryReply(t), id = uid();
-      if (!dReplyOn()){ S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null}); save(); render(); scrollChat();
+      let ans = null;
+      if (dReplyOn()){ const n = norm(String(t).toLowerCase() + " ");
+        const r = (S.rules||[]).find(r => (r.keys||[]).some(w => w && n.includes(norm(w))));
+        const pool = r ? (r.replies||[]) : (cat.startsWith("rule:") ? [] : dLines(cat));
+        const pool2 = pool.length ? pool : dLines("d_other");
+        ans = pool2.length ? pick(pool2) : null; }
+      if (!ans){ S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null}); save(); render(); scrollChat();
         if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
         if (CLOUD && cat === "d_sad") notifyPartner(`${S.user.name} كتب/كتبت حكاية زعلانة 📔 كلّمه/كلّمها 🤍`);
         setTimeout(()=>$("#diarytext")?.focus(),30); break; }
-      const pool = cat.startsWith("rule:") ? ((S.rules||[]).concat(globalRules()).find(r=>"rule:"+r.id===cat)||{}).replies : MS(cat);
-      const ans = pick(pool && pool.length ? pool : MS("d_other"));
       S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null, pending:ans}); save(); render(); scrollChat();
       if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
       if (CLOUD && cat === "d_sad") notifyPartner(`${S.user.name} كتب/كتبت حكاية زعلانة 📔 كلّمه/كلّمها 🤍`);
@@ -2241,7 +2253,7 @@ document.addEventListener("submit", e => {
     }
     case "msgs": {
       const T = msgsTarget();
-      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length ? arr : (U.edit === "global" ? defMsgs(U.gEdit, "muslim", "ar") : T === P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion))[t.dataset.msg]; });
+      f.querySelectorAll("[data-msg]").forEach(t => { const arr = t.value.split("\n").map(s=>s.trim()).filter(Boolean); T.msgs[t.dataset.msg] = arr.length || t.dataset.msg.startsWith("d_") ? arr : (U.edit === "global" ? defMsgs(U.gEdit, "muslim", "ar") : T === P && P.user ? defMsgs(P.user.gender, P.user.religion) : defMsgs(S.user.gender, S.user.religion))[t.dataset.msg]; });
       S._love = null; saveMsgs(); closeSheet(); render(); toast("اتحفظت الرسايل 💌"); break;
     }
     case "restore": {
