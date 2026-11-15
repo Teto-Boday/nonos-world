@@ -1125,7 +1125,7 @@ function moneyView(){
     </div>
     ${mi.todaySpent > mi.daily && mi.daily>0 ? `<div class="notice" style="margin-top:10px">صرفتي النهارده أكتر من المسموح بـ <b class="num">${fmt(mi.todaySpent-mi.daily)}</b> ${CUR()}، بكرة نهدّي شوية 🙈</div>`:""}
   </div>`}
-  ${past ? `<button class="btn ghost block" data-act="monoff" data-v="0">رجوع ل${wk?"لأسبوع ده":"لشهر ده"}</button>` : `<div class="two"><button class="btn" data-act="add-exp">＋ صرفت حاجة</button><button class="btn ghost" data-act="add-inc">💰 جالي فلوس</button></div>`}
+  ${past ? `<button class="btn ghost block" data-act="monoff" data-v="0">رجوع ل${wk?"لأسبوع ده":"لشهر ده"}</button>` : `<div class="two"><button class="btn" data-act="add-exp">－ صرفت حاجة</button><button class="btn ghost" data-act="add-inc">＋ جالي فلوس 💰</button></div>`}
   ${mi.incomes.length ? `<div class="card"><h3>💰 فلوس جاتلك</h3><ul class="list" style="margin-top:10px">${mi.incomes.slice().sort((a,b)=>a.date<b.date?1:-1).map(e=>`<li class="item income"><span class="ic">💰</span><div class="grow"><div class="t">${esc(e.note || "فلوس زيادة")}</div><div class="s">${e.date===dkey()?"النهارده":prettyDate(fromKey(e.date))}</div></div><b class="num">+${fmt(e.amt)}</b><button class="x" data-act="del-inc" data-v="${e.id}" aria-label="امسحي">✕</button></li>`).join("")}</ul></div>` : ""}
   ${byCat.length?`<div class="card"><h3>صرفتي على إيه؟</h3>
     <div class="cat-bar" style="margin:10px 0">${byCat.map(c=>`<i style="width:${c.sum/mi.spent*100}%;background:${c.c}" title="${c.t}"></i>`).join("")}</div>
@@ -2644,7 +2644,7 @@ setTimeout(() => { try { schedulePushIOS(); } catch(e){} }, 8000);
 
 
 /* ================= page tours: a ring around each thing, one tab at a time, shown once per device ================= */
-const PG_VER = 1, PG_VERS = { diary:2 }; // a tab whose tour gained a step gets a higher number, so it shows once more
+const PG_VER = 1, PG_VERS = { diary:3, settings:2 }; // a tab whose tour gained a step gets a higher number, so it shows once more
 const pgVer = t => PG_VERS[t] || PG_VER;
 // [selector, card to ring (closest), Arabic title, Arabic text, English title, English text]
 const PAGE_TOUR = {
@@ -2668,15 +2668,35 @@ const PAGE_TOUR = {
     ["[data-act=add-exam]", ".card", "العدّ التنازلي", "ضيفي مواعيدك المهمة وهتشوفي فاضل عليها كام يوم.", "Countdown", "Add your important dates and see how many days are left.", "العدّ التنازلي", "ضيف مواعيدك المهمة وهتشوف فاضل عليها كام يوم."],
   ],
   diary: [
+    ["[data-act=dmode]", ".seg", "حكاياتي والصحاب 👯", "من هنا تتنقلي بين دفترك الخاص وشات الصحاب.", "Diary and friends 👯", "Switch here between your private diary and chats with friends.", "حكاياتي والصحاب 👯", "من هنا تتنقل بين دفترك الخاص وشات الصحاب."],
+    ["[data-act=dmode][data-v=us]", "", "شات إحنا 💞", "ده شات ليكي إنتي وشريكك بس، بعيد عن دفتر حكاياتي.", "The Us chat 💞", "A chat just for you and your partner, separate from your diary.", "شات إحنا 💞", "ده شات ليك إنت وشريكتك بس، بعيد عن دفتر حكاياتي."],
     ["form.composer", "", "احكي هنا", "اكتبي اللي في قلبك ودوسي إرسال.", "Write here", "Type what is on your mind and tap send.", "احكي هنا", "اكتب اللي في قلبك ودوس إرسال."],
     ["[data-act=new-chat]", "", "الشاتات", "ابدئي شات جديد من هنا، والشاتات القديمة من الزرار اللي جنبه.", "Chats", "Start a new chat here. Old chats are on the button next to it.", "الشاتات", "ابدأ شات جديد من هنا، والشاتات القديمة من الزرار اللي جنبه."],
     ["[data-act=d-solo]", "", "الرد الذكي 🤖", "شغّليه لو عايزة الدفتر يرد عليكي بكلام مناسب للي كتبتيه. وتقدري تقفليه في أي وقت.", "Smart reply 🤖", "Turn it on if you want the diary to answer with words that fit what you wrote. You can turn it off any time.", "الرد الذكي 🤖", "شغّله لو عايز الدفتر يرد عليك بكلام مناسب للي كتبته. وتقدر تقفله في أي وقت."],
   ],
+  us: [
+    ["form[data-form=cmsg]", "", "شاتكم إنتوا الاتنين 💞", "اكتبي هنا والرسالة توصل لشريكك على طول. الشات ده ليكم إنتوا الاتنين بس.", "Just the two of you 💞", "Write here and it reaches your partner right away. This chat is only for the two of you.", "شاتكم إنتوا الاتنين 💞", "اكتب هنا والرسالة توصل لشريكتك على طول. الشات ده ليكم إنتوا الاتنين بس."],
+  ],
+  mate: [
+    [".view .hello", "", "صفحة شريكك 💞", "هنا تشوفي يوم شريكك، واللي هو سامح إنك تشوفيه بس.", "Your partner's page 💞", "See your partner's day here, only what they chose to share with you.", "صفحة شريكتك 💞", "هنا تشوف يوم شريكتك، واللي هي سامحة إنك تشوفه بس."],
+    ["[data-act=p-msgs]", "", "رسايلك ليه ✏️", "من هنا تكتبي الرسايل والردود اللي بتظهرله بكلامك إنتي.", "Your messages ✏️", "Write the messages and replies your partner sees, in your own words.", "رسايلك ليها ✏️", "من هنا تكتب الرسايل والردود اللي بتظهرلها بكلامك إنت."],
+    ["[data-act=replies-help]", "", "محتاجة شرح؟ 📖", "الزرار ده بيشرحلك بالخطوات إزاي تعدّلي الردود.", "Need a guide? 📖", "This button walks you through editing the replies step by step.", "محتاج شرح؟ 📖", "الزرار ده بيشرحلك بالخطوات إزاي تعدّل الردود."],
+  ],
+  friends: [
+    ["[data-act=fr-add]", "", "ضيفي صحابك", "دوسي هنا عشان تضيفي صاحبتك، وبعد ما توافق تقدروا تتكلموا.", "Add your friends", "Tap here to add a friend. Once they accept, you can chat.", "ضيف صحابك", "دوس هنا عشان تضيف صاحبك، وبعد ما يوافق تقدروا تتكلموا."],
+    ["[data-act=g-new]", ".row", "الجروبات", "اعملي جروب جديد لصحابك، أو ادخلي جروب بالكود بتاعه.", "Groups", "Start a new group for your friends, or join one with its code.", "الجروبات", "اعمل جروب جديد لصحابك، أو ادخل جروب بالكود بتاعه."],
+  ],
   settings: [
     ["[data-act=theme]", ".card", "الثيم 🎨", "غيّري ألوان التطبيق والوضع الليلي.", "Theme 🎨", "Change the app colours and dark mode.", "الثيم 🎨", "غيّر ألوان التطبيق والوضع الليلي."],
     ["[data-act=add-rem]", ".card", "التنبيهات ⏰", "ظبّطي المنبّه والتذكيرات اللي توصلك.", "Reminders ⏰", "Set your alarm and the reminders you get.", "التنبيهات ⏰", "ظبّط المنبّه والتذكيرات اللي توصلك."],
+    ["[data-act=loc-gps]", ".card", "الصلاة والأذكار 🕌", "حددي مدينتك عشان مواعيد الصلاة تبقى مظبوطة.", "Prayers and azkar 🕌", "Set your city so prayer times are right.", "الصلاة والأذكار 🕌", "حدد مدينتك عشان مواعيد الصلاة تبقى مظبوطة."],
     ["[data-act=share]", ".card", "خصوصيتك 🔒", "إنتي اللي بتحددي شريكك يشوف إيه.", "Your privacy 🔒", "You decide what your partner can see.", "خصوصيتك 🔒", "إنت اللي بتحدد شريكتك تشوف إيه."],
-    ["[data-act=copy]", ".card", "محتاجة مساعدة؟", "رقم الدعم هنا لو حصلت أي مشكلة.", "Need help?", "The support number is here if anything goes wrong.", "محتاج مساعدة؟", "رقم الدعم هنا لو حصلت أي مشكلة."],
+    ["[data-act=set-lang]", ".card", "اللغة 🌐", "التطبيق متاح بالعربي والإنجليزي.", "Language 🌐", "The app is available in Arabic and English.", "اللغة 🌐", "التطبيق متاح بالعربي والإنجليزي."],
+    ["[data-act=feedback]", ".card", "رأيك يهمنا ⭐", "قيّمي التطبيق، أو ابعتي اقتراح أو شكوى.", "Your opinion matters ⭐", "Rate the app, or send a suggestion or a complaint.", "رأيك يهمنا ⭐", "قيّم التطبيق، أو ابعت اقتراح أو شكوى."],
+    ["[data-act=set-stage]", ".card", "بتدرسي فين؟ 📍", "اختاري جامعة أو مدرسة أو متخرجة، وصفحة المذاكرة والجدول هيتظبطوا على حسابك.", "Where do you study? 📍", "Pick university, school or graduate. The study page and schedule adjust to match.", "بتدرس فين؟ 📍", "اختار جامعة أو مدرسة أو متخرج، وصفحة المذاكرة والجدول هيتظبطوا على حسابك."],
+    ["form[data-form=code]", ".card", "اربطي شريكك 💞", "ابعتيله الكود بتاعك أو اكتبي الكود بتاعه، وبعدها تشاركوا يومكم مع بعض.", "Link your partner 💞", "Send them your code or type theirs, then you can share your day together.", "اربط شريكتك 💞", "ابعتلها الكود بتاعك أو اكتب الكود بتاعها، وبعدها تشاركوا يومكم مع بعض."],
+    ["[data-act=backup]", ".card", "احفظي نسخة 💾", "خدي نسخة من بياناتك عشان ترجّعيها لو حصل حاجة.", "Keep a backup 💾", "Save a copy of your data so you can bring it back if anything happens.", "احفظ نسخة 💾", "خد نسخة من بياناتك عشان ترجّعها لو حصل حاجة."],
+    [".view .support", "", "محتاجة مساعدة؟", "رقم الدعم هنا لو حصلت أي مشكلة.", "Need help?", "The support number is here if anything goes wrong.", "محتاج مساعدة؟", "رقم الدعم هنا لو حصلت أي مشكلة."],
   ],
 };
 const spot = { on:false, tab:"", steps:[], i:0, timer:0, hold:0 };
@@ -2687,7 +2707,7 @@ function spotAuto(){
   if (spot.on){ spot.timer = setTimeout(spotPlace, 60); return; }
   spot.timer = setTimeout(() => {
     if (spot.on || !S || !S.user || (ME && ME.banned) || !$("#tabs") || $("#layer").innerHTML || document.querySelector(".splash")) return;
-    const tab = S.tab || "home", all = PAGE_TOUR[tab];
+    const tab = S.tab === "diary" && (U.dmode === "friends" || U.dmode === "us") ? U.dmode : (S.tab || "home"), all = PAGE_TOUR[tab]; // the friends side and the couple chat inside the diary have their own tours
     if (!all || pgSeen(tab)) return;
     const steps = all.filter(spotTarget);
     if (!steps.length) return;
