@@ -873,6 +873,7 @@ function render(){
   if (P && P.linked) tabs.push(["mate","💞", P.user && P.user.gender === "m" ? "شريكي" : "شريكتي"]);
   nav.innerHTML = gx(`<div class="in">${tabs.map(([k,e,t])=>`<button data-act="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':""}><span class="e">${e}</span>${t}</button>`).join("")}</div>`);
   tickTimer();
+  spotAuto();
 }
 function go(tab){ S.tab = tab; save(); render(); if (tab === "mate" && P && P.linked && CLOUD){ try { const k = "nw-rh-" + UID; if (!localStorage.getItem(k)){ localStorage.setItem(k, "1"); setTimeout(repliesHelp, 400); } } catch(e){} } if (tab==="diary") window.scrollTo({top:document.body.scrollHeight}); else window.scrollTo({top:0}); }
 function toast(t){ const d = document.createElement("div"); d.className="toast"; d.textContent = isEN() ? trRaw(t, isMale()) : isMale() ? mascRaw(t) : String(t); document.body.appendChild(d); setTimeout(()=>d.remove(),1900); }
@@ -883,7 +884,7 @@ function sheet(html, onMount){
   onMount && onMount(layer.querySelector(".sheet"));
 }
 let sheetLocked = false;
-function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; if (U.edit === "global") U.edit = "me"; }
+function closeSheet(){ sheetLocked = false; $("#layer").innerHTML = ""; spotAuto(); if (U.edit === "global") U.edit = "me"; }
 function message(emoji, text, from){
   if (from === undefined) from = loveOn() ? (P && P.user && P.user.gender === "f" ? "منها 💌" : "منه 💌") : "";
   sheet(`<div class="popmsg"><div class="em">${emoji}</div><p>${esc(text)}</p>${from ? `<small>${escP(from)}</small>` : ""}</div>
@@ -1071,7 +1072,7 @@ function studyView(){
   return `
   <section class="hello"><h1>${L.study}</h1><p>ذاكرتي النهارده ${hm(minsOn(k))} · ${L.streak} <b class="num">${streak()}</b></p></section>
   <div class="card">
-    <div class="seg"><button data-act="tmode" data-v="focus" aria-pressed="${mode==="focus"}">${L.focus} · <span class="num">${S.durations.focus}</span> د</button><button data-act="tmode" data-v="rest" aria-pressed="${mode==="rest"}">${L.rest} · <span class="num">${S.durations.rest}</span> د</button></div>
+    <div class="seg"><button data-act="tmode" data-v="focus" aria-pressed="${mode==="focus"}">${L.focus} · <span class="num">${S.durations.focus}</span> ${isEN()?"min":"د"}</button><button data-act="tmode" data-v="rest" aria-pressed="${mode==="rest"}">${L.rest} · <span class="num">${S.durations.rest}</span> ${isEN()?"min":"د"}</button></div>
     <div class="timer">
       <div class="ring" id="ring" style="--p:${pct}"><div><b class="num" id="tleft">${String(Math.floor(remain/60)).padStart(2,"0")}:${String(remain%60).padStart(2,"0")}</b><span>${mode==="focus"?L.focus:L.rest}</span></div></div>
       ${mode==="focus"?`<div class="chips" style="justify-content:center">${S.subjects.map(s=>`<button class="chip" data-act="tsubj" data-v="${esc(s)}" aria-pressed="${s===subj}">${esc(s)}</button>`).join("")}<button class="chip" data-act="add-subject">＋ مادة</button></div>`:""}
@@ -2506,6 +2507,97 @@ setInterval(inAppReminders, 20000);
 setInterval(scheduleNative, 15000);
 setInterval(() => { try { schedulePushIOS(); } catch(e){} }, 10 * 6e4);
 setTimeout(() => { try { schedulePushIOS(); } catch(e){} }, 8000);
+
+
+/* ================= page tours: a ring around each thing, one tab at a time, shown once per device ================= */
+const PG_VER = 1;
+// [selector, card to ring (closest), Arabic title, Arabic text, English title, English text]
+const PAGE_TOUR = {
+  home: [
+    [".letter", "", "فاكرك علطول 💌", "كل يوم رسالة جديدة ليكي. دوسي 🔄 عشان تشوفي رسالة تانية.", "Thinking of you 💌", "A new message for you every day. Tap 🔄 to see another one.", "فكراك علطول 💌", "كل يوم رسالة جديدة ليك. دوس 🔄 عشان تشوف رسالة تانية."],
+    ["[data-act=mood]", ".card", "نفسيتك النهارده", "اختاري إحساسك كل يوم، وهيتحسب في ملخص الأسبوع.", "Your mood today", "Pick how you feel each day. It counts in your weekly summary.", "نفسيتك النهارده", "اختار إحساسك كل يوم، وهيتحسب في ملخص الأسبوع."],
+    [".grid2", "", "يومك في نظرة", "فلوسك ومهامك ومذاكرتك والمية والنوم والصلاة، كله قدامك هنا.", "Your day at a glance", "Money, tasks, study, water, sleep and prayers, all in one place."],
+    ["#tabs", "", "التنقل", "من الشريط ده تتنقلي بين الفلوس ويومك والمذاكرة وحكاياتي.", "Getting around", "Use this bar to move between money, your day, study and your diary.", "التنقل", "من الشريط ده تتنقل بين الفلوس ويومك والمذاكرة وحكاياتي."],
+    ["header.top [data-v=settings]", "", "الإعدادات ⚙️", "من هنا تغيّري الثيم واللغة والتنبيهات، وتربطي حسابك بشريكك.", "Settings ⚙️", "Change the theme, language and reminders here, and link your partner.", "الإعدادات ⚙️", "من هنا تغيّر الثيم واللغة والتنبيهات، وتربط حسابك بشريكتك."],
+  ],
+  money: [
+    [".view .card.tint", "", "فلوسك الشهر ده", "ده اللي فاضل معاكي من مصروف الشهر.", "Your money this month", "This is what is left from this month's allowance.", "فلوسك الشهر ده", "ده اللي فاضل معاك من مصروف الشهر."],
+    ["[data-act=add-exp]", ".two", "سجّلي أول بأول", "كل ما تصرفي حاجة أو يجيلك فلوس، سجّليها من هنا.", "Log as you go", "Whenever you spend or receive money, add it here.", "سجّل أول بأول", "كل ما تصرف حاجة أو يجيلك فلوس، سجّلها من هنا."],
+  ],
+  day: [
+    [".view .seg", "", "امبارح والنهارده وبكرة", "اتنقلي بين الأيام من هنا.", "Yesterday, today, tomorrow", "Move between days here.", "امبارح والنهارده وبكرة", "اتنقل بين الأيام من هنا."],
+    ["[data-act=edit-schedule]", ".card", "جدولك", "اكتبي جدولك مرة واحدة، وهيظهرلك كل يوم لوحده.", "Your schedule", "Enter your schedule once and it shows up on the right day.", "جدولك", "اكتب جدولك مرة واحدة، وهيظهرلك كل يوم لوحده."],
+  ],
+  study: [
+    ["[data-act=tstart]", ".card", "المؤقت ⏱️", "دوسي ابدأ وركّزي. بعد وقت التركيز بييجي وقت راحة.", "The timer ⏱️", "Tap start and focus. A break comes after each focus round.", "المؤقت ⏱️", "دوس ابدأ وركّز. بعد وقت التركيز بييجي وقت راحة."],
+    ["[data-act=add-exam]", ".card", "العدّ التنازلي", "ضيفي مواعيدك المهمة وهتشوفي فاضل عليها كام يوم.", "Countdown", "Add your important dates and see how many days are left.", "العدّ التنازلي", "ضيف مواعيدك المهمة وهتشوف فاضل عليها كام يوم."],
+  ],
+  diary: [
+    ["form.composer", "", "احكي هنا", "اكتبي اللي في قلبك ودوسي إرسال.", "Write here", "Type what is on your mind and tap send.", "احكي هنا", "اكتب اللي في قلبك ودوس إرسال."],
+    ["[data-act=new-chat]", ".row", "الشاتات", "ابدئي شات جديد أو ارجعي للشاتات القديمة من هنا.", "Chats", "Start a new chat or go back to old ones here.", "الشاتات", "ابدأ شات جديد أو ارجع للشاتات القديمة من هنا."],
+  ],
+  settings: [
+    ["[data-act=theme]", ".card", "الثيم 🎨", "غيّري ألوان التطبيق والوضع الليلي.", "Theme 🎨", "Change the app colours and dark mode.", "الثيم 🎨", "غيّر ألوان التطبيق والوضع الليلي."],
+    ["[data-act=add-rem]", ".card", "التنبيهات ⏰", "ظبّطي المنبّه والتذكيرات اللي توصلك.", "Reminders ⏰", "Set your alarm and the reminders you get.", "التنبيهات ⏰", "ظبّط المنبّه والتذكيرات اللي توصلك."],
+    ["[data-act=share]", ".card", "خصوصيتك 🔒", "إنتي اللي بتحددي شريكك يشوف إيه.", "Your privacy 🔒", "You decide what your partner can see.", "خصوصيتك 🔒", "إنت اللي بتحدد شريكتك تشوف إيه."],
+    ["[data-act=copy]", ".card", "محتاجة مساعدة؟", "رقم الدعم هنا لو حصلت أي مشكلة.", "Need help?", "The support number is here if anything goes wrong.", "محتاج مساعدة؟", "رقم الدعم هنا لو حصلت أي مشكلة."],
+  ],
+};
+const spot = { on:false, tab:"", steps:[], i:0, timer:0, hold:0 };
+const pgSeen = t => { try { return Number(localStorage.getItem("nw-pg-" + t) || 0) >= PG_VER; } catch(e){ return true; } };
+function spotTarget(st){ const el = document.querySelector(st[0]); return el ? (st[1] ? el.closest(st[1]) || el : el) : null; }
+function spotAuto(){
+  clearTimeout(spot.timer);
+  if (spot.on){ spot.timer = setTimeout(spotPlace, 60); return; }
+  spot.timer = setTimeout(() => {
+    if (spot.on || !S || !S.user || (ME && ME.banned) || !$("#tabs") || $("#layer").innerHTML || document.querySelector(".splash")) return;
+    const tab = S.tab || "home", all = PAGE_TOUR[tab];
+    if (!all || pgSeen(tab)) return;
+    const steps = all.filter(spotTarget);
+    if (!steps.length) return;
+    Object.assign(spot, { on:true, tab, steps, i:0 });
+    let el = $("#spot");
+    if (!el){ el = document.createElement("div"); el.id = "spot"; el.innerHTML = `<div id="spot-ring"></div><div id="spot-card" role="dialog" aria-live="polite"><small id="spot-n"></small><h3 id="spot-t"></h3><p id="spot-x"></p><button class="btn block" id="spot-next" type="button"></button></div>`; document.body.appendChild(el); $("#spot-next").addEventListener("click", spotNext); }
+    el.hidden = false; spotShow();
+  }, 700);
+}
+function spotShow(){
+  const st = spot.steps[spot.i], en = isEN(), t = spotTarget(st);
+  // short things go to the middle of the screen; tall cards go to the top so their heading shows and the note fits under the ring
+  if (t && t.id !== "tabs" && !t.closest("header.top") && !t.classList.contains("composer")){
+    if (t.getBoundingClientRect().height > innerHeight * .4) scrollTo({ top: Math.max(0, t.getBoundingClientRect().top + scrollY - 84) }); else t.scrollIntoView({ block:"center" });
+  }
+  $("#spot-n").textContent = en ? `${spot.i + 1} of ${spot.steps.length}` : `${spot.i + 1} من ${spot.steps.length}`;
+  const boy = isMale() && st[6];
+  $("#spot-t").textContent = en ? st[4] : boy ? st[6] : st[2];
+  $("#spot-x").textContent = en ? st[5] : boy ? st[7] : st[3];
+  // two seconds before the button works, so nobody taps through without reading
+  const btn = $("#spot-next"), last = spot.i === spot.steps.length - 1, label = en ? (last ? "Got it" : "Next") : (last ? "تمام" : "التالي");
+  let left = 2; btn.disabled = true; btn.textContent = `${label} (${left})`;
+  clearInterval(spot.hold);
+  spot.hold = setInterval(() => { left--; if (left <= 0){ clearInterval(spot.hold); btn.disabled = false; btn.textContent = label; } else btn.textContent = `${label} (${left})`; }, 1000);
+  spotPlace(); setTimeout(spotPlace, 250);
+}
+function spotPlace(){
+  if (!spot.on) return;
+  const t = spotTarget(spot.steps[spot.i]), ring = $("#spot-ring"), card = $("#spot-card");
+  if (!t){ spotNext(true); return; }
+  const r = t.getBoundingClientRect(), pad = 6, vh = innerHeight;
+  const top = Math.max(4, r.top - pad), bottom = Math.min(vh - 4, r.bottom + pad, top + vh * .4); // a tall card is ringed at its top part only
+  Object.assign(ring.style, { top: top + "px", left: Math.max(4, r.left - pad) + "px", width: Math.min(innerWidth - 8, r.width + pad * 2) + "px", height: Math.max(0, bottom - top) + "px" });
+  // the card sits on whichever side of the ring has more room
+  const below = vh - bottom, above = top;
+  if (below >= above){ card.style.top = Math.min(bottom + 12, vh - card.offsetHeight - 12) + "px"; card.style.bottom = "auto"; }
+  else { card.style.bottom = Math.min(vh - top + 12, vh - card.offsetHeight - 12) + "px"; card.style.top = "auto"; }
+}
+function spotNext(force){
+  if (force !== true && $("#spot-next").disabled) return;
+  spot.i++;
+  if (spot.i < spot.steps.length){ spotShow(); return; }
+  clearInterval(spot.hold); spot.on = false; $("#spot").hidden = true;
+  try { localStorage.setItem("nw-pg-" + spot.tab, String(PG_VER)); } catch(e){}
+}
+addEventListener("resize", () => spotPlace());
 
 /* ================= start ================= */
 if (CLOUD){

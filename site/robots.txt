@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://teto-boday.github.io/nonos-world/sitemap.xml
