@@ -451,6 +451,137 @@ const baseMsgs = k => { const own = S.msgs[k] || [], glob = ((CFG.msgs || {})[gK
   return JSON.stringify(own) === JSON.stringify(def) ? (cleanRel(glob).length ? cleanRel(glob) : own) : own; };
 const globalRules = () => isEN() ? [] : ((CFG.msgs || {})["rules_" + gKey()] || []);
 const MS = k => { if (loveOn()) return baseMsgs(k); const set = isEN() ? SOLO_EN : (S.user && S.user.gender === "m" ? SOLO_M : SOLO_F); return (set[k] && set[k].length ? set[k] : cheerPool()); };
+/* ================= diary replies for someone who isn't linked (off until they turn it on) =================
+   No partner wrote these, so the voice is a kind friend. The reply is chosen from what the entry is about:
+   every topic has its words, the topic with the most matching words wins, and a word after "مش"/"not" doesn't count. */
+const SOLO_TOPICS = [
+  ["s_crisis", ["عايزه اموت","عايز اموت","نفسي اموت","انتحر","اموت نفسي","ااذي نفسي","اذي نفسي","مش عايزه اعيش","مش عايز اعيش","kill myself","want to die","suicid","hurt myself","end my life"]],
+  ["s_anx",    ["خايف","قلقان","متوتر","مرعوب","قلق ","توتر","anxious","worried","scared","nervous","afraid","panic"]],
+  ["s_angry",  ["متعصب","متنرفز","اتخانق","خناق","غضبان","مستفز","متغاظ","angry","mad at","furious","fight with","annoyed"]],
+  ["s_lonely", ["لوحدي","وحيد","محدش بيسال","محدش فاهمني","ماليش حد","lonely","alone","no one cares","nobody understands"]],
+  ["s_doubt",  ["فاشل","مش نافع","مش كفايه","مش شاطر","غبي ","غبيه","بكره نفسي","مش بحب نفسي","failure","stupid","not good enough","hate myself","worthless"]],
+  ["d_sad",    ["زعلان","زعلت","مخنوق","مضايق","عيطت","بعيط","حزين","مقهور","مكتئب","مكسور","موجوع","دموع","sad","upset","crying","cried","depressed","hurt","heartbroken","miserable"]],
+  ["s_sleep",  ["مش عارفه انام","مش عارف انام","ارق ","سهران","مش جايلي نوم","can't sleep","cant sleep","insomnia","awake all night"]],
+  ["d_tired",  ["تعبان","تعبت","مرهق","مصدع","هلكان","نعسان","مفيش طاقه","مجهد","مش قادر","tired","exhausted","sleepy","headache","no energy","burned out","burnt out","drained"]],
+  ["s_sick",   ["عيان","سخن ","سخنه","دور برد","بطني","مغص","كحه ","وجع ","وجعني","واجعني","sick","fever","flu","stomach ache","in pain"]],
+  ["s_bored",  ["زهقان","زهقت","ملل ","مليت","مفيش حاجه اعملها","bored","boring","nothing to do"]],
+  ["s_proud",  ["خلصت","عملتها","انجزت","قدرت","كسبت","اتقبلت","finished","did it","made it","got accepted","won"]],
+  ["d_happy",  ["فرحان","مبسوط","نجحت","قفلت","فرحت","جبت الدرجه","حلو اوي","اتبسطت","سعيد","احلي يوم","happy","passed","yay","so good","excited","great day","amazing","best day"]],
+  ["s_grateful",["الحمد لله","ممتن","نعمه","thank god","grateful","blessed"]],
+  ["d_study",  ["مذاكر","ذاكرت","امتحان","كويز","ميدترم","فاينل","محاضر","سكشن","شيت","دكتور","exam","study","studied","quiz","midterm","final","lecture"]],
+  ["s_work",   ["الشغل","شغلي","مديري","المدير","زمايلي","مرتب","انترفيو","work","my boss","job","interview","coworker"]],
+  ["s_love",   ["بحبه","بحبها","معجب","كراش","خطوبه","اتخطبت","حبيبي","حبيبتي","crush","in love","boyfriend","girlfriend","i like him","i like her"]],
+  ["s_family", ["ماما","بابا","اخويا","اختي ","اهلي","جدتي","جدي ","mom","mum","dad","brother","sister","my family","parents"]],
+  ["s_friend", ["صاحبتي","صاحبي","صحابي","اصحابي","الشله","friend","bestie"]],
+  ["s_money",  ["فلوس","مفلس","مصروف","اشتريت","غالي","money","broke","bought","expensive"]],
+  ["s_food",   ["جعان","اكلت","طبخت","فطرت","اتغديت","اتعشيت","hungry","ate","cooked"]],
+  ["s_pray",   ["ادعيلي","دعوه","يارب","صليت","قران","pray for me","prayed"]],
+  ["d_miss",   ["وحشتني","وحشتيني","وحشني","واحشني","واحشاني","وحشاني","miss you","missed you","miss u","missing","i miss"]],
+  ["s_night",  ["تصبح","هنام","رايحه انام","رايح انام","good night","going to sleep","going to bed"]],
+  ["s_thanks", ["شكرا","متشكر","ميرسي","thank you","thanks"]],
+  ["d_ghor",   ["غور ","غوري ","اتغور","get lost","go away"]],
+  ["d_greet",  ["ازيك","عامل ايه","اخبارك","عامله ايه","صباح الخير","مساء الخير","هاي ","اهلا","السلام عليكم","how are you","how r u","hello","hi","hey","good morning","good evening"]],
+  ["d_story",  ["عايزه احكي","عايز احكي","هحكيلك","احكيلك","هقولك حاجه","want to talk","let me tell you","i need to talk"]],
+];
+const SOLO_MORE_F = {
+  s_crisis:["اللي كتبتيه ده مهم ومش هعدّيه 🤍 إنتي مش لوحدك. كلّمي دلوقتي حد بتثقي فيه من أهلك أو صحابك وقوليله اللي جواكي. ولو حاسة إنك في خطر، اطلبي الإسعاف أو روحي أقرب مستشفى."],
+  s_anx:["الخوف ده مفهوم 🤍 خدي نفس عميق وطلّعيه براحة. إيه أكتر حاجة قلقاكي بالظبط؟","القلق بيكبّر الحاجات. اكتبي أسوأ حاجة ممكن تحصل، وبعدين اكتبي هتتصرفي إزاي. هتلاقيها أصغر","إنتي عدّيتي حاجات أصعب قبل كده. خطوة واحدة بس دلوقتي 🌱"],
+  s_angry:["من حقك تتعصبي 😤 طلّعي كل اللي جواكي هنا الأول","العصبية دي معناها إن في حاجة مهمة عندك اتداس عليها. إيه اللي ضايقك أكتر؟","اكتبي كل اللي نفسك تقوليه هنا، وبعد ما تهدي قرّري هتعملي إيه"],
+  s_lonely:["الإحساس ده تقيل، وحقك تحسي بيه 🤍 بس هو مش معناه إن محدش بيحبك","ابعتي رسالة لحد واحد بس النهارده، حتى لو كلمة. ساعات الناس مستنية إننا نبدأ","أنا هنا وسامعة. احكيلي يومك كان عامل إزاي"],
+  s_doubt:["استني، ده مش كلام تتقاليه لنفسك 🤍 لو صاحبتك قالت كده عن نفسها كنتي هتردّي عليها بإيه؟","غلطة أو يوم وحش مش بيحددوا إنتي مين","اكتبي حاجة واحدة عملتيها كويس الأسبوع ده، حتى لو صغيرة"],
+  s_sleep:["قلة النوم بتخلّي كل حاجة أتقل 😴 سيبي الموبايل شوية وجرّبي تاخدي نفس ببطء","اكتبي هنا كل اللي بيلف في دماغك، ساعات الدماغ بتهدى لما الكلام يطلع","متضغطيش على نفسك عشان تنامي. ارتاحي بس والنوم هييجي"],
+  s_sick:["ألف سلامة عليكي 🤍 اشربي سوايل وارتاحي","جسمك محتاج راحة النهارده، سيبي كل حاجة تانية لبعدين","لو التعب مكمّل أو بيزيد، اكشفي عند دكتور ومتأجليش"],
+  s_bored:["الزهق ساعات معناه إنك محتاجة حاجة جديدة ✨ إيه حاجة كان نفسك تجرّبيها؟","قومي اتمشي عشر دقايق أو شغّلي أغنية بتحبيها","اكتبي تلات حاجات نفسك تعمليهم الشهر ده"],
+  s_proud:["برافو عليكي 👏 ده مجهودك إنتي","عملتيها! افتكري الإحساس ده لما حاجة تانية تبقى صعبة","تستاهلي تحتفلي بنفسك النهارده 🎉"],
+  s_grateful:["الحمد لله دايمًا 🤍 حلو إنك شايفة النعم","الامتنان ده بيخلّي اليوم أخف. إيه كمان حلو حصل النهارده؟","ربنا يديمها عليكي 🌸"],
+  s_work:["الشغل بياخد من الواحد كتير. إيه أكتر حاجة شاغلاكي فيه؟","إنتي بتعملي اللي عليكي، ومش كل حاجة في إيدك","افصلي شوية بعد الشغل، إنتي مش شغلك بس 🌱"],
+  s_love:["المشاعر دي حلوة ومربكة في نفس الوقت 💭 قلبك بيقولك إيه؟","خدي وقتك، مفيش حاجة مستعجلة","اللي يستاهلك هيقدّرك زي ما إنتي"],
+  s_family:["الأهل علاقتهم معقدة ساعات، وده طبيعي 🤍 إيه اللي حصل؟","حتى لو اتضايقتي منهم، مشاعرك حقيقية ومهمة","جرّبي تقوليلهم اللي حاسة بيه بهدوء لما الجو يهدى"],
+  s_friend:["الصحاب بيفرقوا كتير في حياتنا. إيه اللي حصل معاها؟","الصاحبة الحقيقية بتفهم لما تتكلموا بصراحة","احكيلي أكتر، أنا سامعة 👂🏽"],
+  s_money:["الفلوس همّها تقيل 💸 جرّبي تكتبي مصاريفك في صفحة الفلوس، بتوضّح الصورة","مش لازم كل حاجة تتحل النهارده","حلو إنك واخدة بالك من فلوسك، ده أول خطوة"],
+  s_food:["بالهنا والشفا 😋 أكلتي إيه؟","الأكل الحلو بيظبّط المود","متنسيش تشربي مية كمان 💧"],
+  s_pray:["ربنا يستجيب ويطمّن قلبك 🤍","الدعاء بيريّح. ربنا يكتبلك الخير","ربنا معاكي ومش هيسيبك"],
+  s_night:["تصبحي على خير 🌙","نوم الهنا، وبكرة يوم جديد","أحلام سعيدة 🤍"],
+  s_thanks:["العفو 🤍 أنا هنا دايمًا","على إيه! احكي وقت ما تحبي","ده واجبي 🌸"],
+  s_q:["سؤال حلو 🤔 إنتي شايفة إيه؟","اكتبي إجابتين ممكنين وشوفي قلبك مرتاح لأنهي واحدة","ساعات الإجابة بتبان وإحنا بنكتب. كمّلي"],
+  s_long:["كتبتي كتير النهارده، وده حلو 🤍 إيه أكتر حاجة شاغلاكي في كل ده؟","واضح إن جواكي كتير. حاسة بإيه دلوقتي بعد ما كتبتي؟","شكرًا إنك طلّعتي كل ده. إيه الحاجة اللي محتاجاها دلوقتي؟"],
+  s_more:["وبعدين؟ كمّلي 👂🏽","وإنتي حسّيتي بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
+};
+const SOLO_MORE_M = {
+  s_crisis:["اللي كتبته ده مهم ومش هعدّيه 🤍 إنت مش لوحدك. كلّم دلوقتي حد بتثق فيه من أهلك أو صحابك وقوله اللي جواك. ولو حاسس إنك في خطر، اطلب الإسعاف أو روح أقرب مستشفى."],
+  s_anx:["الخوف ده مفهوم 🤍 خد نفس عميق وطلّعه براحة. إيه أكتر حاجة قلقاك بالظبط؟","القلق بيكبّر الحاجات. اكتب أسوأ حاجة ممكن تحصل، وبعدين اكتب هتتصرف إزاي. هتلاقيها أصغر","إنت عدّيت حاجات أصعب قبل كده. خطوة واحدة بس دلوقتي 🌱"],
+  s_angry:["من حقك تتعصب 😤 طلّع كل اللي جواك هنا الأول","العصبية دي معناها إن في حاجة مهمة عندك اتداس عليها. إيه اللي ضايقك أكتر؟","اكتب كل اللي نفسك تقوله هنا، وبعد ما تهدى قرّر هتعمل إيه"],
+  s_lonely:["الإحساس ده تقيل، وحقك تحس بيه 🤍 بس هو مش معناه إن محدش بيحبك","ابعت رسالة لحد واحد بس النهارده، حتى لو كلمة. ساعات الناس مستنية إننا نبدأ","أنا هنا وسامع. احكيلي يومك كان عامل إزاي"],
+  s_doubt:["استنى، ده مش كلام يتقال لنفسك 🤍 لو صاحبك قال كده عن نفسه كنت هترد عليه بإيه؟","غلطة أو يوم وحش مش بيحددوا إنت مين","اكتب حاجة واحدة عملتها كويس الأسبوع ده، حتى لو صغيرة"],
+  s_sleep:["قلة النوم بتخلّي كل حاجة أتقل 😴 سيب الموبايل شوية وجرّب تاخد نفس ببطء","اكتب هنا كل اللي بيلف في دماغك، ساعات الدماغ بتهدى لما الكلام يطلع","متضغطش على نفسك عشان تنام. ارتاح بس والنوم هييجي"],
+  s_sick:["ألف سلامة عليك 🤍 اشرب سوايل وارتاح","جسمك محتاج راحة النهارده، سيب كل حاجة تانية لبعدين","لو التعب مكمّل أو بيزيد، اكشف عند دكتور ومتأجلش"],
+  s_bored:["الزهق ساعات معناه إنك محتاج حاجة جديدة ✨ إيه حاجة كان نفسك تجرّبها؟","قوم اتمشى عشر دقايق أو شغّل حاجة بتحبها","اكتب تلات حاجات نفسك تعملهم الشهر ده"],
+  s_proud:["برافو عليك 👏 ده مجهودك إنت","عملتها! افتكر الإحساس ده لما حاجة تانية تبقى صعبة","تستاهل تحتفل بنفسك النهارده 🎉"],
+  s_grateful:["الحمد لله دايمًا 🤍 حلو إنك شايف النعم","الامتنان ده بيخلّي اليوم أخف. إيه كمان حلو حصل النهارده؟","ربنا يديمها عليك"],
+  s_work:["الشغل بياخد من الواحد كتير. إيه أكتر حاجة شاغلاك فيه؟","إنت بتعمل اللي عليك، ومش كل حاجة في إيدك","افصل شوية بعد الشغل، إنت مش شغلك بس 🌱"],
+  s_love:["المشاعر دي حلوة ومربكة في نفس الوقت 💭 قلبك بيقولك إيه؟","خد وقتك، مفيش حاجة مستعجلة","اللي تستاهلك هتقدّرك زي ما إنت"],
+  s_family:["الأهل علاقتهم معقدة ساعات، وده طبيعي 🤍 إيه اللي حصل؟","حتى لو اتضايقت منهم، مشاعرك حقيقية ومهمة","جرّب تقولهم اللي حاسس بيه بهدوء لما الجو يهدى"],
+  s_friend:["الصحاب بيفرقوا كتير في حياتنا. إيه اللي حصل معاه؟","الصاحب الحقيقي بيفهم لما تتكلموا بصراحة","احكيلي أكتر، أنا سامع 👂🏽"],
+  s_money:["الفلوس همّها تقيل 💸 جرّب تكتب مصاريفك في صفحة الفلوس، بتوضّح الصورة","مش لازم كل حاجة تتحل النهارده","حلو إنك واخد بالك من فلوسك، ده أول خطوة"],
+  s_food:["بالهنا والشفا 😋 أكلت إيه؟","الأكل الحلو بيظبّط المود","متنساش تشرب مية كمان 💧"],
+  s_pray:["ربنا يستجيب ويطمّن قلبك 🤍","الدعاء بيريّح. ربنا يكتبلك الخير","ربنا معاك ومش هيسيبك"],
+  s_night:["تصبح على خير 🌙","نوم الهنا، وبكرة يوم جديد","أحلام سعيدة 🤍"],
+  s_thanks:["العفو 🤍 أنا هنا دايمًا","على إيه! احكي وقت ما تحب","ده واجبي"],
+  s_q:["سؤال حلو 🤔 إنت شايف إيه؟","اكتب إجابتين ممكنين وشوف قلبك مرتاح لأنهي واحدة","ساعات الإجابة بتبان وإحنا بنكتب. كمّل"],
+  s_long:["كتبت كتير النهارده، وده حلو 🤍 إيه أكتر حاجة شاغلاك في كل ده؟","واضح إن جواك كتير. حاسس بإيه دلوقتي بعد ما كتبت؟","شكرًا إنك طلّعت كل ده. إيه الحاجة اللي محتاجها دلوقتي؟"],
+  s_more:["وبعدين؟ كمّل 👂🏽","وإنت حسّيت بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
+};
+const SOLO_MORE_EN = {
+  s_crisis:["What you wrote matters and I won't skip past it 🤍 You are not alone. Please talk right now to someone you trust, a family member or a friend, and tell them how you feel. If you think you are in danger, call emergency services or go to the nearest hospital."],
+  s_anx:["That fear makes sense 🤍 Take one slow breath. What exactly is worrying you most?","Worry makes things look bigger. Write the worst that could happen, then how you would handle it. It often shrinks","You've got through harder things before. Just one step for now 🌱"],
+  s_angry:["You're allowed to be angry 😤 Let it all out here first","Anger usually means something important to you got stepped on. What bothered you most?","Write everything you want to say here, then decide what to do once you've cooled down"],
+  s_lonely:["That feeling is heavy, and it's okay to feel it 🤍 It doesn't mean nobody cares about you","Send one message to one person today, even a single word. People often wait for us to start","I'm here and listening. Tell me how your day went"],
+  s_doubt:["Hold on, that's not how to talk to yourself 🤍 If a friend said that about themselves, what would you tell them?","One mistake or one bad day doesn't define you","Write one thing you did well this week, even a small one"],
+  s_sleep:["Too little sleep makes everything heavier 😴 Put the phone down for a bit and breathe slowly","Write everything spinning in your head here. The mind often settles once it's out","Don't force sleep. Just rest and it will come"],
+  s_sick:["Get well soon 🤍 Drink fluids and rest","Your body needs rest today. Everything else can wait","If it keeps going or gets worse, see a doctor and don't put it off"],
+  s_bored:["Boredom sometimes means you need something new ✨ What have you been wanting to try?","Take a ten-minute walk or play a song you love","Write three things you want to do this month"],
+  s_proud:["Well done 👏 That was your effort","You did it! Remember this feeling when something else gets hard","You deserve to celebrate yourself today 🎉"],
+  s_grateful:["So good that you notice the good things 🤍","Gratitude makes the day lighter. What else went well today?","May it last 🌸"],
+  s_work:["Work takes a lot out of a person. What's on your mind most about it?","You're doing your part, and not everything is in your hands","Switch off for a while after work. You are more than your job 🌱"],
+  s_love:["Those feelings are lovely and confusing at once 💭 What is your heart telling you?","Take your time. There's no rush","The right person will value you as you are"],
+  s_family:["Family can be complicated, and that's normal 🤍 What happened?","Even if they upset you, your feelings are real and they matter","Try telling them how you feel, calmly, once things settle"],
+  s_friend:["Friends matter a lot. What happened?","A real friend understands when you talk honestly","Tell me more, I'm listening 👂🏽"],
+  s_money:["Money worries are heavy 💸 Try logging your spending on the money page. It clears the picture","Not everything has to be solved today","Good that you're paying attention to your money. That's the first step"],
+  s_food:["Enjoy 😋 What did you have?","Good food fixes the mood","Don't forget to drink water too 💧"],
+  s_pray:["May your prayer be answered and your heart be at ease 🤍","Praying brings comfort. I hope good things come to you","You're not alone"],
+  s_night:["Good night 🌙","Sleep well. Tomorrow is a new day","Sweet dreams 🤍"],
+  s_thanks:["You're welcome 🤍 I'm always here","Any time! Write whenever you like","Happy to listen 🌸"],
+  s_q:["Good question 🤔 What do you think?","Write two possible answers and see which one your heart settles on","Sometimes the answer shows up as we write. Keep going"],
+  s_long:["You wrote a lot today, and that's good 🤍 What's the biggest thing on your mind in all of it?","There's clearly a lot inside. How do you feel now that it's written?","Thank you for letting all that out. What do you need right now?"],
+  s_more:["And then? Go on 👂🏽","How did that make you feel?","Tell me more","I see. What happened after that?"],
+};
+const dSoloOn = () => !!(S && S.dSolo === true);
+let lastSolo = "";
+function soloTopic(text){
+  const n = " " + norm(String(text).toLowerCase()).replace(/[^\p{L}\p{N}']+/gu, " ").trim() + " ";
+  // a word counts when it isn't denied: not after "مش"/"not", and not inside a "ما…ش" verb. English words must start a word (short ones must be the whole word); a keyword ending in a space must end the word
+  const hit = w => { const k = norm(w.toLowerCase()); let i = -1;
+    while ((i = n.indexOf(k, i + 1)) !== -1){
+      const before = n.slice(0, i), after = n.slice(i + k.length);
+      if (/[a-z]/.test(k)){ if (/[a-z']$/.test(before)) continue; if (k.length <= 3 && /^[a-z]/.test(after)) continue; }
+      else if (/ (?:م|ما)$/.test(before) && /^ش/.test(after)) continue;
+      if (/ (?:مش|مو|not|don't|dont|never|no) $/.test(before) && !/^(?:مش|not|can't|cant) /.test(k)) continue;
+      return true; }
+    return false; };
+  let best = "", top = 0;
+  for (const [cat, words] of SOLO_TOPICS){ const c = words.filter(hit).length; if (cat === "s_crisis"){ if (c && !n.includes(" الضحك ") && !/ laugh/.test(n)) return cat; continue; } if (c > top){ top = c; best = cat; } }
+  if (best) return best;
+  if (/[?؟]/.test(text)) return "s_q";
+  return n.trim().split(" ").length >= 25 ? "s_long" : "s_more";
+}
+function soloReply(text){
+  const cat = soloTopic(text), more = isEN() ? SOLO_MORE_EN : (isMale() ? SOLO_MORE_M : SOLO_MORE_F);
+  // always the friend's voice, also for someone linked: the partner's own lines are handled before this
+  const solo = isEN() ? SOLO_EN : (isMale() ? SOLO_M : SOLO_F);
+  const pool = (more[cat] || (solo[cat] && solo[cat].length ? solo[cat] : more.s_more)).filter(Boolean);
+  const fresh = pool.filter(t => t !== lastSolo);
+  return lastSolo = pick(fresh.length ? fresh : pool);
+}
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
@@ -1202,7 +1333,7 @@ function feedbackSheet(){
   <div class="seg" style="margin-bottom:10px"><button data-act="fb-kind" data-v="review" aria-pressed="${f.kind==="review"}">رأيي</button><button data-act="fb-kind" data-v="idea" aria-pressed="${f.kind==="idea"}">اقتراح</button><button data-act="fb-kind" data-v="complaint" aria-pressed="${f.kind==="complaint"}">شكوى</button></div>
   <form class="form" data-form="feedback">
     <textarea class="in" id="fb-text" maxlength="300" placeholder="${f.kind==="complaint"?"إيه اللي مضايقك؟":f.kind==="idea"?"نفسك نزوّد إيه؟":"اكتبي رأيك لو حابة (مش لازم)"}" ${f.kind==="review" ? "" : "required"}></textarea>
-    ${f.kind==="review" ? `<label class="item" style="cursor:pointer"><input type="checkbox" id="fb-public" checked style="width:20px;height:20px;accent-color:var(--accent)"><div class="grow"><div class="t">اعرضي رأيي على موقع التطبيق</div><div class="s">باسمك الأول بس</div></div></label>` : `<p class="muted small" style="margin:0">ده بيوصل لصاحب التطبيق بس.</p>`}
+    ${f.kind==="review" ? `<label class="item" style="cursor:pointer"><input type="checkbox" id="fb-public" checked style="width:20px;height:20px;accent-color:var(--accent)"><div class="grow"><div class="t">اعرضي رأيي على موقع التطبيق</div><div class="s">باسمك الأول بس</div></div></label>` : `${f.kind==="complaint" ? `<label class="f">رقمك عشان الدعم يكلّمك (اختياري)<input class="in num" id="fb-phone" type="tel" inputmode="tel" dir="ltr" maxlength="20" autocomplete="tel" placeholder="01xxxxxxxxx"></label>` : ""}<p class="muted small" style="margin:0">ده بيوصل لصاحب التطبيق بس.</p>`}
     <button class="btn" type="submit" id="fb-btn">ابعتي</button>
   </form>`);
 }
@@ -1228,7 +1359,7 @@ function diaryView(){
   return `
   ${CLOUD ? diarySwitch() : ""}
   <section class="hello"><h1>${L.diary}</h1><p>احكي يا ${esc(S.user.name)}، ${P&&P.linked&&P.user ? (S.share.diary === false ? "الدفتر ده ليكي إنتي بس 🔒" : esc(P.user.name)+" "+(P.user.gender==="f"?"سامعاك":"سامعك")+" 🤍") : (CLOUD ? "الدفتر ده بتاعك 🤍" : "هو سامعك 🤍")}</p>${priv}</section>
-  <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button>${hasMate() ? `<button class="btn ghost small" data-act="d-reply" aria-pressed="${dReplyOn()}">${dReplyOn() ? "💬 الرد التلقائي شغّال" : "🔕 من غير رد تلقائي"}</button>` : ""}</div>
+  <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ghost small" data-act="new-chat">✨ شات جديد</button><button class="btn ghost small" data-act="old-chats">🗂️ الشاتات القديمة</button>${hasMate() ? `<button class="btn ghost small" data-act="d-reply" aria-pressed="${dReplyOn()}">${dReplyOn() ? "💬 الرد التلقائي شغّال" : "🔕 من غير رد تلقائي"}</button>` : ""}<button class="btn ghost small" data-act="d-solo" aria-pressed="${dSoloOn()}">${dSoloOn() ? "🤖 الرد الذكي شغّال" : isMale() ? "🤖 شغّل الرد الذكي" : "🤖 شغّلي الرد الذكي"}</button></div>
   <div class="chat" id="chat">${out || `<div class="empty">لسه مفيش حكايات… ابدئي إنتي 📔</div>`}</div>
   <form class="composer" data-form="diary">
     <textarea class="in" id="diarytext" rows="1" placeholder="احكي يا ${esc(S.user.name)}…" aria-label="اكتبي حكايتك"></textarea>
@@ -1390,7 +1521,7 @@ function adminView(){
       ${r.status==="approved"?`<div class="s">⏳ هيتغيّر خلال 5 لـ 15 دقيقة لـ: <b class="num" dir="ltr">${esc(r.temp||"")}</b></div>`:r.status==="done"?`<div class="s">✅ اتغيّر: <b class="num" dir="ltr">${esc(r.temp||"")}</b> ابعتهولها</div>`:r.status==="notfound"?`<div class="s">❓ اليوزر ده مش موجود</div>`:""}</div>
       ${r.status==="new"&&u?`<button class="mini" data-act="adm-reset" data-v="${esc(r.id)}">اعمل باسورد مؤقت</button>`:""}<button class="x" data-act="adm-rdel" data-v="${esc(r.id)}" aria-label="امسح">✕</button></li>`}).join(""):`<li class="empty">مفيش طلبات</li>`}</ul>
     <p class="muted small" style="margin:8px 0 0">⚠️ اتأكد إن اللي طالب هو صاحب الحساب فعلًا قبل ما تعمل الباسورد.</p></div>
-  <div class="card"><h3>⭐ التقييمات والآراء والردود</h3><ul class="list" style="margin-top:10px">${(A.feedback||[]).length ? A.feedback.map(f=>`<li class="item"><span class="ic">${f.kind==="reply"?"💬":f.kind==="complaint"?"😟":f.kind==="idea"?"💡":"⭐"}</span><div class="grow"><div class="t">${esc(f.text||"")}</div><div class="s">${f.stars ? "⭐".repeat(f.stars) + " · " : ""}${esc(f.name||"")} · ${f.kind==="reply"?`رد على رسالتك${f.re?" «"+esc(f.re)+"»":""}`:f.kind==="complaint"?"شكوى":f.kind==="idea"?"اقتراح":"رأي"}</div></div>${f.kind==="review"?`<button class="mini" data-act="adm-hide-review" data-v="${esc(f.uid||"")}">شيله من الموقع</button>`:""}<button class="x" data-act="adm-fb-del" data-v="${esc(f.id)}" aria-label="امسح">✕</button></li>`).join("") : `<li class="empty">لسه مفيش</li>`}</ul></div>
+  <div class="card"><h3>⭐ التقييمات والآراء والردود</h3><ul class="list" style="margin-top:10px">${(A.feedback||[]).length ? A.feedback.map(f=>`<li class="item"><span class="ic">${f.kind==="reply"?"💬":f.kind==="complaint"?"😟":f.kind==="idea"?"💡":"⭐"}</span><div class="grow"><div class="t">${esc(f.text||"")}</div><div class="s">${f.stars ? "⭐".repeat(f.stars) + " · " : ""}${esc(f.name||"")} · ${f.kind==="reply"?`رد على رسالتك${f.re?" «"+esc(f.re)+"»":""}`:f.kind==="complaint"?"شكوى":f.kind==="idea"?"اقتراح":"رأي"}</div>${f.phone ? `<div class="s">📞 <a href="tel:${esc(f.phone)}" dir="ltr">${esc(f.phone)}</a></div>` : ""}</div>${f.kind==="review"?`<button class="mini" data-act="adm-hide-review" data-v="${esc(f.uid||"")}">شيله من الموقع</button>`:""}<button class="x" data-act="adm-fb-del" data-v="${esc(f.id)}" aria-label="امسح">✕</button></li>`).join("") : `<li class="empty">لسه مفيش</li>`}</ul></div>
   <div class="card"><h3>🚩 محتاج مراجعة</h3><ul class="list" style="margin-top:10px">${A.reports.length?A.reports.map(r=>`<li class="item"><span class="ic">${r.kind==="auto"?"🤖":"🚩"}</span><div class="grow"><div class="t">${esc(r.text||"")}</div><div class="s">${r.kind==="auto"?"الفلتر علّمها":"بلاغ"} · كتبها ${esc((A.users.find(x=>x.id===r.author)||{}).name||"?")}</div></div>
     <button class="mini" data-act="adm-open" data-v="${esc(r.owner||"")}">افتح</button><button class="mini" data-act="adm-rmmsg" data-v="${esc(r.id)}">🗑️ امسح الرسالة</button><button class="x" data-act="adm-dismiss" data-v="${esc(r.id)}" aria-label="تجاهل">✕</button></li>`).join(""):`<li class="empty">مفيش حاجة ✨</li>`}</ul></div>
   <div class="card"><h3>💬 جروبات الصحاب</h3><ul class="list" style="margin-top:10px">${(A.groups||[]).length ? A.groups.map(g=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-gopen" data-v="${esc(g.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${esc(g.name||"")}</div><div class="s">${(g.members||[]).length} أعضاء${g.lastText?" · "+esc(g.lastText):""}</div></div></button></li>`).join("") : `<li class="empty">مفيش جروبات لسه</li>`}</ul></div>
@@ -1934,6 +2065,7 @@ document.addEventListener("click", e => {
     case "replies-help": repliesHelp(); break;
     case "durations": durationsSheet(); break;
     case "dpreset": { const [f,r] = v.split(","); $("#d-focus").value = f; $("#d-rest").value = r; break; }
+    case "d-solo": S.dSolo = !dSoloOn(); save(); render(); toast(S.dSolo ? "الرد الذكي اشتغل 🤖" : "قفلنا الرد الذكي 🤖"); break;
     case "d-reply": S.dReply = !dReplyOn(); save(); render(); toast(S.dReply ? "رجّعنا الرد التلقائي 💬" : "خلاص، الدفتر من غير ردود 📔"); break;
     case "vacation": if (onVacation()){ S.vacation = {on:false}; save(); render(); toast("رجعنا للمذاكرة 📚"); } else vacationSheet(); break;
     case "vac-back": S.vacation = {on:false}; save(); closeSheet(); render(); toast("يلا بينا 📚💪"); break;
@@ -2137,6 +2269,7 @@ document.addEventListener("submit", e => {
         const pool = r ? (r.replies||[]) : (cat.startsWith("rule:") ? [] : dLines(cat));
         const pool2 = pool.length ? pool : dLines("d_other");
         ans = pool2.length ? pick(pool2) : null; }
+      if (!ans && dSoloOn()) ans = soloReply(t); // الرد الذكي: لأي حد شغّله، وبييجي بعد كلام الشريك لو موجود
       if (!ans){ S.diary.push({id, chat:S.chatId, ts:Date.now(), text:t, cat, reply:null}); save(); render(); scrollChat();
         if (CLOUD && P && P.linked && P.user && (S.share||{}).diary !== false && cat !== "d_sad") pushTo(P.user.ntfy, `📔 ${S.user.name}`, t);
         if (CLOUD && cat === "d_sad") notifyPartner(`${S.user.name} كتب/كتبت حكاية زعلانة 📔 كلّمه/كلّمها 🤍`);
@@ -2230,7 +2363,8 @@ document.addEventListener("submit", e => {
       const btn = $("#fb-btn"); if (btn){ btn.disabled = true; btn.textContent = "لحظة…"; }
       const first = String(ME.name || "").split(/\s+/)[0].slice(0, 20);
       const clean = !BAD.some(w => norm(text.toLowerCase()).includes(norm(w)));
-      fb.add("feedback", Object.assign({uid:UID, name:ME.name, kind:f.kind, text}, f.kind === "review" ? {stars:f.stars} : {}))
+      const phone = f.kind === "complaint" ? val("fb-phone").replace(/[^\d+]/g, "").slice(0, 20) : "";
+      fb.add("feedback", Object.assign({uid:UID, name:ME.name, kind:f.kind, text}, f.kind === "review" ? {stars:f.stars} : {}, phone ? {phone} : {}))
         .then(() => pub && clean ? fb.set(`publicReviews/${UID}`, {name:first, stars:f.stars, text, g:ME.gender || "f", at:Date.now()}, false) : null)
         .then(() => { closeSheet(); message("💗", f.kind === "complaint" ? "وصلت شكوتك، وهنحاول نحلها بسرعة" : f.kind === "idea" ? "شكرًا على الاقتراح، هنشوفه" : "شكرًا على رأيك، فرّحتينا", "Nono's World"); })
         .catch(() => { toast("مقدرتش أبعت، جرّبي تاني"); if (btn){ btn.disabled = false; btn.textContent = "ابعتي"; } });
@@ -2510,7 +2644,8 @@ setTimeout(() => { try { schedulePushIOS(); } catch(e){} }, 8000);
 
 
 /* ================= page tours: a ring around each thing, one tab at a time, shown once per device ================= */
-const PG_VER = 1;
+const PG_VER = 1, PG_VERS = { diary:2 }; // a tab whose tour gained a step gets a higher number, so it shows once more
+const pgVer = t => PG_VERS[t] || PG_VER;
 // [selector, card to ring (closest), Arabic title, Arabic text, English title, English text]
 const PAGE_TOUR = {
   home: [
@@ -2534,7 +2669,8 @@ const PAGE_TOUR = {
   ],
   diary: [
     ["form.composer", "", "احكي هنا", "اكتبي اللي في قلبك ودوسي إرسال.", "Write here", "Type what is on your mind and tap send.", "احكي هنا", "اكتب اللي في قلبك ودوس إرسال."],
-    ["[data-act=new-chat]", ".row", "الشاتات", "ابدئي شات جديد أو ارجعي للشاتات القديمة من هنا.", "Chats", "Start a new chat or go back to old ones here.", "الشاتات", "ابدأ شات جديد أو ارجع للشاتات القديمة من هنا."],
+    ["[data-act=new-chat]", "", "الشاتات", "ابدئي شات جديد من هنا، والشاتات القديمة من الزرار اللي جنبه.", "Chats", "Start a new chat here. Old chats are on the button next to it.", "الشاتات", "ابدأ شات جديد من هنا، والشاتات القديمة من الزرار اللي جنبه."],
+    ["[data-act=d-solo]", "", "الرد الذكي 🤖", "شغّليه لو عايزة الدفتر يرد عليكي بكلام مناسب للي كتبتيه. وتقدري تقفليه في أي وقت.", "Smart reply 🤖", "Turn it on if you want the diary to answer with words that fit what you wrote. You can turn it off any time.", "الرد الذكي 🤖", "شغّله لو عايز الدفتر يرد عليك بكلام مناسب للي كتبته. وتقدر تقفله في أي وقت."],
   ],
   settings: [
     ["[data-act=theme]", ".card", "الثيم 🎨", "غيّري ألوان التطبيق والوضع الليلي.", "Theme 🎨", "Change the app colours and dark mode.", "الثيم 🎨", "غيّر ألوان التطبيق والوضع الليلي."],
@@ -2544,7 +2680,7 @@ const PAGE_TOUR = {
   ],
 };
 const spot = { on:false, tab:"", steps:[], i:0, timer:0, hold:0 };
-const pgSeen = t => { try { return Number(localStorage.getItem("nw-pg-" + t) || 0) >= PG_VER; } catch(e){ return true; } };
+const pgSeen = t => { try { return Number(localStorage.getItem("nw-pg-" + t) || 0) >= pgVer(t); } catch(e){ return true; } };
 function spotTarget(st){ const el = document.querySelector(st[0]); return el ? (st[1] ? el.closest(st[1]) || el : el) : null; }
 function spotAuto(){
   clearTimeout(spot.timer);
@@ -2595,7 +2731,7 @@ function spotNext(force){
   spot.i++;
   if (spot.i < spot.steps.length){ spotShow(); return; }
   clearInterval(spot.hold); spot.on = false; $("#spot").hidden = true;
-  try { localStorage.setItem("nw-pg-" + spot.tab, String(PG_VER)); } catch(e){}
+  try { localStorage.setItem("nw-pg-" + spot.tab, String(pgVer(spot.tab))); } catch(e){}
 }
 addEventListener("resize", () => spotPlace());
 
