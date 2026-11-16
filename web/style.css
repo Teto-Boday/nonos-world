@@ -381,3 +381,5 @@ img{-webkit-user-drag:none}
 .og-last{font-size:13.5px;color:var(--muted)}
 .og-q{font-family:var(--display);font-size:18px;display:flex;flex-direction:column;gap:2px}
 .og-q small{color:var(--muted);font-size:12px;font-family:inherit}
+.og-same{width:100%;text-align:start;background:var(--soft);border-radius:14px;padding:10px 12px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
+.og-same b{font-size:14px}
