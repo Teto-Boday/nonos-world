@@ -3,6 +3,7 @@
 import { EN } from "./en.js";
 import { prayerTimes, CITIES } from "./pray.js";
 import { openGames } from "./games.js";
+import { ONLINE, newGame, fold as foldGames, action as gameAction, card as gameCard } from "./online.js";
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
 const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1237,10 +1238,42 @@ function studyView(){
 function diarySwitch(){
   return `<div class="seg" style="margin-top:4px"><button data-act="dmode" data-v="me" aria-pressed="${U.dmode === "me"}">حكاياتي</button>${P && P.linked ? `<button data-act="dmode" data-v="us" aria-pressed="${U.dmode === "us"}">إحنا 💞</button>` : ""}<button data-act="dmode" data-v="friends" aria-pressed="${U.dmode === "friends"}">الصحاب 👯</button></div>`;
 }
+/* ================= games inside a chat (partner, friend or group): see online.js =================
+   A game is only chat messages, so it needs no storage of its own. The open chat decides where they go. */
+function chatCtx(){
+  if (!CLOUD || S.tab !== "diary") return null;
+  if (U.dmode === "us" && P && P.linked && CP.cid) return { base:`couples/${CP.cid}/msgs`, box:CP, pair:true, members:{ [UID]:S.user.name, [ME.partner]:P.user ? P.user.name : "" }, tell:t => pushTo(P.user && P.user.ntfy, `💞 ${S.user.name}`, t) };
+  if (U.dmode === "friends" && FR.open){ const f = FR.list.find(x => x.id === FR.open); if (!f) return null; const o = friendOf(f);
+    return { base:`friends/${f.id}/msgs`, box:FR, pair:true, members:{ [UID]:ME.name, [o]:(f.names || {})[o] || "" }, tell:t => pushTo((f.topics || {})[o], `👭 ${ME.name}`, t) }; }
+  if (U.dmode === "friends" && GR.open){ const g = GR.list.find(x => x.id === GR.open); if (!g) return null; const members = {}; (g.members || []).forEach(u => { members[u] = (g.names || {})[u] || ""; }); members[UID] = ME.name;
+    return { base:`groups/${g.id}/msgs`, box:GR, pair:false, members, tell:t => Object.entries(g.topics || {}).forEach(([k, tp]) => { if (k !== UID && (g.members || []).includes(k)) pushTo(tp, `👭 ${g.name || ""}`, ME.name + ": " + t); }) }; }
+  return null;
+}
+const gameLang = () => isEN() ? "en" : isMale() ? "m" : "f";
+/* a game's first message becomes its card; the moves after it are not shown as bubbles */
+function gameBubble(m, games){ if (m.g.t !== "new") return ""; const st = games.get(m.g.id); return st ? `<div class="msg og">${gameCard(st, UID, gameLang(), escP)}</div>` : ""; }
+function sendGame(ctx, g, note){
+  const def = ONLINE.find(x => x.k === g.k) || ONLINE[0], id = uid() + uid();
+  // people on an older copy of the app see this line instead of the board
+  const m = { id, from:UID, name:ME.name, text:g.t === "new" ? `🎮 ${isEN() ? def.en[0] : def.ar[0]}` : "🎮", ts:Date.now(), g };
+  ctx.box.msgs = ctx.box.msgs.concat(m); keepTyping(render); if (g.t === "new") scrollChat();
+  fb.set(`${ctx.base}/${id}`, m, false).then(() => { if (note) ctx.tell(note); }).catch(() => { ctx.box.msgs = ctx.box.msgs.filter(x => x.id !== id); render(); toast("مقدرتش أبعت، اتأكدي من النت"); });
+}
+function startGame(k){
+  const ctx = chatCtx(), def = ONLINE.find(x => x.k === k); if (!ctx || !def) return;
+  if (!def.free && !gamesOpen()){ gamesPaySheet(); return; }
+  closeSheet(); sendGame(ctx, newGame(k, UID, ctx.members, ctx.pair), isEN() ? `🎮 Started a game of ${def.en[0]}` : `🎮 بدأ لعبة ${def.ar[0]}`);
+}
+function onlineGamesSheet(){
+  const en = isEN(), open = gamesOpen();
+  sheet(keep(`<h2>🎮 ${en ? "Play together" : isMale() ? "العب معاهم" : "العبي معاهم"}</h2><p class="muted small">${en ? "Each of you on your own phone. The game shows up here in the chat." : "كل واحد على موبايله، واللعبة بتظهر هنا في الشات."}</p>
+  <ul class="list">${ONLINE.map(o => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="og-start" data-v="${o.k}"><span class="ic">${o.e.slice(0, 2)}</span><div class="grow"><div class="t">${en ? o.en[0] : o.ar[0]}</div><div class="s">${en ? o.en[1] : o.ar[1]}</div></div><span style="flex:none;font-weight:800;color:var(--accent)">${o.free || open ? "▶" : "🔒"}</span></button></li>`).join("")}</ul>`, "f"));
+}
 function friendChatView(f){
   const oid = friendOf(f), on = esc((f.names||{})[oid] || "");
-  let last = "", out = "";
+  let last = "", out = ""; const games = foldGames(FR.msgs);
   FR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
@@ -1250,7 +1283,7 @@ function friendChatView(f){
   return `<div class="row between"><button class="btn ghost small" data-act="fr-back">رجوع</button><button class="btn ghost small" data-act="fr-remove" data-v="${esc(f.id)}">شيلي من صحابي</button></div>
     <section class="hello"><h1>👭 ${on}</h1><p>${presTag(FR.acts[oid])}</p><p>${today.length ? "النهارده: " + today.map(x => esc(x.e + " " + x.t)).join(" · ") : "لسه مفيش حاجة النهارده"}</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">قولي أهلًا 👋</div>`}</div>
-    <form class="composer" data-form="frmsg"><textarea class="in" id="ftext" rows="1" placeholder="اكتبي لـ ${on}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+    <form class="composer" data-form="frmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="ftext" rows="1" placeholder="اكتبي لـ ${on}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function openFriend(fid){
   if (FR.unsub){ try { FR.unsub(); } catch(e){} FR.unsub = null; }
@@ -1291,8 +1324,9 @@ function friendsView(){
     <h3 style="margin:18px 0 8px">👯 الجروبات</h3>
     <div class="row wrap"><button class="btn small" data-act="g-new">＋ جروب جديد</button><button class="btn ghost small" data-act="g-join">ادخلي جروب بكود</button></div>
     <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button></li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
-  let last = "", out = "";
+  let last = "", out = ""; const games = foldGames(GR.msgs);
   GR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d), mine = m.from === UID;
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     out += mine ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
@@ -1302,11 +1336,12 @@ function friendsView(){
   return `<div class="row between"><button class="btn ghost small" data-act="g-back">رجوع</button><button class="btn ghost small" data-act="g-info">الكود والأعضاء</button></div>
     <section class="hello"><h1>${esc(g.name)}</h1><p>${names}</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">قولوا أهلًا لبعض 👋</div>`}</div>
-    <form class="composer" data-form="gmsg"><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+    <form class="composer" data-form="gmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function coupleView(){
-  let last = "", out = "";
+  let last = "", out = ""; const games = foldGames(CP.msgs);
   CP.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
     out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
@@ -1316,7 +1351,7 @@ function coupleView(){
   return `${diarySwitch()}
     <section class="hello"><h1>${esc(S.user.name)} 💞 ${pn}</h1><p>${presTag(P.user)}</p><p>شاتكم إنتوا الاتنين بس، بعيد عن دفتر حكاياتي</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">ابدئي إنتي وقولي ${P.user && P.user.gender==="f" ? "لها" : "له"} حاجة حلوة 💌</div>`}</div>
-    <form class="composer" data-form="cmsg"><textarea class="in" id="ctext" rows="1" placeholder="اكتبي لـ ${pn}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+    <form class="composer" data-form="cmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="ctext" rows="1" placeholder="اكتبي لـ ${pn}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function actSaveItems(items){ const mine = FR.mine || {items:[], log:[]}; FR.mine = Object.assign({}, mine, {items}); render(); fb.set(`act/${UID}`, {items, log:mine.log||[], name:ME.name, seen:Date.now()}, false).catch(()=>toast("مقدرتش أحفظ")); }
 function keepTyping(fn){ const a = document.activeElement, id = a && a.id, val = id && a.value; fn(); if (id){ const el = document.getElementById(id); if (el){ el.value = val; el.focus(); } } }
@@ -2039,6 +2074,12 @@ document.addEventListener("click", e => {
     case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast(S.user.gender === "m" ? "إيه الروقان ده كله 😎" : "ايه الحلاوه دي كلها 💅✨"); break; }
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
+    case "og-menu": onlineGamesSheet(); break;
+    case "og-start": startGame(v); break;
+    case "og-new": startGame(v); break;
+    case "og": { const ctx = chatCtx(); if (!ctx) break; const [gid, what, arg] = String(v).split(":"), st = foldGames(ctx.box.msgs).get(gid), g = gameAction(st, UID, what, arg);
+      if (!g) break; const over = foldGames(ctx.box.msgs.concat({ from:UID, name:ME.name, ts:Date.now(), g })).get(gid);
+      sendGame(ctx, g, what === "join" ? (isEN() ? "🎮 Joined the game" : "🎮 دخل اللعبة") : (st.k === "xo" || st.k === "c4") && !over.win ? (isEN() ? "🎮 Your turn" : "🎮 دورك") : over.win ? (isEN() ? "🎮 The game is over" : "🎮 اللعبة خلصت") : ""); break; }
     case "games": openGames({ en:isEN(), unlocked:gamesOpen(), onLocked:gamesPaySheet }); break;
     case "adm-games": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.games;
       fb.set(`users/${v}`, {games:on}).then(()=>{ u.games = on; render(); toast(on ? `🎮 ${u.name} اتفتحتله كل الألعاب` : `🎮 ${u.name} رجع للألعاب المجانية بس`); }).catch(()=>toast("مقدرتش")); break; }
@@ -2694,6 +2735,7 @@ const PAGE_TOUR = {
     ["[data-act=d-solo]", "", "الرد الذكي 🤖", "شغّليه لو عايزة الدفتر يرد عليكي بكلام مناسب للي كتبتيه. وتقدري تقفليه في أي وقت.", "Smart reply 🤖", "Turn it on if you want the diary to answer with words that fit what you wrote. You can turn it off any time.", "الرد الذكي 🤖", "شغّله لو عايز الدفتر يرد عليك بكلام مناسب للي كتبته. وتقدر تقفله في أي وقت."],
   ],
   us: [
+    ["form[data-form=cmsg] [data-act=og-menu]", "", "العبوا مع بعض 🎮", "من الزرار ده تبدئي لعبة مع شريكك، كل واحد على موبايله.", "Play together 🎮", "Start a game with your partner from this button, each on your own phone.", "العبوا مع بعض 🎮", "من الزرار ده تبدأ لعبة مع شريكتك، كل واحد على موبايله."],
     ["form[data-form=cmsg]", "", "شاتكم إنتوا الاتنين 💞", "اكتبي هنا والرسالة توصل لشريكك على طول. الشات ده ليكم إنتوا الاتنين بس.", "Just the two of you 💞", "Write here and it reaches your partner right away. This chat is only for the two of you.", "شاتكم إنتوا الاتنين 💞", "اكتب هنا والرسالة توصل لشريكتك على طول. الشات ده ليكم إنتوا الاتنين بس."],
   ],
   mate: [

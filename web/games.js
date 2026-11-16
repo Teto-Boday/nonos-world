@@ -8,9 +8,9 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 const TXT = {
   ar: { title:"ألعاب القعدة", sub:"موبايل واحد في النص، وكل واحد ليه زرار. من غير نت.", free:"مجاني", players:"كام لاعب؟", start:"يلا نلعب", back:"رجوع", how:"إزاي تتلعب",
-        win:"كسب!", draw:"تعادل", again:"العبوا تاني", other:"لعبة تانية", quit:"تخرجوا من اللعبة؟", resume:"كمّلوا", leave:"اخرج", round:"الجولة", keys:"على الكمبيوتر: الزراير", first:"أول واحد يكسب", rounds:"جولات" },
+        solo:"ضد الكمبيوتر", win:"كسب!", draw:"تعادل", again:"العبوا تاني", other:"لعبة تانية", quit:"تخرجوا من اللعبة؟", resume:"كمّلوا", leave:"اخرج", round:"الجولة", keys:"على الكمبيوتر: الزراير", first:"أول واحد يكسب", rounds:"جولات" },
   en: { title:"Party games", sub:"One phone in the middle, one button each. No internet needed.", free:"Free", players:"How many players?", start:"Let's play", back:"Back", how:"How to play",
-        win:"wins!", draw:"Draw", again:"Play again", other:"Another game", quit:"Leave the game?", resume:"Keep playing", leave:"Leave", round:"Round", keys:"On a computer: keys", first:"First to win", rounds:"rounds" },
+        solo:"vs computer", win:"wins!", draw:"Draw", again:"Play again", other:"Another game", quit:"Leave the game?", resume:"Keep playing", leave:"Leave", round:"Round", keys:"On a computer: keys", first:"First to win", rounds:"rounds" },
 };
 
 /* where each player sits: 0 bottom, 1 top (across the table), 2 and 3 share the two ends when there are more */
@@ -42,6 +42,12 @@ const keepIn = (p, r, w, h) => { p.x = clamp(p.x, r, w - r); p.y = clamp(p.y, r,
 const lastAlive = ps => { const a = ps.filter(p => p.alive); return a.length > 1 ? null : a.length ? ps.indexOf(a[0]) : -1; };
 const hearts = n => "♥".repeat(Math.max(0, n));
 
+/* ---------- the computer player: each game has ai(i) that says whether its button should be down right now.
+   It reacts a little late and aims a little off on purpose, so a person can beat it. ---------- */
+const angDiff = (a, b) => { let d = (b - a) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; };
+const aimed = (p, tx, ty, tol) => Math.abs(angDiff(p.a, Math.atan2(ty - p.y, tx - p.x))) < tol;
+const nearest = (ps, i, ok = () => true) => { let best = null, bd = 1e9; ps.forEach((q, j) => { if (j === i || !q.alive || !ok(j)) return; const d = Math.hypot(q.x - ps[i].x, q.y - ps[i].y); if (d < bd){ bd = d; best = q; } }); return best; };
+
 /* ---------- sumo: you spin on your own, a tap dashes you forward ---------- */
 function sumo({ n, w, h, u, col }){
   const cx = w / 2, cy = h / 2, r = 7 * u; let R = Math.min(w, h) * .46, time = 0;
@@ -57,6 +63,9 @@ function sumo({ n, w, h, u, col }){
         const vn = (a.vx - b.vx) * s.nx + (a.vy - b.vy) * s.ny; if (vn > 0){ a.vx -= vn * s.nx * 1.05; a.vy -= vn * s.ny * 1.05; b.vx += vn * s.nx * 1.05; b.vy += vn * s.ny * 1.05; } }
       for (const p of ps) if (p.alive && Math.hypot(p.x - cx, p.y - cy) > R) p.alive = false;
     },
+    // dash when facing someone, or when facing the middle while close to the edge
+    ai(i){ const p = ps[i], t = nearest(ps, i); if (!t || p.cd > 0 || Math.random() > .09) return false;
+      const edge = Math.hypot(p.x - cx, p.y - cy) > R * .72; return edge ? aimed(p, cx, cy, .6) : aimed(p, t.x, t.y, .5); },
     result: () => lastAlive(ps),
     draw(c){
       c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.fillStyle = col.surface; c.fill(); c.lineWidth = 1.2 * u; c.strokeStyle = col.accent; c.stroke();
@@ -97,6 +106,9 @@ function tanks({ n, w, h, u, col }){
         for (let i = 0; i < n; i++){ const p = ps[i]; if (p.alive && (s.o !== i || s.age > .3) && Math.hypot(p.x - s.x, p.y - s.y) < r + 1.3 * u){ p.alive = false; return false; } }
         return true; });
     },
+    // drive (and fire) while roughly facing someone, let go now and then to aim again
+    ai(i){ const p = ps[i], t = nearest(ps, i); if (!t) return false; p.rest = (p.rest || 0) - 1 / 60; if (p.rest > 0) return false;
+      if (aimed(p, t.x, t.y, .22)){ if (Math.random() < .03) p.rest = .35; return true; } return false; },
     result: () => time > 45 ? -1 : lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -143,7 +155,9 @@ function football({ n, w, h, u, col }){
       if (ball.x < br){ if (inGoal(2)) return concede(2); ball.x = br; ball.vx = Math.abs(ball.vx); }
       if (ball.x > w - br){ if (inGoal(3)) return concede(3); ball.x = w - br; ball.vx = -Math.abs(ball.vx); }
     },
-    result: () => lastAlive(ps),
+    // run at the ball whenever it's roughly ahead
+    ai(i){ return aimed(ps[i], ball.x, ball.y, .5) && Math.random() > .08; },
+    result: () => time > 150 ? -1 : lastAlive(ps), // nobody scored the golden goal in a minute: call it a draw
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
       c.strokeStyle = col.line; c.lineWidth = .5 * u; c.beginPath(); c.arc(w / 2, h / 2, 12 * u, 0, TAU); c.stroke(); c.beginPath(); c.moveTo(0, h / 2); c.lineTo(w, h / 2); c.stroke();
@@ -183,6 +197,10 @@ function hockey({ n, w, h, u, col }){
       if (wait > 0){ wait -= dt; if (wait <= 0) serve(); return; }
       for (let k = 0; k < 3 && wait <= 0; k++) step(dt / 3);
     },
+    // turn the paddle round when the ball is coming and the paddle is sliding away from it
+    ai(i){ const p = ps[i]; p.think = (p.think || 0) - 1 / 60; if (p.think > 0) return false;
+      const coming = [ball.vy > 0, ball.vy < 0, ball.vx < 0, ball.vx > 0][i], at = (i < 2 ? ball.x : ball.y) + rnd(-16, 16) * u, off = at - p.t;
+      if (coming && Math.abs(off) > len(i) * .3 && Math.sign(off) !== p.dir){ p.think = .5; return true; } return false; },
     result: () => lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -220,6 +238,10 @@ function snakes({ n, w, h, u, col }){
         if (p.alive && p.gap <= 0) p.lines[p.lines.length - 1].push(p.x, p.y);
       });
     },
+    // turn when something is in the way ahead; otherwise wander a little
+    ai(i){ const p = ps[i]; const blocked = (ang, far) => { for (let d = cell * 2; d < far; d += cell){ const x = p.x + Math.cos(ang) * d, y = p.y + Math.sin(ang) * d;
+        if (x < cell || y < cell || x > w - cell || y > h - cell) return true; const k = Math.floor(y / cell) * cols + Math.floor(x / cell); if (owner[k] !== -1 && (owner[k] !== i || time - stamp[k] > .4)) return true; } return false; };
+      if (blocked(p.a, 13 * u) || blocked(p.a + .35, 9 * u)) return true; p.wander = (p.wander || 0) - 1 / 60; if (p.wander < -1.4) p.wander = rnd(.1, .35); return p.wander > 0; },
     result: () => lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -245,6 +267,11 @@ function bomb({ n, w, h, u, col }){
       if (fuse <= 0){ const p = ps[holder]; p.alive = false; boom = .8; bx = p.x; by = p.y;
         const left = ps.map((q, i) => q.alive ? i : -1).filter(i => i >= 0); if (left.length > 1){ holder = left[Math.floor(Math.random() * left.length)]; fuse = rnd(8, 13); pass = .8; } }
     },
+    // with the bomb: run at the nearest player. Without it: run when facing away from whoever has it
+    ai(i){ const p = ps[i], hp = ps[holder]; if (i === holder){ const t = nearest(ps, i); return !!t && aimed(p, t.x, t.y, .4); }
+      if (!hp || !hp.alive) return false; const away = Math.atan2(p.y - hp.y, p.x - hp.x), near = Math.hypot(p.x - hp.x, p.y - hp.y) < 45 * u;
+      const wall = p.x + Math.cos(p.a) * 12 * u, wy = p.y + Math.sin(p.a) * 12 * u; if (wall < r || wall > w - r || wy < r || wy > h - r) return false;
+      return near && Math.abs(angDiff(p.a, away)) < .9; },
     result: () => lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -271,7 +298,7 @@ export function openGames(opts = {}){
   closeGames();
   const en = !!opts.en, T = TXT[en ? "en" : "ar"], nm = g => (en ? g.en : g.ar);
   const root = document.createElement("div"); root.id = "games"; root.dir = en ? "ltr" : "rtl"; document.body.appendChild(root);
-  let raf = 0, players = 2, cur = null, stopPlay = null;
+  let raf = 0, players = 2, cur = null, stopPlay = null; // players 1 = one person against the computer
   const close = () => { if (stopPlay) stopPlay(); root.remove(); };
   root._close = close;
   const open = g => !!opts.unlocked || !!g.free;
@@ -286,18 +313,18 @@ export function openGames(opts = {}){
     cur = g;
     root.innerHTML = `<div class="g-page"><header class="g-head"><h2>${g.e} ${nm(g)[0]}</h2><button class="g-x" data-g="menu" aria-label="${T.back}">✕</button></header>
       <div class="g-card"><b>${T.how}</b><p>${nm(g)[1]}</p><p class="g-small">${g.rounds > 1 ? `${T.first} ${g.rounds} ${T.rounds}` : ""}</p>${matchMedia("(pointer:fine)").matches ? `<p class="g-small">${T.keys}: ${KEYS.map((k, i) => `${FACES[i]} ${k.toUpperCase()}`).join(" · ")}</p>` : ""}</div>
-      <div class="g-card"><b>${T.players}</b><div class="g-seg">${[2, 3, 4].map(k => `<button data-g="n" data-n="${k}" aria-pressed="${players === k}">${FACES.slice(0, k).join("")}</button>`).join("")}</div></div>
+      <div class="g-card"><b>${T.players}</b><div class="g-seg">${[1, 2, 3, 4].map(k => `<button data-g="n" data-n="${k}" aria-pressed="${players === k}">${k === 1 ? FACES[0] + "🤖" : FACES.slice(0, k).join("")}<small>${k === 1 ? T.solo : k}</small></button>`).join("")}</div></div>
       <button class="g-go" data-g="start">${T.start}</button></div>`;
   }
-  function finish(g, winner){
-    root.innerHTML = `<div class="g-page g-center"><div class="g-cup">🏆</div><div class="g-face" style="--c:${COLORS[winner]}">${FACES[winner]}</div><h2>${T.win}</h2>
+  function finish(g, winner, bots = []){
+    root.innerHTML = `<div class="g-page g-center"><div class="g-cup">🏆</div><div class="g-face" style="--c:${COLORS[winner]}">${bots.includes(winner) ? "🤖" : FACES[winner]}</div><h2>${T.win}</h2>
       <button class="g-go" data-g="start">${T.again}</button><button class="g-ghost" data-g="menu">${T.other}</button></div>`;
   }
 
-  function play(g, n){
+  function play(g, n, bots = []){
     // 2 players sit across from each other; 3 and 4 share the two ends
     const slot = i => n === 2 ? (i === 0 ? "b" : "t") : n === 3 ? (i === 1 ? "t" : i === 0 ? "br" : "bl") : ["br", "tl", "bl", "tr"][i];
-    const btn = i => `<button class="g-btn g-${slot(i)}" data-p="${i}" style="--c:${COLORS[i]}"><span>${FACES[i]}</span><i></i></button>`;
+    const btn = i => `<button class="g-btn g-${slot(i)}${bots.includes(i) ? " g-bot" : ""}" data-p="${i}" style="--c:${COLORS[i]}"${bots.includes(i) ? " disabled" : ""}><span>${bots.includes(i) ? "🤖" : FACES[i]}</span><i></i></button>`;
     const top = [1, 3].filter(i => i < n), bottom = [2, 0].filter(i => i < n);
     root.innerHTML = `<div class="g-play"><div class="g-strip g-top">${top.map(btn).join("")}</div><div class="g-field"><canvas></canvas><button class="g-pause" data-g="pause" aria-label="${T.leave}">✕</button><div class="g-ask" hidden><p>${T.quit}</p><button class="g-go" data-g="resume">${T.resume}</button><button class="g-ghost" data-g="menu">${T.leave}</button></div></div><div class="g-strip g-bottom">${bottom.map(btn).join("")}</div></div>`;
     const cv = root.querySelector("canvas"), c = cv.getContext("2d"), field = root.querySelector(".g-field"), held = Array(n).fill(false), wins = Array(n).fill(0);
@@ -309,11 +336,11 @@ export function openGames(opts = {}){
     const score = () => root.querySelectorAll(".g-btn").forEach(b => { b.querySelector("i").textContent = "★".repeat(wins[+b.dataset.p]); });
     const down = i => { if (paused || held[i]) return; held[i] = true; if (phase === "run" && game.press) game.press(i); root.querySelector(`.g-btn[data-p="${i}"]`)?.classList.add("on"); };
     const up = i => { held[i] = false; root.querySelector(`.g-btn[data-p="${i}"]`)?.classList.remove("on"); };
-    root.querySelectorAll(".g-btn").forEach(b => { const i = +b.dataset.p;
+    root.querySelectorAll(".g-btn:not(.g-bot)").forEach(b => { const i = +b.dataset.p;
       b.addEventListener("pointerdown", e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch(err){} down(i); });
       for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, () => up(i));
       b.addEventListener("contextmenu", e => e.preventDefault()); });
-    const kd = e => { const i = KEYS.indexOf(e.key.toLowerCase()); if (i >= 0 && i < n && !e.repeat){ e.preventDefault(); down(i); } }, ku = e => { const i = KEYS.indexOf(e.key.toLowerCase()); if (i >= 0 && i < n) up(i); };
+    const kd = e => { const i = KEYS.indexOf(e.key.toLowerCase()); if (i >= 0 && i < n && !bots.includes(i) && !e.repeat){ e.preventDefault(); down(i); } }, ku = e => { const i = KEYS.indexOf(e.key.toLowerCase()); if (i >= 0 && i < n && !bots.includes(i)) up(i); };
     addEventListener("keydown", kd); addEventListener("keyup", ku);
     const big = (text, sub) => { c.fillStyle = "rgba(0,0,0,.28)"; c.fillRect(0, 0, w, h); c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle";
       c.font = `800 ${Math.min(w, h) * .26}px system-ui, sans-serif`; c.fillText(text, w / 2, h / 2); if (sub){ c.font = `700 ${Math.min(w, h) * .06}px system-ui, sans-serif`; c.fillText(sub, w / 2, h / 2 + Math.min(w, h) * .2); } };
@@ -322,12 +349,13 @@ export function openGames(opts = {}){
       const dt = Math.min(.034, (now - last) / 1000 || 0); last = now;
       if (!paused){
         if (phase === "count"){ t -= dt; if (t <= 0) phase = "run"; }
-        else if (phase === "run"){ game.update(dt, held); const r = game.result(); if (r !== null){ winner = r; if (r >= 0) wins[r]++; score(); phase = "end"; t = 1.7; } }
-        else { t -= dt; if (t <= 0){ const champ = wins.findIndex(x => x >= g.rounds); if (champ >= 0){ stop(); finish(g, champ); return; } round++; newRound(); } }
+        else if (phase === "run"){ for (const i of bots){ const want = !!(game.ai && game.ai(i)); if (want && !held[i]) down(i); else if (!want && held[i]) up(i); }
+          game.update(dt, held); const r = game.result(); if (r !== null){ winner = r; if (r >= 0) wins[r]++; score(); phase = "end"; t = 1.7; } }
+        else { t -= dt; if (t <= 0){ const champ = wins.findIndex(x => x >= g.rounds); if (champ >= 0){ stop(); finish(g, champ, bots); return; } round++; newRound(); } }
       }
       c.fillStyle = col.bg; c.fillRect(0, 0, w, h); game.draw(c);
       if (phase === "count") big(String(Math.ceil(t)), g.rounds > 1 ? `${T.round} ${round}` : "");
-      else if (phase === "end") big(winner >= 0 ? FACES[winner] : "🤝", winner >= 0 ? T.win : T.draw);
+      else if (phase === "end") big(winner >= 0 ? (bots.includes(winner) ? "🤖" : FACES[winner]) : "🤝", winner >= 0 ? T.win : T.draw);
     }
     function stop(){ dead = true; cancelAnimationFrame(raf); removeEventListener("keydown", kd); removeEventListener("keyup", ku); removeEventListener("resize", onResize); stopPlay = null; }
     const onResize = () => { if (phase === "count") newRound(); };
@@ -344,7 +372,7 @@ export function openGames(opts = {}){
       case "menu": menu(); break;
       case "pick": { const g = GAMES.find(x => x.id === b.dataset.id); if (!g) break; if (!open(g)){ close(); if (opts.onLocked) opts.onLocked(); break; } setup(g); break; }
       case "n": players = +b.dataset.n; setup(cur); break;
-      case "start": if (cur) play(cur, players); break;
+      case "start": if (cur) play(cur, Math.max(2, players), players === 1 ? [1] : []); break;
       case "pause": play.pause(true); break;
       case "resume": play.pause(false); break;
     }
