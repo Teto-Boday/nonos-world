@@ -1695,8 +1695,8 @@ function settingsView(){
     <div class="notice" style="margin-top:10px">على التابلت بيرنّوا حتى لو التطبيق مقفول. على الكمبيوتر بيرنّوا طول ما البرنامج مفتوح. على الآيفون استخدمي منبّه الآيفون مع Shortcuts (الشرح في موقع التحميل).</div>
   </div>
   ${isMuslim() ? `<div class="card"><h3>🕌 الصلاة والأذكار</h3>
-    <div class="item" style="margin-top:10px"><span class="ic">📍</span><div class="grow"><div class="t">${esc(myLoc().name)}</div><div class="s">${myLoc().guess ? "مختارين القاهرة لحد ما تحددي مكانك" : "مواعيد الصلاة على حسب المكان ده"}</div></div><button class="mini" data-act="loc-gps">مكاني</button></div>
-    <select class="in" id="loc-city" aria-label="اختاري المدينة" style="margin-top:8px"><option value="">أو اختاري مدينتك…</option>${CITIES.map(([n])=>`<option ${myLoc().name===n?"selected":""}>${n}</option>`).join("")}</select>
+    <div class="item" style="margin-top:10px"><span class="ic">📍</span><div class="grow"><div class="t">${esc(cityName(myLoc().name))}</div><div class="s">${myLoc().guess ? "مختارين القاهرة لحد ما تحددي مكانك" : "مواعيد الصلاة على حسب المكان ده"}</div></div><button class="mini" data-act="loc-gps">مكاني</button></div>
+    <select class="in" id="loc-city" aria-label="اختاري المدينة" style="margin-top:8px"><option value="">أو اختاري مدينتك…</option>${CITIES.map(([n])=>`<option value="${n}" ${myLoc().name===n?"selected":""}>${esc(cityName(n))}</option>`).join("")}</select>
     <div class="ptimes">${(() => { const t = timesFor(); return [["fajr","الفجر"],["sunrise","الشروق"],["dhuhr","الظهر"],["asr","العصر"],["maghrib","المغرب"],["isha","العشاء"]].map(([p,n]) => `<div><small>${n}</small><b class="num">${hhmm(t[p])}</b></div>`).join(""); })()}</div>
     <ul class="list" style="margin-top:6px">${[["on","🕌 إشعار الأذان في كل صلاة"],["remind","⏰ تذكير بعد 25 دقيقة لو معلّمتيش إنك صلّيتي"],["azkar","📿 أذكار الصباح والمساء"],["kahf","📖 سورة الكهف يوم الجمعة"],["fast","🌙 تذكير بصيام الاثنين والخميس (بالليل قبلها)"]].map(([k,t])=>`<li class="item"><div class="grow t">${t}</div><button class="switch" data-act="pray-opt" data-v="${k}" role="switch" aria-checked="${k === "fast" ? !!(S.pray||{}).fast : (S.pray||{})[k]!==false}" aria-label="${t}"><i></i></button></li>`).join("")}</ul>
     ${S.user.gender !== "m" ? `<p class="muted small" style="margin:8px 4px 0">🤍 أيام البريود الأذان بيقف لوحده، وبيوصلك مكانه حديث عن الصبر والأجر. والأذكار بتفضل، وتذكير الصيام مش بيوصل في الأيام دي.</p>` : ""}
@@ -1748,6 +1748,11 @@ function settingsView(){
 }
 
 const SUPPORT_NUM = "+20 100 495 6321", SUPPORT_WA = "https://wa.me/201004956321", SUPPORT_TEL = "tel:+201004956321";
+// the saved city keeps its Arabic name (it's the key); this is only what the English version shows
+const CITY_EN = { "القاهرة":"Cairo", "الجيزة":"Giza", "الإسكندرية":"Alexandria", "القليوبية (بنها)":"Qalyubia (Benha)", "الشرقية (الزقازيق)":"Sharqia (Zagazig)", "الدقهلية (المنصورة)":"Dakahlia (Mansoura)", "الغربية (طنطا)":"Gharbia (Tanta)", "المنوفية (شبين الكوم)":"Monufia (Shebin El Kom)",
+  "البحيرة (دمنهور)":"Beheira (Damanhour)", "كفر الشيخ":"Kafr El Sheikh", "دمياط":"Damietta", "بورسعيد":"Port Said", "الإسماعيلية":"Ismailia", "السويس":"Suez", "الفيوم":"Fayoum", "بني سويف":"Beni Suef", "المنيا":"Minya", "أسيوط":"Asyut", "سوهاج":"Sohag", "قنا":"Qena",
+  "الأقصر":"Luxor", "أسوان":"Aswan", "الغردقة":"Hurghada", "شرم الشيخ":"Sharm El Sheikh", "مرسى مطروح":"Marsa Matrouh", "العريش":"Arish", "دبي":"Dubai", "أبوظبي":"Abu Dhabi", "الرياض":"Riyadh", "جدة":"Jeddah", "الكويت":"Kuwait City", "الدوحة":"Doha" };
+const cityName = n => isEN() ? (CITY_EN[n] || n) : n;
 /* party games: two are free, the rest open when the owner turns on users/{uid}.games after a 30 EGP payment */
 const gamesOpen = () => IS_ADMIN || !!(ME && ME.games);
 function gamesPaySheet(){
@@ -2079,7 +2084,8 @@ document.addEventListener("click", e => {
     case "og-new": startGame(v); break;
     case "og": { const ctx = chatCtx(); if (!ctx) break; const [gid, what, arg] = String(v).split(":"), st = foldGames(ctx.box.msgs).get(gid), g = gameAction(st, UID, what, arg);
       if (!g) break; const over = foldGames(ctx.box.msgs.concat({ from:UID, name:ME.name, ts:Date.now(), g })).get(gid);
-      sendGame(ctx, g, what === "join" ? (isEN() ? "🎮 Joined the game" : "🎮 دخل اللعبة") : (st.k === "xo" || st.k === "c4") && !over.win ? (isEN() ? "🎮 Your turn" : "🎮 دورك") : over.win ? (isEN() ? "🎮 The game is over" : "🎮 اللعبة خلصت") : ""); break; }
+      const turnNow = over.win ? "" : (st.k === "xo" || st.k === "c4") ? over.p[over.n % 2] : st.k === "mem" ? over.p[over.turn] : "";
+      sendGame(ctx, g, what === "join" ? (isEN() ? "🎮 Joined the game" : "🎮 دخل اللعبة") : over.win ? (isEN() ? "🎮 The game is over" : "🎮 اللعبة خلصت") : turnNow && turnNow !== UID ? (isEN() ? "🎮 Your turn" : "🎮 دورك") : st.k === "tod" && what === "move" ? (isEN() ? "🎭 Truth or dare" : "🎭 صراحة ولا جرأة") : ""); break; }
     case "games": openGames({ en:isEN(), unlocked:gamesOpen(), onLocked:gamesPaySheet }); break;
     case "adm-games": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.games;
       fb.set(`users/${v}`, {games:on}).then(()=>{ u.games = on; render(); toast(on ? `🎮 ${u.name} اتفتحتله كل الألعاب` : `🎮 ${u.name} رجع للألعاب المجانية بس`); }).catch(()=>toast("مقدرتش")); break; }
@@ -2516,7 +2522,7 @@ document.addEventListener("submit", e => {
 document.addEventListener("input", e => { if (e.target.id === "adm-q"){ U.admin.q = e.target.value; const pos = e.target.selectionStart; render(); const i = $("#adm-q"); i.focus(); i.setSelectionRange(pos,pos); } });
 document.addEventListener("change", e => {
   if (e.target.id === "wake"){ S.alarm.wake = e.target.value; save(); toast("هصحّيكي الساعة " + tf(e.target.value) + " ⏰"); }
-  if (e.target.id === "loc-city" && e.target.value){ const c = CITIES.find(x => x[0] === e.target.value); if (c){ S.loc = {name:c[0], lat:c[1], lng:c[2]}; save(); render(); toast("✅ مواعيد الصلاة بقت على " + c[0]); } }
+  if (e.target.id === "loc-city" && e.target.value){ const c = CITIES.find(x => x[0] === e.target.value); if (c){ S.loc = {name:c[0], lat:c[1], lng:c[2]}; save(); render(); toast(isEN() ? "✅ Prayer times now follow " + cityName(c[0]) : "✅ مواعيد الصلاة بقت على " + c[0]); } }
 });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !sheetLocked) closeSheet();

@@ -383,3 +383,7 @@ img{-webkit-user-drag:none}
 .og-q small{color:var(--muted);font-size:12px;font-family:inherit}
 .og-same{width:100%;text-align:start;background:var(--soft);border-radius:14px;padding:10px 12px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
 .og-same b{font-size:14px}
+.g-seg .g-lv{font-size:14px;letter-spacing:0;font-weight:700;padding:12px 4px}
+.g-head span{display:flex;gap:6px}
+.og-mem{grid-template-columns:repeat(4,1fr);max-width:260px}
+.og-b.txt{flex:1 1 auto;max-width:100%;white-space:normal;line-height:1.5}
