@@ -2,6 +2,7 @@
 "use strict";
 import { EN } from "./en.js";
 import { prayerTimes, CITIES } from "./pray.js";
+import { openGames } from "./games.js";
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
 const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1091,6 +1092,7 @@ function homeView(){
     ${isMuslim() ? `<div class="item" style="margin-top:12px"><span class="ic">🌙</span><div class="grow"><div class="t">تذكير بصيام الاثنين والخميس</div><div class="s">${(S.pray||{}).fast ? "هنفكّرك بالليل قبلها الساعة 9" : "مقفول، افتحيه لو حابة"}</div></div><button class="switch" data-act="pray-opt" data-v="fast" role="switch" aria-checked="${!!(S.pray||{}).fast}" aria-label="تذكير بصيام الاثنين والخميس"><i></i></button></div>` : ""}
   </div>
 
+  <button class="card games-card" data-act="games"><span class="ic">🎮</span><span class="grow"><b>ألعاب القعدة</b><small>العبوا مع بعض على موبايل واحد، من غير نت</small></span><span class="go">▶</span></button>
   <button class="btn ghost block" data-act="week-summary">${L.week} · ملخص الأسبوع</button>
   ${togetherStrip()}
   `;
@@ -1501,6 +1503,7 @@ function adminView(){
       <form class="form" data-form="adm-notify" data-v="${esc(u.id)}" style="gap:6px"><div class="row"><input class="in" id="an-text" required maxlength="300" placeholder="ابعتله رسالة…" aria-label="رسالة" style="flex:1;min-width:0"><button class="btn small" type="submit">🔔 ابعت</button></div>
         <div class="item"><div class="grow"><div class="t">💬 يقدر يرد عليها</div><div class="s">${U.anReply !== false ? "هيظهرله مكان يكتب فيه رد" : "إعلان بس، من غير رد"}</div></div><button type="button" class="switch" data-act="an-reply" role="switch" aria-checked="${U.anReply !== false}" aria-label="يقدر يرد"><i></i></button></div></form>
       <div class="item"><div class="grow"><div class="t">💌 عامله زي المرتبط</div><div class="s">${u.forceLove ? "بيوصله كلام حب حتى لو مش مرتبط" : "مقفول، بياخد تشجيع بس لو مش مرتبط"}</div></div><button class="switch" data-act="adm-forcelove" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.forceLove}" aria-label="عامله زي المرتبط"><i></i></button></div>
+      <div class="item"><div class="grow"><div class="t">🎮 كل الألعاب (بعد دفع الـ30 جنيه)</div><div class="s">${u.games ? "مفتوحاله كل الألعاب" : "مقفول، معاه اللعبتين المجاني بس"}</div></div><button class="switch" data-act="adm-games" data-v="${esc(u.id)}" role="switch" aria-checked="${!!u.games}" aria-label="كل الألعاب"><i></i></button></div>
       <p class="muted small">الباسورد واليوزر والمسح بيتنفّذوا لما تدوس "⚡ نفّذ دلوقتي" (أو لوحدهم كل كام ساعة). ولو حد منهم مربوط بحد تاني، الربط القديم بيتفك لوحده.</p>
     </div><div class="row wrap">${u.partner ? `<button class="btn small" data-act="adm-copen" data-v="${esc(u.id)}">💞 شاتهم مع بعض</button>` : ""}${u.id !== UID ? `<button class="btn danger small" data-act="adm-deluser" data-v="${esc(u.id)}">🗑️ امسح الحساب نهائي</button>` : ""}<button class="btn ${u.banned?"":"danger"} small" data-act="adm-ban" data-v="${esc(u.id)}">${u.banned?"✅ فك الإيقاف":"⛔ وقف الحساب"}</button>${u.partner?`<button class="btn ghost small" data-act="adm-unlink" data-v="${esc(u.id)}">💔 فك الربط</button>`:""}</div>`}));
   }
@@ -1710,6 +1713,18 @@ function settingsView(){
 }
 
 const SUPPORT_NUM = "+20 100 495 6321", SUPPORT_WA = "https://wa.me/201004956321", SUPPORT_TEL = "tel:+201004956321";
+/* party games: two are free, the rest open when the owner turns on users/{uid}.games after a 30 EGP payment */
+const gamesOpen = () => IS_ADMIN || !!(ME && ME.games);
+function gamesPaySheet(){
+  const en = isEN(), m = isMale(), un = ME && ME.username ? "@" + esc(ME.username) : "";
+  sheet(keep(en ? `<h2>🎮 Unlock all the games</h2>
+  <p class="muted small">Two games are free. The rest open for <b>30 EGP</b>, paid once.</p>
+  <ol class="howto"><li>Send 30 EGP by InstaPay or Vodafone Cash.</li><li>Send the transfer screenshot and your username ${un ? `<b dir="ltr">${un}</b>` : ""} to support on WhatsApp.</li><li>We open the games on your account. Close the app and open it again.</li></ol>`
+  : `<h2>🎮 ${m ? "افتح" : "افتحي"} كل الألعاب</h2>
+  <p class="muted small">لعبتين مجاني. باقي الألعاب بتتفتح بـ<b>30 جنيه</b> مرة واحدة.</p>
+  <ol class="howto"><li>${m ? "حوّل" : "حوّلي"} 30 جنيه إنستاباي أو فودافون كاش.</li><li>${m ? "ابعت" : "ابعتي"} صورة التحويل واسم المستخدم بتاعك ${un ? `<b dir="ltr">${un}</b>` : ""} للدعم على واتساب.</li><li>هنفتحلك الألعاب على حسابك. ${m ? "اقفل التطبيق وافتحه" : "اقفلي التطبيق وافتحيه"} تاني.</li></ol>`, "f")
+  + `<div class="row wrap" style="gap:8px;justify-content:center;margin-bottom:12px"><a class="btn small" style="text-decoration:none" href="https://ipn.eg/S/teto.2362006/instapay/6Qt402" target="_blank" rel="noopener">\uE000${en ? "InstaPay" : "إنستاباي"}\uE001</a><button class="btn ghost small" data-act="copy" data-v="01031544361">\uE000${en ? "Vodafone Cash" : "فودافون كاش"}\uE001 <bdi dir="ltr">01031544361</bdi></button></div>` + supportBox(true));
+}
 function supportBox(compact){
   const en = isEN();
   return `<div class="support${compact?" compact":""}"><div class="s-t">\uE000${en ? "💬 Contact support" : "💬 التواصل مع الدعم"}\uE001 <bdi dir="ltr" style="unicode-bidi:isolate;font-weight:800">${SUPPORT_NUM}</bdi></div>
@@ -2024,6 +2039,9 @@ document.addEventListener("click", e => {
     case "star": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.stars = c.stars === +v ? +v-1 : +v; save(); render(); if (c.stars===5) toast(S.user.gender === "m" ? "إيه الروقان ده كله 😎" : "ايه الحلاوه دي كلها 💅✨"); break; }
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
+    case "games": openGames({ en:isEN(), unlocked:gamesOpen(), onLocked:gamesPaySheet }); break;
+    case "adm-games": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.games;
+      fb.set(`users/${v}`, {games:on}).then(()=>{ u.games = on; render(); toast(on ? `🎮 ${u.name} اتفتحتله كل الألعاب` : `🎮 ${u.name} رجع للألعاب المجانية بس`); }).catch(()=>toast("مقدرتش")); break; }
     case "add-exp": expSheet(); break;
     case "add-inc": incSheet(); break;
     case "del-inc": S.money.incomes = (S.money.incomes||[]).filter(x=>x.id!==v); save(); render(); break;
@@ -2644,7 +2662,7 @@ setTimeout(() => { try { schedulePushIOS(); } catch(e){} }, 8000);
 
 
 /* ================= page tours: a ring around each thing, one tab at a time, shown once per device ================= */
-const PG_VER = 1, PG_VERS = { diary:3, settings:2 }; // a tab whose tour gained a step gets a higher number, so it shows once more
+const PG_VER = 1, PG_VERS = { home:2, diary:3, settings:2 }; // a tab whose tour gained a step gets a higher number, so it shows once more
 const pgVer = t => PG_VERS[t] || PG_VER;
 // [selector, card to ring (closest), Arabic title, Arabic text, English title, English text]
 const PAGE_TOUR = {
@@ -2652,6 +2670,7 @@ const PAGE_TOUR = {
     [".letter", "", "فاكرك علطول 💌", "كل يوم رسالة جديدة ليكي. دوسي 🔄 عشان تشوفي رسالة تانية.", "Thinking of you 💌", "A new message for you every day. Tap 🔄 to see another one.", "فكراك علطول 💌", "كل يوم رسالة جديدة ليك. دوس 🔄 عشان تشوف رسالة تانية."],
     ["[data-act=mood]", ".card", "نفسيتك النهارده", "اختاري إحساسك كل يوم، وهيتحسب في ملخص الأسبوع.", "Your mood today", "Pick how you feel each day. It counts in your weekly summary.", "نفسيتك النهارده", "اختار إحساسك كل يوم، وهيتحسب في ملخص الأسبوع."],
     [".grid2", "", "يومك في نظرة", "فلوسك ومهامك ومذاكرتك والمية والنوم والصلاة، كله قدامك هنا.", "Your day at a glance", "Money, tasks, study, water, sleep and prayers, all in one place."],
+    ["[data-act=games]", "", "ألعاب القعدة 🎮", "العبي مع صحابك أو شريكك على موبايل واحد، ومن غير نت.", "Party games 🎮", "Play with your friends or partner on one phone, no internet needed.", "ألعاب القعدة 🎮", "العب مع صحابك أو شريكتك على موبايل واحد، ومن غير نت."],
     ["#tabs", "", "التنقل", "من الشريط ده تتنقلي بين الفلوس ويومك والمذاكرة وحكاياتي.", "Getting around", "Use this bar to move between money, your day, study and your diary.", "التنقل", "من الشريط ده تتنقل بين الفلوس ويومك والمذاكرة وحكاياتي."],
     ["header.top [data-v=settings]", "", "الإعدادات ⚙️", "من هنا تغيّري الثيم واللغة والتنبيهات، وتربطي حسابك بشريكك.", "Settings ⚙️", "Change the theme, language and reminders here, and link your partner.", "الإعدادات ⚙️", "من هنا تغيّر الثيم واللغة والتنبيهات، وتربط حسابك بشريكتك."],
   ],

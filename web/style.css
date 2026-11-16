@@ -306,3 +306,51 @@ img{-webkit-user-drag:none}
 #spot-card p{margin:0 0 12px}
 #spot-card .btn:disabled{opacity:.55}
 @media (prefers-reduced-motion:reduce){#spot-ring{transition:none}}
+
+/* party games: a full-screen layer over the app */
+#games{position:fixed;inset:0;z-index:90;background:var(--bg);color:var(--ink);overflow:auto;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.g-page{max-width:560px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.g-center{align-items:center;justify-content:center;min-height:100%;text-align:center}
+.g-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.g-head h2{font-size:24px}
+.g-x{border:0;background:var(--soft);color:var(--ink);width:44px;height:44px;border-radius:14px;font-size:18px;font-weight:800}
+.g-sub{margin:0;color:var(--muted)}
+.g-list{display:flex;flex-direction:column;gap:10px}
+.g-item{display:flex;align-items:center;gap:12px;text-align:start;border:0;background:var(--surface);border-radius:var(--r);padding:12px 14px;box-shadow:0 2px 0 var(--line)}
+.g-e{font-size:30px;width:46px;height:46px;display:grid;place-items:center;background:var(--soft);border-radius:14px;flex:none}
+.g-n{flex:1;min-width:0;display:flex;flex-direction:column}
+.g-n b{font-family:var(--display);font-size:17px}
+.g-n small{color:var(--muted);font-size:12.5px;line-height:1.5}
+.g-tag{flex:none;font-weight:800;font-size:13px;color:var(--accent);background:var(--soft);border-radius:99px;padding:4px 10px}
+.g-card{background:var(--surface);border-radius:var(--r);padding:14px 16px;box-shadow:0 2px 0 var(--line)}
+.g-card p{margin:6px 0 0}
+.g-small{color:var(--muted);font-size:13px}
+.g-seg{display:flex;gap:8px;margin-top:10px}
+.g-seg button{flex:1;border:2px solid var(--line);background:var(--bg);border-radius:16px;padding:10px 4px;font-size:20px;letter-spacing:2px}
+.g-seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--soft)}
+.g-go{border:0;border-radius:18px;padding:14px 18px;font-weight:800;font-size:17px;background:var(--accent);color:#fff;box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 60%,#000 10%);width:100%}
+.g-ghost{border:0;background:var(--soft);color:var(--accent);border-radius:18px;padding:12px 18px;font-weight:700;width:100%}
+.g-cup{font-size:64px;line-height:1}
+.g-face{font-size:74px;width:130px;height:130px;display:grid;place-items:center;border-radius:50%;background:var(--c);box-shadow:0 0 0 6px var(--surface)}
+.g-play{position:absolute;inset:0;display:flex;flex-direction:column;touch-action:none;overflow:hidden}
+.g-strip{flex:none;display:flex;gap:6px;padding:6px;height:calc(92px + env(safe-area-inset-bottom))}
+.g-top{height:calc(92px + env(safe-area-inset-top));padding-top:calc(6px + env(safe-area-inset-top))}
+.g-bottom{padding-bottom:calc(6px + env(safe-area-inset-bottom))}
+.g-btn{flex:1;border:0;border-radius:22px;background:var(--c);color:#fff;font-size:38px;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:none;box-shadow:inset 0 -5px 0 rgba(0,0,0,.18);transition:transform .06s,filter .06s}
+.g-btn i{font-style:normal;font-size:18px;letter-spacing:1px}
+.g-btn.on{transform:scale(.97);filter:brightness(.85);box-shadow:none}
+.g-top .g-btn{transform:rotate(180deg)}
+.g-top .g-btn.on{transform:rotate(180deg) scale(.97)}
+.g-field{flex:1;min-height:0;position:relative;margin:0 6px;border-radius:18px;overflow:hidden}
+.g-field canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.g-pause{position:absolute;top:4px;left:4px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(0,0,0,.22);color:#fff;font-weight:800;font-size:12px;opacity:.75;padding:0}
+.g-ask{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;color:#fff;text-align:center}
+.g-ask[hidden]{display:none}
+.g-ask p{font-family:var(--display);font-size:22px;margin:0 0 6px}
+.g-ask button{max-width:280px}
+.games-card{display:flex;align-items:center;gap:12px;width:100%;border:0;text-align:start;margin:12px 0;background:linear-gradient(135deg,var(--soft),var(--soft2))}
+.games-card .ic{font-size:30px}
+.games-card .grow{flex:1;min-width:0;display:flex;flex-direction:column}
+.games-card b{font-family:var(--display);font-size:17px}
+.games-card small{color:var(--muted)}
+.games-card .go{color:var(--accent);font-weight:800}

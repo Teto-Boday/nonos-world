@@ -19,9 +19,11 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if signed() && (me() == uid || admin() || resource.data.get('partner', null) == me());
-      allow create: if signed() && me() == uid && !request.resource.data.keys().hasAny(['banned']);
+      // 'games' (the paid games) can only be turned on by the owner, like 'banned'
+      allow create: if signed() && me() == uid && !request.resource.data.keys().hasAny(['banned', 'games']);
       allow update: if admin() || (signed() && me() == uid
-        && request.resource.data.get('banned', false) == resource.data.get('banned', false));
+        && request.resource.data.get('banned', false) == resource.data.get('banned', false)
+        && request.resource.data.get('games', false) == resource.data.get('games', false));
       allow delete: if admin();
     }
 
