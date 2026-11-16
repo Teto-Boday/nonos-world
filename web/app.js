@@ -2867,5 +2867,5 @@ window.addEventListener("pagehide", flushNow);
   const SEL = "input,textarea,[contenteditable],.hadith,.copyable";
   const inOk = n => { while (n && n.nodeType !== 1) n = n.parentNode; return !!(n && n.closest && n.closest(SEL)); };
   const ok = e => { if (e.type === "copy" || e.type === "cut") { const s = getSelection(); return inOk(e.target) || (s && s.rangeCount > 0 && inOk(s.anchorNode) && inOk(s.focusNode)); } return inOk(e.target); };
-  ["copy","cut","contextmenu","dragstart"].forEach(ev => document.addEventListener(ev, e => { if (!ok(e)) e.preventDefault(); }));
+  ["copy","cut","contextmenu","dragstart","selectstart"].forEach(ev => document.addEventListener(ev, e => { if (!ok(e)) e.preventDefault(); }));
 })();

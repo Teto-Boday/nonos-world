@@ -292,8 +292,10 @@ textarea.in{resize:vertical;min-height:110px;line-height:1.7}
 .credit{text-align:center;font-size:.85rem;opacity:.75;margin:10px 0 0}
 
 /* no-copy: the app's text can't be selected or copied, except hadiths (and anything you type) */
-html{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-input,textarea,[contenteditable],.hadith,.copyable{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+/* no copying anywhere except hadith and text boxes; and no zoom on a double tap (pinching to zoom still works) */
+*{touch-action:manipulation} /* on every element so iPhone respects it; anything with its own touch-action (games) keeps it */
+*,*::before,*::after{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,[contenteditable],.hadith,.hadith *,.copyable,.copyable *{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 img{-webkit-user-drag:none}
 
 /* page tour: dim everything except the ringed item */
