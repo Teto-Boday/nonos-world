@@ -2868,4 +2868,6 @@ window.addEventListener("pagehide", flushNow);
   const inOk = n => { while (n && n.nodeType !== 1) n = n.parentNode; return !!(n && n.closest && n.closest(SEL)); };
   const ok = e => { if (e.type === "copy" || e.type === "cut") { const s = getSelection(); return inOk(e.target) || (s && s.rangeCount > 0 && inOk(s.anchorNode) && inOk(s.focusNode)); } return inOk(e.target); };
   ["copy","cut","contextmenu","dragstart","selectstart"].forEach(ev => document.addEventListener(ev, e => { if (!ok(e)) e.preventDefault(); }));
+  // iPhone zooms with two fingers even when the page says no; stop that too (two players pressing at once in the games would zoom the screen)
+  ["gesturestart","gesturechange"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive:false }));
 })();
