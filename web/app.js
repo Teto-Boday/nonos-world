@@ -458,6 +458,9 @@ const MS = k => { if (loveOn()) return baseMsgs(k); const set = isEN() ? SOLO_EN
    every topic has its words, the topic with the most matching words wins, and a word after "مش"/"not" doesn't count. */
 const SOLO_TOPICS = [
   ["s_crisis", ["عايزه اموت","عايز اموت","نفسي اموت","انتحر","اموت نفسي","ااذي نفسي","اذي نفسي","مش عايزه اعيش","مش عايز اعيش","kill myself","want to die","suicid","hurt myself","end my life"]],
+  ["s_botinsult", ["انت غبي","إنت غبي","انتي غبيه","الرد غبي","ردك غبي","ردود غبيه","مش بتفهم","مبتفهمش","رد بايخ","you are stupid","you're stupid","dumb bot","stupid bot","you don't understand"]],
+  ["s_who",    ["انت مين","مين انت","انتي مين","مين معايا","انت بوت","انت روبوت","who are you","are you a bot","are you real"]],
+  ["s_confused",["مش فاهم","مش فاهمه","مش فاهمة","يعني ايه","قصدك ايه","تقصد ايه","مش واضح","i don't understand","i dont understand","what do you mean","confused"]],
   ["s_anx",    ["خايف","قلقان","متوتر","مرعوب","قلق ","توتر","anxious","worried","scared","nervous","afraid","panic"]],
   ["s_angry",  ["متعصب","متنرفز","اتخانق","خناق","غضبان","مستفز","متغاظ","angry","mad at","furious","fight with","annoyed"]],
   ["s_lonely", ["لوحدي","وحيد","محدش بيسال","محدش فاهمني","ماليش حد","lonely","alone","no one cares","nobody understands"]],
@@ -470,7 +473,7 @@ const SOLO_TOPICS = [
   ["s_proud",  ["خلصت","عملتها","انجزت","قدرت","كسبت","اتقبلت","finished","did it","made it","got accepted","won"]],
   ["d_happy",  ["فرحان","مبسوط","نجحت","قفلت","فرحت","جبت الدرجه","حلو اوي","اتبسطت","سعيد","احلي يوم","happy","passed","yay","so good","excited","great day","amazing","best day"]],
   ["s_grateful",["الحمد لله","ممتن","نعمه","thank god","grateful","blessed"]],
-  ["d_study",  ["مذاكر","ذاكرت","امتحان","كويز","ميدترم","فاينل","محاضر","سكشن","شيت","دكتور","exam","study","studied","quiz","midterm","final","lecture"]],
+  ["d_study",  ["مذاكر","ذاكرت","اذاكر","هذاكر","بذاكر","امتحان","كويز","ميدترم","فاينل","محاضر","سكشن","شيت","دكتور","exam","study","studied","quiz","midterm","final","lecture"]],
   ["s_work",   ["الشغل","شغلي","مديري","المدير","زمايلي","مرتب","انترفيو","work","my boss","job","interview","coworker"]],
   ["s_love",   ["بحبه","بحبها","معجب","كراش","خطوبه","اتخطبت","حبيبي","حبيبتي","crush","in love","boyfriend","girlfriend","i like him","i like her"]],
   ["s_family", ["ماما","بابا","اخويا","اختي ","اهلي","جدتي","جدي ","mom","mum","dad","brother","sister","my family","parents"]],
@@ -482,7 +485,10 @@ const SOLO_TOPICS = [
   ["s_night",  ["تصبح","هنام","رايحه انام","رايح انام","good night","going to sleep","going to bed"]],
   ["s_thanks", ["شكرا","متشكر","ميرسي","thank you","thanks"]],
   ["d_ghor",   ["غور ","غوري ","اتغور","get lost","go away"]],
-  ["d_greet",  ["ازيك","عامل ايه","اخبارك","عامله ايه","صباح الخير","مساء الخير","هاي ","اهلا","السلام عليكم","how are you","how r u","hello","hi","hey","good morning","good evening"]],
+  ["s_nothing",["مفيش جديد","مفيش حاجه جديده","مفيش حاجه","ولا حاجه","زي ما انا","نفس الحال","يوم عادي","عادي","nothing new","nothing much","same as always","just a normal day"]],
+  ["s_bye",    [" باي","مع السلامه","هقفل","هخرج","bye","see you","gotta go"]],
+  ["d_greet",  ["ازيك","عامل ايه","اخبارك","عامله ايه","صباح الخير","مساء الخير","هاي ","اهلا","السلام عليكم"," هالو"," هلو "," هلا ","مرحبا","how are you","how r u","hello","hi","hey","good morning","good evening"]],
+  ["s_ok",     ["تمام","ماشي","كويس","كويسه","الحمد لله بخير","بخير","اوك","اوكي","i'm fine","im fine","i'm good","im good","okay"]],
   ["d_story",  ["عايزه احكي","عايز احكي","هحكيلك","احكيلك","هقولك حاجه","want to talk","let me tell you","i need to talk"]],
 ];
 const SOLO_MORE_F = {
@@ -507,6 +513,14 @@ const SOLO_MORE_F = {
   s_thanks:["العفو 🤍 أنا هنا دايمًا","على إيه! احكي وقت ما تحبي","ده واجبي 🌸"],
   s_q:["سؤال حلو 🤔 إنتي شايفة إيه؟","اكتبي إجابتين ممكنين وشوفي قلبك مرتاح لأنهي واحدة","ساعات الإجابة بتبان وإحنا بنكتب. كمّلي"],
   s_long:["كتبتي كتير النهارده، وده حلو 🤍 إيه أكتر حاجة شاغلاكي في كل ده؟","واضح إن جواكي كتير. حاسة بإيه دلوقتي بعد ما كتبتي؟","شكرًا إنك طلّعتي كل ده. إيه الحاجة اللي محتاجاها دلوقتي؟"],
+  s_botinsult:["معاكي حق، أنا لسه بتعلّم 😅 قوليلي بطريقة تانية وأنا أحاول أفهم", "سامحيني لو ردّي مكانش في محله 🙈 أنا رد أوتوماتيك على قدّي. احكيلي تاني؟", "عندك حق 😅 لو عايزة تقفلي الرد الأوتوماتيك هتلاقي الزرار فوق الدفتر"],
+  s_who:["أنا الرد الأوتوماتيك بتاع دفترك 🤖 مش إنسان، بس بحاول أرد عليكي بكلام يناسب اللي بتكتبيه", "أنا رد أوتوماتيك جوه حكاياتي 🤍 اللي بتكتبيه هنا بيفضل في دفترك"],
+  s_confused:["معلش، خليني أسألك بطريقة أبسط: يومك كان حلو ولا متعب؟", "قصدي احكيلي عن أي حاجة في بالك، حتى لو صغيرة 🤍", "ولا يهمك 😊 قوليلي بس حاسة بإيه دلوقتي؟"],
+  s_nothing:["ساعات الأيام العادية بتبقى مريحة 🤍 عملتي إيه النهارده؟", "تمام، مش لازم يكون فيه جديد. أكلتي إيه النهارده؟ 😄", "يوم هادي يعني 🌿 فيه حاجة نفسك تعمليها بكرة؟"],
+  s_bye:["مع السلامة 🤍 ارجعيلي وقت ما تحبي", "باي 👋 الدفتر هنا مستنيكي", "يومك حلو 🌸"],
+  s_ok:["طب الحمد لله 🤍 فيه حاجة حلوة حصلت النهارده؟", "حلو 😊 عاملة إيه في يومك؟", "دايمًا يارب 🌸 احكيلي عن يومك"],
+  s_yesno:["تمام 🤍 احكيلي أكتر لو حابة", "ماشي 😊 وإيه كمان؟", "فهمتك. عايزة تحكي عن حاجة تانية؟"],
+  s_short:["أنا سامعاكي 🤍 إيه اللي في بالك؟", "يومك ماشي إزاي؟", "عايزة تحكي عن حاجة معينة؟ 😊"],
   s_more:["وبعدين؟ كمّلي 👂🏽","وإنتي حسّيتي بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
 };
 const SOLO_MORE_M = {
@@ -531,6 +545,14 @@ const SOLO_MORE_M = {
   s_thanks:["العفو 🤍 أنا هنا دايمًا","على إيه! احكي وقت ما تحب","ده واجبي"],
   s_q:["سؤال حلو 🤔 إنت شايف إيه؟","اكتب إجابتين ممكنين وشوف قلبك مرتاح لأنهي واحدة","ساعات الإجابة بتبان وإحنا بنكتب. كمّل"],
   s_long:["كتبت كتير النهارده، وده حلو 🤍 إيه أكتر حاجة شاغلاك في كل ده؟","واضح إن جواك كتير. حاسس بإيه دلوقتي بعد ما كتبت؟","شكرًا إنك طلّعت كل ده. إيه الحاجة اللي محتاجها دلوقتي؟"],
+  s_botinsult:["معاك حق، أنا لسه بتعلّم 😅 قولّي بطريقة تانية وأنا أحاول أفهم", "سامحني لو ردّي مكانش في محله 🙈 أنا رد أوتوماتيك على قدّي. احكيلي تاني؟", "عندك حق 😅 لو عايز تقفل الرد الأوتوماتيك هتلاقي الزرار فوق الدفتر"],
+  s_who:["أنا الرد الأوتوماتيك بتاع دفترك 🤖 مش إنسان، بس بحاول أرد عليك بكلام يناسب اللي بتكتبه", "أنا رد أوتوماتيك جوه حكاياتي 🤍 اللي بتكتبه هنا بيفضل في دفترك"],
+  s_confused:["معلش، خليني أسألك بطريقة أبسط: يومك كان حلو ولا متعب؟", "قصدي احكيلي عن أي حاجة في بالك، حتى لو صغيرة 🤍", "ولا يهمك 😊 قولّي بس حاسس بإيه دلوقتي؟"],
+  s_nothing:["ساعات الأيام العادية بتبقى مريحة 🤍 عملت إيه النهارده؟", "تمام، مش لازم يكون فيه جديد. أكلت إيه النهارده؟ 😄", "يوم هادي يعني 🌿 فيه حاجة نفسك تعملها بكرة؟"],
+  s_bye:["مع السلامة 🤍 ارجعلي وقت ما تحب", "باي 👋 الدفتر هنا مستنيك", "يومك حلو 🌸"],
+  s_ok:["طب الحمد لله 🤍 فيه حاجة حلوة حصلت النهارده؟", "حلو 😊 عامل إيه في يومك؟", "دايمًا يارب 🌸 احكيلي عن يومك"],
+  s_yesno:["تمام 🤍 احكيلي أكتر لو حابب", "ماشي 😊 وإيه كمان؟", "فهمتك. عايز تحكي عن حاجة تانية؟"],
+  s_short:["أنا سامعك 🤍 إيه اللي في بالك؟", "يومك ماشي إزاي؟", "عايز تحكي عن حاجة معينة؟ 😊"],
   s_more:["وبعدين؟ كمّل 👂🏽","وإنت حسّيت بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
 };
 const SOLO_MORE_EN = {
@@ -555,6 +577,14 @@ const SOLO_MORE_EN = {
   s_thanks:["You're welcome 🤍 I'm always here","Any time! Write whenever you like","Happy to listen 🌸"],
   s_q:["Good question 🤔 What do you think?","Write two possible answers and see which one your heart settles on","Sometimes the answer shows up as we write. Keep going"],
   s_long:["You wrote a lot today, and that's good 🤍 What's the biggest thing on your mind in all of it?","There's clearly a lot inside. How do you feel now that it's written?","Thank you for letting all that out. What do you need right now?"],
+  s_botinsult:["Fair enough, I'm still learning 😅 Try saying it another way", "Sorry if that reply missed 🙈 I'm only an automatic reply. Tell me again?", "You're right 😅 You can turn automatic replies off with the button above the diary"],
+  s_who:["I'm your diary's automatic reply 🤖 Not a person, but I try to answer what you write", "I'm an automatic reply inside your diary 🤍 What you write here stays in your diary"],
+  s_confused:["Sorry, let me ask more simply: was your day good or tiring?", "I mean, tell me anything on your mind, even something small 🤍", "No worries 😊 How are you feeling right now?"],
+  s_nothing:["Ordinary days can be restful 🤍 What did you do today?", "That's fine, there doesn't have to be news. What did you eat today? 😄", "A quiet day then 🌿 Anything you'd like to do tomorrow?"],
+  s_bye:["Bye for now 🤍 Come back any time", "Bye 👋 Your diary will be here", "Have a lovely day 🌸"],
+  s_ok:["Glad to hear it 🤍 Did anything nice happen today?", "Good 😊 How's your day going?", "Hope it stays that way 🌸 Tell me about your day"],
+  s_yesno:["Okay 🤍 Tell me more if you like", "Alright 😊 What else?", "Got it. Want to talk about something else?"],
+  s_short:["I'm listening 🤍 What's on your mind?", "How's your day going?", "Want to talk about something in particular? 😊"],
   s_more:["And then? Go on 👂🏽","How did that make you feel?","Tell me more","I see. What happened after that?"],
 };
 const dSoloOn = () => !!(S && S.dSolo === true);
@@ -573,8 +603,11 @@ function soloTopic(text){
   let best = "", top = 0;
   for (const [cat, words] of SOLO_TOPICS){ const c = words.filter(hit).length; if (cat === "s_crisis"){ if (c && !n.includes(" الضحك ") && !/ laugh/.test(n)) return cat; continue; } if (c > top){ top = c; best = cat; } }
   if (best) return best;
+  // a one-word answer like "yes", "no", "ok": these are too short to search inside other words
+  if (/^ (?:اه|ايوه|ايوا|اكيد|لا|لأ|لاء|مش عارفه?|yes|yeah|yep|no|nope|maybe|ممكن) $/.test(n)) return "s_yesno";
   if (/[?؟]/.test(text)) return "s_q";
-  return n.trim().split(" ").length >= 25 ? "s_long" : "s_more";
+  const words = n.trim().split(" ").length;
+  return words >= 25 ? "s_long" : words <= 4 ? "s_short" : "s_more";
 }
 function soloReply(text){
   const cat = soloTopic(text), more = isEN() ? SOLO_MORE_EN : (isMale() ? SOLO_MORE_M : SOLO_MORE_F);
