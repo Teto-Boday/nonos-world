@@ -410,3 +410,10 @@ img{-webkit-user-drag:none}
 #rxpick .rxtype{display:flex;gap:6px;margin-top:8px}
 #rxpick .rxtype input{flex:1;min-width:0;border:2px solid var(--line);border-radius:14px;padding:6px 10px;font-size:18px;background:var(--bg);color:var(--ink);-webkit-user-select:text;user-select:text}
 #rxpick .rxtype .btn{flex:none;width:52px;height:44px;font-size:18px;padding:0;border-radius:14px;background:var(--accent);color:#fff}
+
+.lirow{display:flex;align-items:center;gap:6px}
+.lirow > .item{flex:1;min-width:0}
+.mutemini{flex:none;border:0;background:var(--soft);border-radius:14px;width:40px;height:40px;font-size:17px;opacity:.55}
+.mutemini.on{opacity:1;background:color-mix(in srgb,var(--muted) 18%,var(--surface))}
+#upBtn{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:50%;transform:translateX(-50%);z-index:30;border:0;border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;font-size:14px;background:var(--surface);color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.18)}
+#upBtn[hidden]{display:none}

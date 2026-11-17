@@ -1288,6 +1288,7 @@ const gameLang = () => isEN() ? "en" : isMale() ? "m" : "f";
 const REACTS = ["😂", "😭", "😔"];
 let MUTE = {}; try { MUTE = JSON.parse(localStorage.getItem("nw-mute") || "{}") || {}; } catch(e){ MUTE = {}; }
 function isMuted(k){ if (MUTE[k]) return true; if (k.startsWith("g:")){ const g = GR.list.find(x => x.id === k.slice(2)); return !!(g && (g.topics||{})[UID] === ""); } return false; }
+function muteMini(k){ const m = isMuted(k); return `<button class="mutemini${m ? " on" : ""}" data-act="mute" data-v="${esc(k)}" aria-label="${m ? "شغّلي الإشعارات" : "كتم"}" title="${m ? "شغّلي الإشعارات" : "كتم"}">${m ? "🔕" : "🔔"}</button>`; }
 function muteBtn(k){ const m = isMuted(k); return `<button class="btn ghost small" data-act="mute" data-v="${esc(k)}">${m ? "🔔 شغّلي الإشعارات" : "🔕 كتم"}</button>`; }
 // ➕ opens more: a grid of common ones, plus a box to type any emoji from the keyboard
 const MORE_REACTS = ["❤️", "😍", "🥰", "🤍", "🙂", "🤡", "💋", "👍", "👎", "😮", "😳", "🥺", "😡", "🔥", "👏", "🙏", "💯", "🤣", "😅", "🤔", "🙄", "😴", "🎉", "💔", "👀", "😎", "🤝"];
@@ -1352,6 +1353,26 @@ document.addEventListener("pointermove", e => { if (rxAt && Math.hypot(e.clientX
 ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, () => { clearTimeout(rxTimer); rxAt = null; }));
 document.addEventListener("contextmenu", e => { const m = e.target.closest && e.target.closest(".chat .msg[data-mid]"); if (m){ e.preventDefault(); rxOpen(m); } });
 addEventListener("scroll", () => { clearTimeout(rxTimer); rxClose(); }, { passive:true });
+/* inside a friend or group chat: swipe right or left to go back, and a button that jumps to the top */
+const inSubChat = () => !!(S && S.tab === "diary" && U.dmode === "friends" && (FR.open || GR.open));
+function chatBack(){ if (FR.open) openFriend(null); else if (GR.open) openGroup(null); }
+let swAt = null;
+document.addEventListener("touchstart", e => {
+  swAt = null; if (!inSubChat() || e.touches.length !== 1 || $("#layer").innerHTML || document.querySelector("#rxpick")) return;
+  if (e.target.closest && e.target.closest(".msg.og, textarea, input, select")) return; // لوحة اللعب والكتابة ليهم السحب بتاعهم
+  const t = e.touches[0]; swAt = [t.clientX, t.clientY, Date.now()];
+}, { passive:true });
+document.addEventListener("touchend", e => {
+  if (!swAt) return; const t = e.changedTouches[0], dx = t.clientX - swAt[0], dy = t.clientY - swAt[1], dt = Date.now() - swAt[2]; swAt = null;
+  if (Math.abs(dx) > 80 && Math.abs(dy) < Math.abs(dx) * 0.6 && dt < 800 && inSubChat() && !$("#layer").innerHTML && !document.querySelector("#rxpick")) chatBack();
+}, { passive:true });
+function upBtn(){
+  let b = document.getElementById("upBtn");
+  const show = inSubChat() && window.scrollY > 250;
+  if (!b){ if (!show) return; b = document.createElement("button"); b.id = "upBtn"; b.type = "button"; b.addEventListener("click", () => window.scrollTo({top:0, behavior:"smooth"})); document.body.appendChild(b); }
+  b.textContent = isEN() ? "⬆ Top" : "⬆ لفوق"; b.setAttribute("aria-label", isEN() ? "Back to top" : "اطلع لفوق"); b.hidden = !show;
+}
+addEventListener("scroll", upBtn, { passive:true }); setInterval(upBtn, 800);
 function rxHint(){ try { if (localStorage.getItem("nw-rx-hint")) return; localStorage.setItem("nw-rx-hint", "1"); } catch(e){ return; } setTimeout(() => toast(isEN() ? "💡 Hold a message to react 😂 😭 😔" : isMale() ? "💡 خلّي صباعك على أي رسالة عشان تعمل رياكت 😂 😭 😔" : "💡 خلّي صباعك على أي رسالة عشان تعملي رياكت 😂 😭 😔"), 600); }
 /* a game's first message becomes its card; the moves after it are not shown as bubbles */
 const OG_DRAFT = {}; // what someone is typing inside a game card, kept while the chat redraws
@@ -1419,7 +1440,7 @@ function friendsListCard(){
   return `<div class="card"><div class="row between"><h3>👭 صحابي</h3><button class="btn small" data-act="fr-add">＋ ضيفي حد</button></div>
     <ul class="list" style="margin-top:10px">
     ${inc.map(f => `<li class="item"><span class="ic">💌</span><div class="grow"><div class="t">${esc((f.names||{})[f.from] || "")}</div><div class="s">طلب صداقة 💌</div></div><button class="mini" data-act="fr-accept" data-v="${esc(f.id)}">موافقة</button><button class="x" data-act="fr-remove" data-v="${esc(f.id)}" aria-label="رفض">✕</button></li>`).join("")}
-    ${ok.map(f => { const oid = friendOf(f), t = todayLog(FR.acts[oid]); return `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="fr-open" data-v="${esc(f.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${presence(FR.acts[oid]||{}).c === "on" ? `<span class="pres on"></span>` : ""}${esc((f.names||{})[oid] || "")}${isMuted("f:" + f.id) ? " 🔕" : ""}</div><div class="s">${t.length ? t.slice(-4).map(x => esc(x.e + " " + x.t)).join(" · ") : "لسه مفيش حاجة النهارده"}</div></div><span aria-hidden="true">💬</span></button></li>`; }).join("")}
+    ${ok.map(f => { const oid = friendOf(f), t = todayLog(FR.acts[oid]); return `<li class="lirow"><button class="item" style="width:100%;border:0;text-align:start" data-act="fr-open" data-v="${esc(f.id)}"><span class="ic">👭</span><div class="grow"><div class="t">${presence(FR.acts[oid]||{}).c === "on" ? `<span class="pres on"></span>` : ""}${esc((f.names||{})[oid] || "")}${isMuted("f:" + f.id) ? " 🔕" : ""}</div><div class="s">${t.length ? t.slice(-4).map(x => esc(x.e + " " + x.t)).join(" · ") : "لسه مفيش حاجة النهارده"}</div></div><span aria-hidden="true">💬</span></button>${muteMini("f:" + f.id)}</li>`; }).join("")}
     ${out.map(f => `<li class="item"><span class="ic">⏳</span><div class="grow"><div class="t">مستنيين موافقة</div><div class="s">${esc(Object.values(f.names||{})[0] || "")}</div></div><button class="x" data-act="fr-remove" data-v="${esc(f.id)}" aria-label="إلغاء">✕</button></li>`).join("")}
     ${!FR.list.length ? `<li class="empty">ضيفي صحابك بالكود، وتشوفوا بتعملوا إيه وتتكلموا 💬</li>` : ""}
     </ul></div>`;
@@ -1434,7 +1455,7 @@ function friendsView(){
     ${friendsListCard()}
     <h3 style="margin:18px 0 8px">👯 الجروبات</h3>
     <div class="row wrap"><button class="btn small" data-act="g-new">＋ جروب جديد</button><button class="btn ghost small" data-act="g-join">ادخلي جروب بكود</button></div>
-    <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}${isMuted("g:" + x.id) ? " 🔕" : ""}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button></li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
+    <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li class="lirow"><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}${isMuted("g:" + x.id) ? " 🔕" : ""}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button>${muteMini("g:" + x.id)}</li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
   let last = "", out = ""; const games = foldGames(GR.msgs), R = foldReacts(GR.msgs);
   if (GR.msgs.some(m => m.from !== UID && !m.g && !m.r)) rxHint();
   GR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
