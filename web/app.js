@@ -3,7 +3,7 @@
 import { EN } from "./en.js";
 import { prayerTimes, CITIES } from "./pray.js";
 import { openGames } from "./games.js";
-import { ONLINE, newGame, fold as foldGames, action as gameAction, card as gameCard } from "./online.js";
+import { ONLINE, newGame, fold as foldGames, action as gameAction, card as gameCard, todOpen, gameOver } from "./online.js";
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
 const escP = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -758,7 +758,7 @@ function setupPartner(){
       sub(`u/${pid}/sec/msgs`, v => { if (v){ Object.assign(P, v); P.loaded.msgs = true; } if (S.tab === "partner") render(); });
       CP.cid = coupleId(UID, pid); CP.msgs = []; let cpFirst = true;
       punsubs.push(fb.listenCol(`couples/${CP.cid}/msgs`, list => {
-        if (!cpFirst) list.filter(m => m.from !== UID && !CP.msgs.some(x => x.id === m.id)).forEach(m => { if (!(S.tab === "diary" && U.dmode === "us" && document.visibilityState === "visible")) notice(`💞 ${P.user ? P.user.name : ""}`, m.text || ""); });
+        if (!cpFirst) list.filter(m => m.from !== UID && !m.r && !CP.msgs.some(x => x.id === m.id)).forEach(m => { if (!(S.tab === "diary" && U.dmode === "us" && document.visibilityState === "visible")) notice(`💞 ${P.user ? P.user.name : ""}`, m.text || ""); });
         cpFirst = false; CP.msgs = list;
         if (S.tab === "diary" && U.dmode === "us" && !$("#layer").innerHTML){ keepTyping(render); scrollChat(); }
       }, () => {}, 500));
@@ -1283,8 +1283,77 @@ function chatCtx(){
   return null;
 }
 const gameLang = () => isEN() ? "en" : isMale() ? "m" : "f";
+/* reactions on chat messages (friends, groups, partner): like games, a reaction is just another message, { r:{ to, e } },
+   so no new database rules are needed; the newest reaction of each person on a message wins, and e:"" takes it back */
+const REACTS = ["😂", "😭", "😔"];
+// ➕ opens more: a grid of common ones, plus a box to type any emoji from the keyboard
+const MORE_REACTS = ["❤️", "😍", "🥰", "🤍", "👍", "👎", "😮", "😳", "🥺", "😡", "🔥", "👏", "🙏", "💯", "🤣", "😅", "🤔", "🙄", "😴", "🎉", "💔", "👀", "😎", "🤝"];
+const okReact = e => typeof e === "string" && e.length > 0 && e.length <= 16 && /\p{Extended_Pictographic}/u.test(e) && !/[\p{L}\p{N}<>&"'\s]/u.test(e.replace(/[\u{FE0F}\u{200D}\u{20E3}]/gu, ""));
+// the three quick reactions follow what this person uses: a new one takes the place of the one used longest ago, and the others stay where they are
+function quickReacts(){ try { const q = JSON.parse(localStorage.getItem("nw-rx-quick") || "null"); if (Array.isArray(q) && q.length === 3 && q.every(x => okReact(x[0]))) return q; } catch(e){} return REACTS.map((e, i) => [e, -i]); }
+function useReact(e){
+  const q = quickReacts(), at = q.findIndex(x => x[0] === e), now = Date.now();
+  if (at >= 0) q[at][1] = now; else { let old = 0; q.forEach((x, i) => { if (x[1] < q[old][1]) old = i; }); q[old] = [e, now]; }
+  try { localStorage.setItem("nw-rx-quick", JSON.stringify(q)); } catch(err){}
+}
+const rid = x => String(x).replace(/[^\w-]/g, ""); // message ids are plain letters and digits; anything else is dropped
+function foldReacts(msgs){
+  const by = new Map();
+  msgs.filter(m => m.r && m.r.to).sort((a, b) => a.ts - b.ts).forEach(m => { if (!by.has(m.r.to)) by.set(m.r.to, new Map()); const k = by.get(m.r.to); if (okReact(m.r.e)) k.set(m.from, m.r.e); else k.delete(m.from); });
+  return by;
+}
+function reactRow(mid, R){
+  const k = R.get(mid); if (!k || !k.size) return "";
+  const count = {}; k.forEach(e => { count[e] = (count[e] || 0) + 1; }); const mine = k.get(UID);
+  const order = Object.keys(count).sort((a, b) => count[b] - count[a]);
+  return `<span class="rx">${order.map(e => `<button type="button" class="${e === mine ? "on" : ""}" data-act="react" data-v="${rid(mid)}|${e}">${e}${count[e] > 1 ? `<b class="num">${count[e]}</b>` : ""}</button>`).join("")}</span>`;
+}
+function sendReact(mid, e){
+  const ctx = chatCtx(); mid = rid(mid); if (!ctx || !mid) return;
+  if (e && !okReact(e)) return;
+  if (e) useReact(e);
+  const now = (foldReacts(ctx.box.msgs).get(mid) || new Map()).get(UID), next = now === e ? "" : e;
+  const id = uid() + uid(), m = { id, from:UID, name:ME.name, text:next || "↩️", ts:Date.now(), r:{ to:mid, e:next } };
+  ctx.box.msgs = ctx.box.msgs.concat(m); keepTyping(render);
+  fb.set(`${ctx.base}/${id}`, m, false).catch(() => { ctx.box.msgs = ctx.box.msgs.filter(x => x.id !== id); render(); toast("مقدرتش أبعت، اتأكدي من النت"); });
+}
+/* hold a finger on a message (or right-click on a computer) to pick a reaction */
+let rxTimer = 0, rxAt = null;
+function rxClose(){ const p = $("#rxpick"); if (p) p.remove(); }
+function rxOpen(msgEl){
+  rxClose(); const mid = msgEl.dataset.mid, b = msgEl.querySelector(".bub").getBoundingClientRect(), mine = (foldReacts((chatCtx() || {box:{msgs:[]}}).box.msgs).get(mid) || new Map()).get(UID);
+  const p = document.createElement("div"); p.id = "rxpick"; p.setAttribute("role", "menu");
+  const one = e => `<button type="button" role="menuitem" class="${e === mine ? "on" : ""}" data-act="react" data-v="${rid(mid)}|${e}">${e}</button>`;
+  p.innerHTML = `<div class="rxrow">${quickReacts().map(x => one(x[0])).join("")}<button type="button" class="rxmore" aria-label="${isEN() ? "More" : "رياكت تاني"}">➕</button></div>`;
+  document.body.appendChild(p);
+  const place = () => { const w = p.offsetWidth, h = p.offsetHeight, top = b.top - h - 8 < 70 ? Math.min(b.bottom + 8, innerHeight - h - 90) : b.top - h - 8;
+    p.style.top = Math.max(8, top) + "px"; p.style.left = Math.max(8, Math.min(innerWidth - w - 8, b.left + b.width / 2 - w / 2)) + "px"; };
+  place();
+  p.querySelector(".rxmore").addEventListener("click", () => {
+    p.classList.add("big");
+    p.innerHTML = `<div class="rxgrid">${[...new Set(quickReacts().map(x => x[0]).concat(REACTS, MORE_REACTS))].map(one).join("")}</div>
+      <form class="rxtype"><input id="rxIn" maxlength="16" autocomplete="off" placeholder="${isEN() ? "or type any emoji" : isMale() ? "أو اكتب أي إيموجي" : "أو اكتبي أي إيموجي"}" aria-label="emoji"><button class="btn small" type="submit">✓</button></form>`;
+    place();
+    p.querySelector(".rxtype").addEventListener("submit", ev => { ev.preventDefault(); const e = p.querySelector("#rxIn").value.trim();
+      if (!okReact(e)){ toast(isEN() ? "Type one emoji" : isMale() ? "اكتب إيموجي واحد بس" : "اكتبي إيموجي واحد بس"); return; } rxClose(); sendReact(mid, e); });
+  });
+  if (navigator.vibrate) try { navigator.vibrate(15); } catch(e){}
+}
+document.addEventListener("pointerdown", e => {
+  const m = e.target.closest && e.target.closest(".chat .msg[data-mid]");
+  if (!e.target.closest || !e.target.closest("#rxpick")) rxClose();
+  if (!m || e.target.closest("button")) return;
+  rxAt = [e.clientX, e.clientY]; clearTimeout(rxTimer); rxTimer = setTimeout(() => rxOpen(m), 420);
+});
+document.addEventListener("pointermove", e => { if (rxAt && Math.hypot(e.clientX - rxAt[0], e.clientY - rxAt[1]) > 10){ clearTimeout(rxTimer); rxAt = null; } });
+["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, () => { clearTimeout(rxTimer); rxAt = null; }));
+document.addEventListener("contextmenu", e => { const m = e.target.closest && e.target.closest(".chat .msg[data-mid]"); if (m){ e.preventDefault(); rxOpen(m); } });
+addEventListener("scroll", () => { clearTimeout(rxTimer); rxClose(); }, { passive:true });
+function rxHint(){ try { if (localStorage.getItem("nw-rx-hint")) return; localStorage.setItem("nw-rx-hint", "1"); } catch(e){ return; } setTimeout(() => toast(isEN() ? "💡 Hold a message to react 😂 😭 😔" : isMale() ? "💡 خلّي صباعك على أي رسالة عشان تعمل رياكت 😂 😭 😔" : "💡 خلّي صباعك على أي رسالة عشان تعملي رياكت 😂 😭 😔"), 600); }
 /* a game's first message becomes its card; the moves after it are not shown as bubbles */
-function gameBubble(m, games){ if (m.g.t !== "new") return ""; const st = games.get(m.g.id); return st ? `<div class="msg og">${gameCard(st, UID, gameLang(), escP)}</div>` : ""; }
+const OG_DRAFT = {}; // what someone is typing inside a game card, kept while the chat redraws
+document.addEventListener("input", e => { if (e.target.id && e.target.id.startsWith("oga-")) OG_DRAFT[e.target.id.slice(4)] = e.target.value; });
+function gameBubble(m, games){ if (m.g.t !== "new") return ""; const st = games.get(m.g.id); return st ? `<div class="msg og">${gameCard(st, UID, gameLang(), escP, OG_DRAFT[m.g.id])}</div>` : ""; }
 function sendGame(ctx, g, note){
   const def = ONLINE.find(x => x.k === g.k) || ONLINE[0], id = uid() + uid();
   // people on an older copy of the app see this line instead of the board
@@ -1294,6 +1363,10 @@ function sendGame(ctx, g, note){
 }
 function startGame(k){
   const ctx = chatCtx(), def = ONLINE.find(x => x.k === k); if (!ctx || !def) return;
+  // one game at a time: whoever has a game still going in this chat finishes (or ends) it before starting another
+  const open = [...foldGames(ctx.box.msgs).values()].find(st => st.by === UID && !gameOver(st));
+  if (open){ closeSheet(); toast(isEN() ? "🎮 Finish your game in this chat first, or tap 🏁 End the game" : isMale() ? "🎮 خلّص لعبتك اللي في الشات ده الأول، أو دوس 🏁 إنهاء اللعبة" : "🎮 خلّصي لعبتك اللي في الشات ده الأول، أو دوسي 🏁 إنهاء اللعبة");
+    const el = document.querySelector(`[data-v^="${open.id}:"]`); if (el) el.closest(".og-card").scrollIntoView({ block:"center", behavior:"smooth" }); return; }
   if (!def.free && !gamesOpen()){ gamesPaySheet(); return; }
   closeSheet(); sendGame(ctx, newGame(k, UID, ctx.members, ctx.pair), isEN() ? `🎮 Started a game of ${def.en[0]}` : `🎮 بدأ لعبة ${def.ar[0]}`);
 }
@@ -1304,13 +1377,15 @@ function onlineGamesSheet(){
 }
 function friendChatView(f){
   const oid = friendOf(f), on = esc((f.names||{})[oid] || "");
-  let last = "", out = ""; const games = foldGames(FR.msgs);
+  let last = "", out = ""; const games = foldGames(FR.msgs), R = foldReacts(FR.msgs);
+  if (FR.msgs.some(m => m.from !== UID && !m.g && !m.r)) rxHint();
   FR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    if (m.r) return;
     if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
-    out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
-      : `<div class="msg him"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div><button class="x small" data-act="fr-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
+    out += m.from === UID ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
+      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div><button class="x small" data-act="fr-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
   });
   const today = todayLog(FR.acts[oid]);
   return `<div class="row between"><button class="btn ghost small" data-act="fr-back">رجوع</button><button class="btn ghost small" data-act="fr-remove" data-v="${esc(f.id)}">شيلي من صحابي</button></div>
@@ -1323,7 +1398,7 @@ function openFriend(fid){
   FR.open = fid; FR.msgs = [];
   if (fid) FR.unsub = fb.listenCol(`friends/${fid}/msgs`, list => {
     const known = new Set(FR.msgs.map(m => m.id)), had = FR.msgs.length;
-    if (had) list.filter(m => m.from !== UID && !known.has(m.id)).forEach(m => { if (document.visibilityState !== "visible") notice(`👭 ${m.name || ""}`, m.text || ""); });
+    if (had) list.filter(m => m.from !== UID && !m.r && !known.has(m.id)).forEach(m => { if (document.visibilityState !== "visible") notice(`👭 ${m.name || ""}`, m.text || ""); });
     FR.msgs = list; if (S.tab === "diary" && U.dmode === "friends" && FR.open === fid){ keepTyping(render); scrollChat(); } }, () => {}, 300);
   render(); if (fid) scrollChat(); else window.scrollTo({top:0});
 }
@@ -1357,13 +1432,15 @@ function friendsView(){
     <h3 style="margin:18px 0 8px">👯 الجروبات</h3>
     <div class="row wrap"><button class="btn small" data-act="g-new">＋ جروب جديد</button><button class="btn ghost small" data-act="g-join">ادخلي جروب بكود</button></div>
     <ul class="list">${GR.list.length ? GR.list.slice().sort((a,b)=>(b.last||b.at||0)-(a.last||a.at||0)).map(x => `<li><button class="item" style="width:100%;border:0;text-align:start" data-act="g-open" data-v="${esc(x.id)}"><span class="ic">👯</span><div class="grow"><div class="t">${esc(x.name)}</div><div class="s"><span class="num">${(x.members||[]).length}</span> أعضاء${x.lastText ? " · " + esc(String(x.lastText).slice(0,40)) : ""}</div></div></button></li>`).join("") : `<li class="empty">لسه مفيش جروبات، اعملي واحد وابعتي الكود لصحابك</li>`}</ul>`;
-  let last = "", out = ""; const games = foldGames(GR.msgs);
+  let last = "", out = ""; const games = foldGames(GR.msgs), R = foldReacts(GR.msgs);
+  if (GR.msgs.some(m => m.from !== UID && !m.g && !m.r)) rxHint();
   GR.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    if (m.r) return;
     if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d), mine = m.from === UID;
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
-    out += mine ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
-      : `<div class="msg him"><div class="bub"><small class="from">${esc(m.name || "")}</small>${esc(m.text)}<span class="tm num">${tm}</span></div><button class="x small" data-act="g-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
+    out += mine ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
+      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub"><small class="from">${esc(m.name || "")}</small>${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div><button class="x small" data-act="g-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
   });
   const names = Object.values(g.names || {}).map(esc).join("، ");
   return `<div class="row between"><button class="btn ghost small" data-act="g-back">رجوع</button><button class="btn ghost small" data-act="g-info">الكود والأعضاء</button></div>
@@ -1372,13 +1449,14 @@ function friendsView(){
     <form class="composer" data-form="gmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function coupleView(){
-  let last = "", out = ""; const games = foldGames(CP.msgs);
+  let last = "", out = ""; const games = foldGames(CP.msgs), R = foldReacts(CP.msgs);
   CP.msgs.slice().sort((a,b)=>a.ts-b.ts).forEach(m => {
+    if (m.r) return;
     if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
-    out += m.from === UID ? `<div class="msg me"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`
-      : `<div class="msg him"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span></div></div>`;
+    out += m.from === UID ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
+      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`;
   });
   const pn = esc(P.user ? P.user.name : "");
   return `${diarySwitch()}
@@ -2113,12 +2191,15 @@ document.addEventListener("click", e => {
     case "sleep": { const c = S.care[k] = S.care[k] || {water:0,sleep:0}; c.sleep = Math.max(0, Math.min(16, c.sleep + +v)); save(); render(); break; }
     case "week-summary": weekSheet(); break;
     case "og-menu": onlineGamesSheet(); break;
+    case "react": { const [mid, e] = String(v).split("|"); rxClose(); sendReact(mid, e); break; }
     case "og-start": startGame(v); break;
     case "og-new": startGame(v); break;
-    case "og": { const ctx = chatCtx(); if (!ctx) break; const [gid, what, arg] = String(v).split(":"), st = foldGames(ctx.box.msgs).get(gid), g = gameAction(st, UID, what, arg);
+    case "og": { const ctx = chatCtx(); if (!ctx) break; const [gid, what, a0] = String(v).split(":"), arg = what === "ans" ? (($("#oga-" + gid) || {}).value || "") : a0, st = foldGames(ctx.box.msgs).get(gid), g = gameAction(st, UID, what, arg);
+      if (what === "ans" && !g){ toast(isEN() ? "Write your answer first" : isMale() ? "اكتب إجابتك الأول" : "اكتبي إجابتك الأول"); break; }
+      if (what === "ans") delete OG_DRAFT[gid];
       if (!g) break; const over = foldGames(ctx.box.msgs.concat({ from:UID, name:ME.name, ts:Date.now(), g })).get(gid);
       const turnNow = over.win ? "" : (st.k === "xo" || st.k === "c4") ? over.p[over.n % 2] : st.k === "mem" ? over.p[over.turn] : "";
-      sendGame(ctx, g, what === "join" ? (isEN() ? "🎮 Joined the game" : "🎮 دخل اللعبة") : over.win ? (isEN() ? "🎮 The game is over" : "🎮 اللعبة خلصت") : turnNow && turnNow !== UID ? (isEN() ? "🎮 Your turn" : "🎮 دورك") : st.k === "tod" && what === "move" ? (isEN() ? "🎭 Truth or dare" : "🎭 صراحة ولا جرأة") : ""); break; }
+      sendGame(ctx, g, what === "end" ? (isEN() ? "🏁 The game was ended" : "🏁 اللعبة اتقفلت") : what === "join" ? (isEN() ? "🎮 Joined the game" : "🎮 دخل اللعبة") : over.win ? (isEN() ? "🎮 The game is over" : "🎮 اللعبة خلصت") : turnNow && turnNow !== UID ? (isEN() ? "🎮 Your turn" : "🎮 دورك") : st.k === "tod" && what === "ans" ? (todOpen(over) ? (isEN() ? "🎭 All the answers are in" : "🎭 الإجابات ظهرت") : (isEN() ? "🎭 Answered, your turn" : "🎭 جاوب، مستنيك")) : st.k === "tod" && what === "next" ? (isEN() ? "🎭 New round" : "🎭 جولة جديدة") : ""); break; }
     case "games": openGames({ en:isEN(), unlocked:gamesOpen(), onLocked:gamesPaySheet }); break;
     case "adm-games": { const u = U.admin.users.find(x=>x.id===v); if (!u) break; const on = !u.games;
       fb.set(`users/${v}`, {games:on}).then(()=>{ u.games = on; render(); toast(on ? `🎮 ${u.name} اتفتحتله كل الألعاب` : `🎮 ${u.name} رجع للألعاب المجانية بس`); }).catch(()=>toast("مقدرتش")); break; }

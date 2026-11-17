@@ -389,3 +389,24 @@ img{-webkit-user-drag:none}
 .g-head span{display:flex;gap:6px}
 .og-mem{grid-template-columns:repeat(4,1fr);max-width:260px}
 .og-b.txt{flex:1 1 auto;max-width:100%;white-space:normal;line-height:1.5}
+
+/* reactions on chat messages */
+.bub .rx{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 2px}
+.bub .rx button{border:0;background:rgba(127,127,127,.18);border-radius:99px;padding:1px 7px;font-size:15px;line-height:1.5;color:inherit;display:inline-flex;align-items:center;gap:3px}
+.bub .rx button.on{box-shadow:0 0 0 2px var(--accent) inset;background:var(--surface);color:var(--ink)}
+.bub .rx b{font-size:11px}
+#rxpick{position:fixed;z-index:80;display:flex;gap:4px;background:var(--surface);border-radius:99px;padding:6px 8px;box-shadow:0 8px 26px rgba(30,10,25,.28);animation:pop .18s ease}
+#rxpick button{border:0;background:transparent;font-size:28px;width:46px;height:46px;border-radius:50%;padding:0}
+#rxpick button.on{background:var(--soft)}
+.chat .msg[data-mid] .bub{-webkit-user-select:none;user-select:none}
+.og-in{width:100%;resize:none;min-height:64px;text-align:start}
+.og-ans{margin-top:6px;padding:8px 10px;border-radius:12px;background:var(--surface);font-weight:700;white-space:pre-wrap;word-wrap:break-word}
+.og-end{border:0;background:transparent;color:var(--muted);font-size:12.5px;font-weight:700;padding:4px 10px;text-decoration:underline;text-underline-offset:3px}
+#rxpick .rxrow{display:flex;gap:4px}
+#rxpick .rxmore{font-size:20px;color:var(--muted);background:var(--soft)}
+#rxpick.big{border-radius:22px;flex-direction:column;padding:10px;width:min(320px,calc(100vw - 16px))}
+#rxpick .rxgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+#rxpick.big button{width:auto;height:44px;font-size:26px}
+#rxpick .rxtype{display:flex;gap:6px;margin-top:8px}
+#rxpick .rxtype input{flex:1;min-width:0;border:2px solid var(--line);border-radius:14px;padding:6px 10px;font-size:18px;background:var(--bg);color:var(--ink);-webkit-user-select:text;user-select:text}
+#rxpick .rxtype .btn{flex:none;width:52px;height:44px;font-size:18px;padding:0;border-radius:14px;background:var(--accent);color:#fff}
