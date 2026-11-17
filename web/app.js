@@ -1287,7 +1287,7 @@ const gameLang = () => isEN() ? "en" : isMale() ? "m" : "f";
    so no new database rules are needed; the newest reaction of each person on a message wins, and e:"" takes it back */
 const REACTS = ["😂", "😭", "😔"];
 // ➕ opens more: a grid of common ones, plus a box to type any emoji from the keyboard
-const MORE_REACTS = ["❤️", "😍", "🥰", "🤍", "👍", "👎", "😮", "😳", "🥺", "😡", "🔥", "👏", "🙏", "💯", "🤣", "😅", "🤔", "🙄", "😴", "🎉", "💔", "👀", "😎", "🤝"];
+const MORE_REACTS = ["❤️", "😍", "🥰", "🤍", "🙂", "🤡", "💋", "👍", "👎", "😮", "😳", "🥺", "😡", "🔥", "👏", "🙏", "💯", "🤣", "😅", "🤔", "🙄", "😴", "🎉", "💔", "👀", "😎", "🤝"];
 const okReact = e => typeof e === "string" && e.length > 0 && e.length <= 16 && /\p{Extended_Pictographic}/u.test(e) && !/[\p{L}\p{N}<>&"'\s]/u.test(e.replace(/[\u{FE0F}\u{200D}\u{20E3}]/gu, ""));
 // the three quick reactions follow what this person uses: a new one takes the place of the one used longest ago, and the others stay where they are
 function quickReacts(){ try { const q = JSON.parse(localStorage.getItem("nw-rx-quick") || "null"); if (Array.isArray(q) && q.length === 3 && q.every(x => okReact(x[0]))) return q; } catch(e){} return REACTS.map((e, i) => [e, -i]); }
