@@ -2954,14 +2954,28 @@ setInterval(()=>{ if (S && S.dark==="auto") applyTheme(); }, 60000);
 const BUILD = "__NW_BUILD__";
 let updWaiting = false;
 function busyNow(){ const a = document.activeElement; return !!($("#layer") && $("#layer").innerHTML) || !!(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) || !!(S && S.timer && S.timer.end); }
-function doUpdate(){ try { clearTimeout(pushTimer); if (S && UID) pushNow(); if (S) save(); } catch(e){} setTimeout(() => location.reload(), 500); }
+// before reloading, wait (up to 12s) for the new offline copy to be in place, so a slow connection doesn't reopen the old one
+let updTarget = "";
+function doUpdate(){
+  try { clearTimeout(pushTimer); if (S && UID) pushNow(); if (S) save(); } catch(e){}
+  try { sessionStorage.setItem("nw-upd-tried", updTarget); } catch(e){}
+  let done = false; const go = () => { if (!done){ done = true; location.reload(); } };
+  if (navigator.serviceWorker) navigator.serviceWorker.addEventListener("controllerchange", () => setTimeout(go, 300));
+  setTimeout(go, 12000);
+  // no new worker coming (only the page changed): fetch the fresh files ourselves, then reload
+  Promise.all(["./", "index.html", "main.js", "style.css"].map(u => fetch(u + (u.includes("?") ? "&" : "?") + "t=" + Date.now(), {cache:"no-store"})
+    .then(r => r.ok && caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith("nw-") && k !== "nw-fonts").map(k => caches.open(k).then(c => c.put(new URL(u, location.href).href, r.clone()))))))))
+    .catch(() => {}).then(() => setTimeout(go, 1500));
+}
 async function checkUpdate(){
   if (BUILD.startsWith("__") || !navigator.onLine) return;
   try {
     const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return;
-    const j = await r.json(); if (!j.v || j.v === BUILD) return;
+    const j = await r.json(); if (!j.v || j.v === BUILD) return; updTarget = String(j.v);
+    // tried once already this session and still on the old copy: don't keep reloading, just offer the button
+    let tried = ""; try { tried = sessionStorage.getItem("nw-upd-tried") || ""; } catch(e){}
     if (navigator.serviceWorker) navigator.serviceWorker.getRegistration().then(g => g && g.update()).catch(()=>{});
-    if (!busyNow()) return doUpdate();
+    if (!busyNow() && tried !== updTarget) return doUpdate();
     if (updWaiting) return; updWaiting = true;
     const d = document.createElement("button"); d.className = "updbar"; d.textContent = isEN() ? "New update ✨ tap to refresh" : gx("فيه تحديث جديد ✨ دوسي علشان يتحدّث", isMale());
     d.onclick = doUpdate; document.body.appendChild(d);
