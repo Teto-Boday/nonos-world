@@ -200,7 +200,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "كويسة":"كويس","ليكي":"ليك","مبسوطة":"مبسوط","مبسوطه":"مبسوط","متأكدة":"متأكد","مختارتيش":"مختارتش","مصرفتيش":"مصرفتش","مضايقة":"مضايق","مضغوطة":"مضغوط",
 "معاكي":"معاك","موافقة":"موافق","مستعدة":"مستعد","مستنيكي":"مستنيك","نامي":"نام","نسيتي":"نسيت","نمتي":"نمت","هتعوضي":"هتعوض","هصحّيكي":"هصحّيك","هنناديكي":"هنناديك",
 "وابتسمي":"وابتسم","وافقتي":"وافقت","شغالة":"شغال","بطلة":"بطل","بسبوسة":"وحش","بسبوسه":"وحش","نونو":"بطل","بنوتي":"بطل","حبيبتي":"حبيبي",
-"مسلمة":"مسلم","مسيحية":"مسيحي","خرجتي":"خرجت","قيّمي":"قيّم","اعرضي":"اعرض","فرّحتينا":"فرّحتنا","اكتبيلي":"اكتبلي","اعملي الجروب":"اعمل الجروب","فاكرك علطول":"فكراك علطول","جالك":"جالك","حابة":"حابب","ضيفيها":"ضيفها","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
+"مسلمة":"مسلم","حوّشي":"حوّش","حوّشتي":"حوّشت","هتحوّشي":"هتحوّش","بتحوّشي":"بتحوّش","حطّي":"حطّ","تحتاجيها":"تحتاجها","هتفكّي":"هتفكّ","سيبيها":"سيبها","محتاجة":"محتاج","هتسحبي":"هتسحب","هتسحبيه":"هتسحبه","اسحبي":"اسحب","سحبتي":"سحبت","مسيحية":"مسيحي","خرجتي":"خرجت","قيّمي":"قيّم","اعرضي":"اعرض","فرّحتينا":"فرّحتنا","اكتبيلي":"اكتبلي","اعملي الجروب":"اعمل الجروب","فاكرك علطول":"فكراك علطول","جالك":"جالك","حابة":"حابب","ضيفيها":"ضيفها","هو سامعك":"هي سامعاك","هو بيشوفك":"هي بتشوفك","يرد عليكي":"ترد عليك","من عنده":"من عندها","شريك حياتك":"شريكة حياتك","شريكك":"شريكتك","صاحبة الحساب":"صاحب الحساب"};
 const MASC_RE = new RegExp("(^|[^\\u0621-\\u064A\\u0671-\\u06D3])(" + Object.keys(MASC).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|") + ")(?![\\u0621-\\u064A\\u0671-\\u06D3])", "g");
 const mascRaw = str => String(str).replace(MASC_RE, (m, pre, w) => pre + MASC[w]);
 const stripMarks = h => String(h).replace(/[]/g, "");
@@ -962,26 +962,30 @@ function carryIn(off = 0){
   let o = off - 1, n = 0; while (n++ < 600 && dkey(periodRange(o).start) > first) o--;
   if (dkey(periodRange(o).end) < first) o++;
   let carry = 0;
-  for (; o < off; o++){ const r = periodSums(o); carry = Math.max(0, S.money.allowance + r.added + carry - r.spent); }
+  for (; o < off; o++){ const r = periodSums(o); carry = Math.max(0, S.money.allowance + r.added + carry - r.spent - r.saved); }
   return carry;
 }
 function periodSums(off){
   const {start,end} = periodRange(off), sk = dkey(start), ek = dkey(end);
   const list = S.money.expenses.filter(e => e.date >= sk && e.date <= ek), incomes = (S.money.incomes || []).filter(e => e.date >= sk && e.date <= ek);
-  return {list, incomes, spent: list.reduce((a,e)=>a+e.amt,0), added: incomes.reduce((a,e)=>a+e.amt,0)};
+  return {list, incomes, spent: list.reduce((a,e)=>a+e.amt,0), added: incomes.reduce((a,e)=>a+e.amt,0), saved: savIn(sk, ek)};
 }
+/* التحويشة: فلوس على جنب. الإيداع بيطلع من مصروف الفترة، والسحب بيرجعله */
+const savList = () => S.money.savings || [];
+const savTotal = () => Math.max(0, savList().reduce((a,x)=>a+x.amt,0));
+const savIn = (sk, ek) => savList().filter(x => x.date >= sk && x.date <= ek).reduce((a,x)=>a+x.amt,0);
 function moneyInfo(off = 0){
   const {start,end} = periodRange(off); const sk = dkey(start), ek = dkey(end), tk = off ? ek : dkey();
   const list = S.money.expenses.filter(e => e.date >= sk && e.date <= ek);
   const spent = list.reduce((a,e)=>a+e.amt,0), todaySpent = list.filter(e=>e.date===tk).reduce((a,e)=>a+e.amt,0);
   const incomes = (S.money.incomes || []).filter(e => e.date >= sk && e.date <= ek), added = incomes.reduce((a,e)=>a+e.amt,0);
-  const carried = carryIn(off), total = S.money.allowance + added + carried, left = total - spent;
+  const saved = savIn(sk, ek), carried = carryIn(off), total = S.money.allowance + added + carried, left = total - spent - saved;
   const daysLeft = Math.round((end - fromKey(tk))/864e5) + 1;
-  const leftStartToday = left + todaySpent;
+  const leftStartToday = left + todaySpent; // التحويش بيقلّل المسموح بيه كل يوم، مش بيتحسب صرف النهارده
   const daily = Math.max(0, leftStartToday / Math.max(1,daysLeft));
   const ratio = total ? left / total : 0;
   const state = !total ? "ok" : left <= 0 ? "out" : ratio < 0.3 ? "near" : "ok";
-  return {list, incomes, added, carried, total, spent, left, daily, todaySpent, daysLeft, state, todayLeft: daily - todaySpent};
+  return {list, incomes, added, carried, saved, total, spent, left, daily, todaySpent, daysLeft, state, todayLeft: daily - todaySpent};
 }
 const dur = m => (m === "focus" ? S.durations.focus : S.durations.rest) * 60;
 const newTimer = (m, subject) => ({mode:m, total:dur(m), remain:dur(m), subject});
@@ -1194,7 +1198,7 @@ function moneyView(){
   const mi = moneyInfo(off), {start,end} = periodRange(off);
   const hasOlder = S.money.expenses.concat(S.money.incomes || []).some(e => e.date < dkey(start));
   const byCat = CATS.map(c=>({...c, sum: mi.list.filter(e=>e.cat===c.k).reduce((a,e)=>a+e.amt,0)})).filter(c=>c.sum>0).sort((a,b)=>b.sum-a.sum);
-  const pct = mi.total ? Math.min(100, mi.spent/mi.total*100) : 0;
+  const pct = mi.total ? Math.min(100, (mi.spent + Math.max(0, mi.saved))/mi.total*100) : 0;
   const groups = {};
   mi.list.slice().sort((a,b)=>a.date<b.date?1:-1).forEach(e => (groups[e.date] = groups[e.date] || []).push(e));
   return `
@@ -1208,7 +1212,7 @@ function moneyView(){
     <div class="row between"><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span><button class="btn ghost small" data-act="allowance">المصروف: <span class="num">${fmt(S.money.allowance)}</span></button></div>
     <div class="big num" style="margin-top:10px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div>
     <div class="bar" style="margin:12px 0 6px"><i style="width:${pct}%"></i></div>
-    <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b></span><span>من <b class="num">${fmt(mi.total)}</b>${mi.added ? ` <span class="income-tag">(+<span class="num">${fmt(mi.added)}</span> جالك)</span>` : ""}${mi.carried ? ` <span class="income-tag">(+<span class="num">${fmt(mi.carried)}</span> ${wk?"من الأسبوع اللي قبله":"من الشهر اللي قبله"})</span>` : ""}</span></div>
+    <div class="row between small muted"><span>صرفتي <b class="num">${fmt(mi.spent)}</b>${mi.saved > 0 ? ` · حوّشتي <b class="num">${fmt(mi.saved)}</b> 🐷` : ""}</span><span>من <b class="num">${fmt(mi.total)}</b>${mi.added ? ` <span class="income-tag">(+<span class="num">${fmt(mi.added)}</span> جالك)</span>` : ""}${mi.carried ? ` <span class="income-tag">(+<span class="num">${fmt(mi.carried)}</span> ${wk?"من الأسبوع اللي قبله":"من الشهر اللي قبله"})</span>` : ""}</span></div>
   </div>
   ${past ? "" : `<div class="card">
     <div class="row between"><h3>${L.daily}</h3><span class="muted small">علشان الفلوس تكفّي لآخر ${S.money.period==="week"?"الأسبوع":"الشهر"}</span></div>
@@ -1219,6 +1223,7 @@ function moneyView(){
     ${mi.todaySpent > mi.daily && mi.daily>0 ? `<div class="notice" style="margin-top:10px">صرفتي النهارده أكتر من المسموح بـ <b class="num">${fmt(mi.todaySpent-mi.daily)}</b> ${CUR()}، بكرة نهدّي شوية 🙈</div>`:""}
   </div>`}
   ${past ? `<button class="btn ghost block" data-act="monoff" data-v="0">رجوع ل${wk?"لأسبوع ده":"لشهر ده"}</button>` : `<div class="two"><button class="btn" data-act="add-exp">－ صرفت حاجة</button><button class="btn ghost" data-act="add-inc">＋ جالي فلوس 💰</button></div>`}
+  ${past ? "" : savCard()}
   ${mi.incomes.length ? `<div class="card"><h3>💰 فلوس جاتلك</h3><ul class="list" style="margin-top:10px">${mi.incomes.slice().sort((a,b)=>a.date<b.date?1:-1).map(e=>`<li class="item income"><span class="ic">💰</span><div class="grow"><div class="t">${esc(e.note || "فلوس زيادة")}</div><div class="s">${e.date===dkey()?"النهارده":prettyDate(fromKey(e.date))}</div></div><b class="num">+${fmt(e.amt)}</b><button class="x" data-act="del-inc" data-v="${e.id}" aria-label="امسحي">✕</button></li>`).join("")}</ul></div>` : ""}
   ${byCat.length?`<div class="card"><h3>صرفتي على إيه؟</h3>
     <div class="cat-bar" style="margin:10px 0">${byCat.map(c=>`<i style="width:${c.sum/mi.spent*100}%;background:${c.c}" title="${c.t}"></i>`).join("")}</div>
@@ -2101,6 +2106,47 @@ function forgotSheet(){
     <button class="btn" type="submit" id="fg-btn">ابعتي الطلب</button>
   </form>`);
 }
+function savCard(){
+  const tot = savTotal(), last = savList().slice(-4).reverse();
+  return `<div class="card sav-card">
+    <div class="row between"><h3>🐷 التحويشة</h3><span class="pill good">🔒 متجمدة</span></div>
+    <div class="big num" style="margin-top:8px">${fmt(tot)} <small>${CUR()}</small></div>
+    <div class="muted small" style="margin-top:4px">${tot ? "فلوس على جنب ومتجمدة، متتصرفش. هتنفع وقت زنقة 💪" : "حطّي فلوس على جنب، ولو حاجة صغيرة كل يوم. بتفضل متجمدة لحد ما تحتاجيها."}</div>
+    <div class="two" style="margin-top:12px"><button class="btn" data-act="sav-add">＋ حوّشي</button><button class="btn ghost" data-act="sav-out" ${tot > 0 ? "" : "disabled"}>🔓 فكّي التحويشة</button></div>
+    ${last.length ? `<ul class="list" style="margin-top:10px">${last.map(x => `<li class="item ${x.amt > 0 ? "income" : ""}"><span class="ic">${x.amt > 0 ? "🐷" : "🔓"}</span><div class="grow"><div class="t">${x.note ? esc(x.note) : x.amt > 0 ? "حوّشتي" : "سحبتي من التحويشة"}</div><div class="s">${x.date===dkey()?"النهارده":prettyDate(fromKey(x.date))}</div></div><b class="num">${x.amt > 0 ? "+" : "−"}${fmt(Math.abs(x.amt))}</b></li>`).join("")}</ul>` : ""}
+  </div>`;
+}
+function savAddSheet(){
+  const left = Math.max(0, moneyInfo().left);
+  sheet(`<h2>🐷 حوّشي فلوس</h2>
+  <p class="muted small">المبلغ ده هيتشال من مصروفك ويتجمد في التحويشة. فاضلّك دلوقتي <b class="num">${fmt(left)}</b> ${CUR()}.</p>
+  <form class="form" data-form="sav-add">
+    <label class="f">هتحوّشي كام؟ (${CUR()})<input class="in num" id="s-amt" type="number" inputmode="decimal" min="1" step="any" required placeholder="50"></label>
+    <label class="f">بتحوّشي لإيه؟ (لو حابة)<input class="in" id="s-note" maxlength="60" placeholder="موبايل جديد، هدية، رحلة…"></label>
+    <button class="btn" type="submit">حوّشي 🐷</button>
+  </form>`);
+}
+function savOutAsk(){
+  sheet(`<div style="text-align:center"><div style="font-size:54px">🐷</div>
+  <h2>متأكدة إنك هتفكّي التحويشة؟</h2>
+  <p class="muted">هتنفع وقت زنقة! فيها <b class="num">${fmt(savTotal())}</b> ${CUR()}.</p></div>
+  <div class="stack" style="display:grid;gap:10px;margin-top:14px"><button class="btn" data-act="sav-keep">لا، سيبيها متجمدة 🔒</button><button class="btn ghost" data-act="sav-out2">أيوه، محتاجة منها</button></div>`);
+}
+function savOutSheet(){
+  const tot = savTotal();
+  sheet(`<h2>🔓 هتسحبي كام؟</h2>
+  <p class="muted small">في التحويشة <b class="num">${fmt(tot)}</b> ${CUR()}، والمبلغ اللي هتسحبيه هيرجع لمصروفك.</p>
+  <form class="form" data-form="sav-out">
+    <label class="f">المبلغ (${CUR()})<input class="in num" id="s-out" type="number" inputmode="decimal" min="1" max="${tot}" step="any" required placeholder="${fmt(Math.min(tot, 100))}"></label>
+    <button class="btn ghost block" type="button" data-act="sav-all">اسحبي كله (<span class="num">${fmt(tot)}</span>)</button>
+    <button class="btn" type="submit">اسحبي</button>
+  </form>`);
+}
+function savTake(amt){
+  const tot = savTotal(); amt = Math.min(amt, tot); if (!(amt > 0)) return;
+  S.money.savings = savList().concat({id:uid(), amt:-amt, date:dkey()}); save(); closeSheet(); render();
+  toast("سحبتي " + fmt(amt) + " ورجعوا لمصروفك · فاضل في التحويشة " + fmt(savTotal()));
+}
 function incSheet(){
   sheet(`<h2>💰 جالك فلوس؟</h2>
   <form class="form" data-form="inc">
@@ -2325,6 +2371,11 @@ document.addEventListener("click", e => {
       fb.set(`users/${v}`, {games:on}).then(()=>{ u.games = on; render(); toast(on ? `🎮 ${u.name} اتفتحتله كل الألعاب` : `🎮 ${u.name} رجع للألعاب المجانية بس`); }).catch(()=>toast("مقدرتش")); break; }
     case "add-exp": expSheet(); break;
     case "add-inc": incSheet(); break;
+    case "sav-add": savAddSheet(); break;
+    case "sav-out": if (savTotal() > 0) savOutAsk(); break;
+    case "sav-keep": closeSheet(); toast("برافو 💪 التحويشة فضلت متجمدة"); break;
+    case "sav-out2": savOutSheet(); break;
+    case "sav-all": savTake(savTotal()); break;
     case "del-inc": S.money.incomes = (S.money.incomes||[]).filter(x=>x.id!==v); save(); render(); break;
     case "ecat": S._cat = v; document.querySelectorAll("#e-cats .chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.v===v)); break;
     case "del-exp": S.money.expenses = S.money.expenses.filter(x=>x.id!==v); save(); render(); break;
@@ -2542,6 +2593,17 @@ document.addEventListener("submit", e => {
   const k = dkey();
   switch(f.dataset.form){
     case "task": { const t = val("newtask"); if (!t) return; const d = dkey(addDays(new Date(), S._dayOff||0)); S.tasks.push({id:uid(),date:d,title:t,status:null}); save(); render(); setTimeout(()=>$("#newtask")?.focus(),30); break; }
+    case "sav-add": {
+      const amt = parseFloat(val("s-amt")); if (!(amt > 0)) return;
+      const left = moneyInfo().left; if (amt > left) { toast(left > 0 ? "مش هينفع، الفاضل في مصروفك " + fmt(left) : "مفيش فلوس فاضلة في مصروفك دلوقتي"); return; }
+      S.money.savings = savList().concat({id:uid(), amt, note:val("s-note"), date:dkey()}); save(); closeSheet(); render();
+      toast("حوّشتي " + fmt(amt) + " 🐷 بقى في التحويشة " + fmt(savTotal())); break;
+    }
+    case "sav-out": {
+      const amt = parseFloat(val("s-out")); if (!(amt > 0)) return;
+      if (amt > savTotal()) { toast("مش هينفع، اللي في التحويشة " + fmt(savTotal())); return; }
+      savTake(amt); break;
+    }
     case "inc": {
       const amt = parseFloat(val("i-amt")); if (!(amt > 0)) return;
       S.money.incomes = (S.money.incomes || []).concat({id:uid(), amt, note:val("i-note"), date:dkey()}); save(); closeSheet(); render();

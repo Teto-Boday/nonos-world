@@ -1,5 +1,17 @@
 // English wording for the app. Keys are the Arabic text exactly as it appears in app.js.
 export const EN = {
+"التحويشة":"Savings","🔒 متجمدة":"🔒 Locked","فلوس على جنب ومتجمدة، متتصرفش. هتنفع وقت زنقة 💪":"Money set aside and locked, not for spending. It'll help in a pinch 💪",
+"حطّي فلوس على جنب، ولو حاجة صغيرة كل يوم. بتفضل متجمدة لحد ما تحتاجيها.":"Put money aside, even a little every day. It stays locked until you need it.",
+"حطّ فلوس على جنب، ولو حاجة صغيرة كل يوم. بتفضل متجمدة لحد ما تحتاجها.":"Put money aside, even a little every day. It stays locked until you need it.",
+"＋ حوّشي":"＋ Save","＋ حوّش":"＋ Save","🔓 فكّي التحويشة":"🔓 Break the savings","🔓 فكّ التحويشة":"🔓 Break the savings","سحبتي من التحويشة":"Taken from savings","سحبت من التحويشة":"Taken from savings",
+"🐷 حوّشي فلوس":"🐷 Save money","🐷 حوّش فلوس":"🐷 Save money","المبلغ ده هيتشال من مصروفك ويتجمد في التحويشة. فاضلّك دلوقتي":"This amount comes out of your spending money and gets locked in savings. You have left:",
+"هتحوّشي كام؟":"How much to save?","هتحوّش كام؟":"How much to save?","بتحوّشي لإيه؟ (لو حابة)":"Saving for what? (optional)","بتحوّش لإيه؟ (لو حابب)":"Saving for what? (optional)","موبايل جديد، هدية، رحلة…":"New phone, a gift, a trip…","حوّشي 🐷":"Save 🐷","حوّش 🐷":"Save 🐷",
+"متأكدة إنك هتفكّي التحويشة؟":"Sure you want to break your savings?","متأكد إنك هتفكّ التحويشة؟":"Sure you want to break your savings?","هتنفع وقت زنقة! فيها":"It'll help in a pinch! It holds",
+"لا، سيبيها متجمدة 🔒":"No, keep it locked 🔒","لا، سيبها متجمدة 🔒":"No, keep it locked 🔒","أيوه، محتاجة منها":"Yes, I need some","أيوه، محتاج منها":"Yes, I need some",
+"🔓 هتسحبي كام؟":"🔓 How much to take?","🔓 هتسحب كام؟":"🔓 How much to take?","في التحويشة":"In savings:","، والمبلغ اللي هتسحبيه هيرجع لمصروفك.":", and what you take goes back to your spending money.","، والمبلغ اللي هتسحبه هيرجع لمصروفك.":", and what you take goes back to your spending money.",
+"اسحبي كله":"Take it all","اسحب كله":"Take it all","اسحبي":"Take","اسحب":"Take","برافو 💪 التحويشة فضلت متجمدة":"Bravo 💪 your savings stay locked",
+"ورجعوا لمصروفك · فاضل في التحويشة":"back to your spending · left in savings","بقى في التحويشة":"now in savings","مش هينفع، الفاضل في مصروفك":"Not enough, your spending money left is","مش هينفع، اللي في التحويشة":"Not enough, your savings hold","مفيش فلوس فاضلة في مصروفك دلوقتي":"No spending money left right now",
+"حوّشتي":"Saved","حوّشت":"Saved","سحبتي":"Took","سحبت":"Took",
 "اللي قبله":"Previous","اللي بعده":"Next",
 "من الأسبوع اللي قبله":"from last week","من الشهر اللي قبله":"from last month",
 "الأسبوع اللي قبله":"Previous week","الأسبوع اللي بعده":"Next week","الشهر اللي قبله":"Previous month","الشهر اللي بعده":"Next month","الأسبوع اللي فات":"Last week","الشهر ده":"This month","رجوع للأسبوع ده":"Back to this week","رجوع للشهر ده":"Back to this month","مفيش مصاريف في الفترة دي":"No spending in this period",
