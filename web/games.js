@@ -64,8 +64,8 @@ function sumo({ n, w, h, u, col, fx }){
       for (const p of ps) if (p.alive && Math.hypot(p.x - cx, p.y - cy) > R){ p.alive = false; fx("out"); }
     },
     // dash when facing someone, or when facing the middle while close to the edge
-    ai(i){ const p = ps[i], t = nearest(ps, i); if (!t || p.cd > 0 || Math.random() > .09) return false;
-      const edge = Math.hypot(p.x - cx, p.y - cy) > R * .72; return edge ? aimed(p, cx, cy, .6) : aimed(p, t.x, t.y, .5); },
+    ai(i, lvl = 2){ const p = ps[i], t = nearest(ps, i); if (!t || p.cd > 0 || Math.random() > [.12, .2, .35][lvl]) return false;
+      const edge = Math.hypot(p.x - cx, p.y - cy) > R * [.72, .68, .62][lvl]; return edge ? aimed(p, cx, cy, .6) : aimed(p, t.x, t.y, [.5, .42, .32][lvl]); },
     result: () => lastAlive(ps),
     draw(c){
       c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.fillStyle = col.surface; c.fill(); c.lineWidth = 1.2 * u; c.strokeStyle = col.accent; c.stroke();
@@ -107,8 +107,8 @@ function tanks({ n, w, h, u, col, fx }){
         return true; });
     },
     // drive (and fire) while roughly facing someone, let go now and then to aim again
-    ai(i){ const p = ps[i], t = nearest(ps, i); if (!t) return false; p.rest = (p.rest || 0) - 1 / 60; if (p.rest > 0) return false;
-      if (aimed(p, t.x, t.y, .22)){ if (Math.random() < .03) p.rest = .35; return true; } return false; },
+    ai(i, lvl = 2){ const p = ps[i], t = nearest(ps, i); if (!t) return false; p.rest = (p.rest || 0) - 1 / 60; if (p.rest > 0) return false;
+      if (aimed(p, t.x, t.y, [.24, .2, .16][lvl])){ if (Math.random() < [.04, .015, 0][lvl]) p.rest = .35; return true; } return false; },
     result: () => time > 45 ? -1 : lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -156,7 +156,16 @@ function football({ n, w, h, u, col, fx }){
       if (ball.x > w - br){ if (inGoal(3)) return concede(3); ball.x = w - br; ball.vx = -Math.abs(ball.vx); }
     },
     // run at the ball whenever it's roughly ahead
-    ai(i){ return aimed(ps[i], ball.x, ball.y, .5) && Math.random() > .08; },
+    // easy: just chases the ball. medium and hard: get behind the ball so it flies at someone else's goal, and hard also falls back to guard its own goal
+    ai(i, lvl = 2){ const p = ps[i]; if (lvl === 0) return aimed(p, ball.x, ball.y, .5) && Math.random() > .08;
+      const G = [[w / 2, h], [w / 2, 0], [0, h / 2], [w, h / 2]], mine = G[i];
+      let opp = null, od = 1e9; ps.forEach((q, j) => { if (j === i || !q.alive) return; const d = Math.hypot(G[j][0] - ball.x, G[j][1] - ball.y); if (d < od){ od = d; opp = G[j]; } });
+      if (!opp) return aimed(p, ball.x, ball.y, .4);
+      const toMine = Math.hypot(ball.x - mine[0], ball.y - mine[1]), coming = (ball.vx * (mine[0] - ball.x) + ball.vy * (mine[1] - ball.y)) > 0;
+      if (lvl === 2 && coming && toMine < Math.min(w, h) * .45){ const tx = (ball.x + mine[0]) / 2, ty = (ball.y + mine[1]) / 2; return aimed(p, tx, ty, .35) || aimed(p, ball.x, ball.y, .25); }
+      const dx = opp[0] - ball.x, dy = opp[1] - ball.y, d = Math.hypot(dx, dy) || 1, back = (r + br) * (lvl === 2 ? 1.4 : 1.1);
+      const tx = ball.x - dx / d * back, ty = ball.y - dy / d * back, near = Math.hypot(tx - p.x, ty - p.y) < r * 1.6;
+      return near ? aimed(p, ball.x, ball.y, .4) : aimed(p, tx, ty, lvl === 2 ? .3 : .4) && Math.random() > (lvl === 2 ? 0 : .03); },
     result: () => time > 150 ? -1 : lastAlive(ps), // nobody scored the golden goal in a minute: call it a draw
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -198,9 +207,9 @@ function hockey({ n, w, h, u, col, fx }){
       for (let k = 0; k < 3 && wait <= 0; k++) step(dt / 3);
     },
     // turn the paddle round when the ball is coming and the paddle is sliding away from it
-    ai(i){ const p = ps[i]; p.think = (p.think || 0) - 1 / 60; if (p.think > 0) return false;
-      const coming = [ball.vy > 0, ball.vy < 0, ball.vx < 0, ball.vx > 0][i], at = (i < 2 ? ball.x : ball.y) + rnd(-16, 16) * u, off = at - p.t;
-      if (coming && Math.abs(off) > len(i) * .3 && Math.sign(off) !== p.dir){ p.think = .5; return true; } return false; },
+    ai(i, lvl = 2){ const p = ps[i]; p.think = (p.think || 0) - 1 / 60; if (p.think > 0) return false;
+      const j = [16, 10, 4][lvl], coming = [ball.vy > 0, ball.vy < 0, ball.vx < 0, ball.vx > 0][i], at = (i < 2 ? ball.x : ball.y) + rnd(-j, j) * u, off = at - p.t;
+      if ((coming || lvl >= 1) && Math.abs(off) > len(i) * [.3, .25, .18][lvl] && Math.sign(off) !== p.dir){ p.think = [.5, .32, .16][lvl]; return true; } return false; },
     result: () => lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -239,9 +248,9 @@ function snakes({ n, w, h, u, col, fx }){
       });
     },
     // turn when something is in the way ahead; otherwise wander a little
-    ai(i){ const p = ps[i]; const blocked = (ang, far) => { for (let d = cell * 2; d < far; d += cell){ const x = p.x + Math.cos(ang) * d, y = p.y + Math.sin(ang) * d;
+    ai(i, lvl = 2){ const p = ps[i]; const blocked = (ang, far) => { for (let d = cell * 2; d < far; d += cell){ const x = p.x + Math.cos(ang) * d, y = p.y + Math.sin(ang) * d;
         if (x < cell || y < cell || x > w - cell || y > h - cell) return true; const k = Math.floor(y / cell) * cols + Math.floor(x / cell); if (owner[k] !== -1 && (owner[k] !== i || time - stamp[k] > .4)) return true; } return false; };
-      if (blocked(p.a, 13 * u) || blocked(p.a + .35, 9 * u)) return true; p.wander = (p.wander || 0) - 1 / 60; if (p.wander < -1.4) p.wander = rnd(.1, .35); return p.wander > 0; },
+      if (blocked(p.a, [13, 15, 18][lvl] * u) || blocked(p.a + .35, [9, 11, 13][lvl] * u)) return true; p.wander = (p.wander || 0) - 1 / 60; if (p.wander < -1.4) p.wander = rnd(.1, .35); return p.wander > 0; },
     result: () => lastAlive(ps),
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -268,8 +277,8 @@ function bomb({ n, w, h, u, col, fx }){
         const left = ps.map((q, i) => q.alive ? i : -1).filter(i => i >= 0); if (left.length > 1){ holder = left[Math.floor(Math.random() * left.length)]; fuse = rnd(8, 13); pass = .8; } }
     },
     // with the bomb: run at the nearest player. Without it: run when facing away from whoever has it
-    ai(i){ const p = ps[i], hp = ps[holder]; if (i === holder){ const t = nearest(ps, i); return !!t && aimed(p, t.x, t.y, .4); }
-      if (!hp || !hp.alive) return false; const away = Math.atan2(p.y - hp.y, p.x - hp.x), near = Math.hypot(p.x - hp.x, p.y - hp.y) < 45 * u;
+    ai(i, lvl = 2){ const p = ps[i], hp = ps[holder]; if (i === holder){ const t = nearest(ps, i); return !!t && aimed(p, t.x, t.y, [.45, .38, .3][lvl]); }
+      if (!hp || !hp.alive) return false; const away = Math.atan2(p.y - hp.y, p.x - hp.x), near = Math.hypot(p.x - hp.x, p.y - hp.y) < [40, 48, 58][lvl] * u;
       const wall = p.x + Math.cos(p.a) * 12 * u, wy = p.y + Math.sin(p.a) * 12 * u; if (wall < r || wall > w - r || wy < r || wy > h - r) return false;
       return near && Math.abs(angDiff(p.a, away)) < .9; },
     result: () => lastAlive(ps),
@@ -291,7 +300,7 @@ function race({ n, w, h, u, col, fx }){
     press(i){ if (won !== null) return; const p = ps[i]; p.d++; p.bob = 1; fx("tap"); if (p.d >= goal) won = i; },
     update(dt){ time += dt; ps.forEach(p => { p.bob = Math.max(0, p.bob - dt * 9); }); },
     // the computer just taps at a steady pace for its level
-    ai(i, lvl){ const p = ps[i]; if (time < p.next) return false; p.next = time + 1 / ([3.3, 5.2, 7.5][lvl] * rnd(.8, 1.2)); return true; },
+    ai(i, lvl){ const p = ps[i]; if (time < p.next) return false; p.next = time + 1 / ([5, 7.5, 10.5][lvl] * rnd(.8, 1.2)); return true; },
     result: () => won,
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -312,7 +321,7 @@ function quick({ n, w, h, u, col, fx }){
     press(i){ const p = ps[i]; if (won !== null || !p.alive) return; if (time < go){ p.alive = false; fx("out"); const left = ps.filter(q => q.alive); if (left.length === 1) won = ps.indexOf(left[0]); else if (!left.length) won = -1; } else { won = i; fx("hit"); } },
     update(dt){ time += dt; if (!said && time >= go){ said = true; fx("go"); } },
     // the computer answers after a human-like delay, slower on the easy level, and now and then jumps the gun
-    ai(i, lvl){ const p = ps[i]; if (!p.alive) return false; if (!p.at) p.at = go + [rnd(.5, .95), rnd(.34, .6), rnd(.22, .36)][lvl] - (Math.random() < [.08, .04, 0][lvl] ? rnd(.6, 1.2) : 0); return time >= p.at; },
+    ai(i, lvl){ const p = ps[i]; if (!p.alive) return false; if (!p.at) p.at = go + [rnd(.38, .6), rnd(.26, .38), rnd(.17, .24)][lvl] - (Math.random() < [.05, .02, 0][lvl] ? rnd(.6, 1.2) : 0); return time >= p.at; },
     result: () => won,
     draw(c){
       const green = time >= go; c.fillStyle = green ? "#2fa868" : "#d24a5c"; c.fillRect(0, 0, w, h);
@@ -334,8 +343,8 @@ function paint({ n, w, h, u, col, fx }){
       for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (separate(ps[i], ps[j], r, r)) fx("hit");
     },
     // head for the nearest square that isn't yours yet
-    ai(i){ const p = ps[i]; let best = null, bd = 1e9; for (let k = 0; k < grid.length; k++){ if (grid[k] === i) continue; const x = (k % cols + .5) * cell, y = (Math.floor(k / cols) + .5) * ch, d = Math.hypot(x - p.x, y - p.y); if (d < bd && d > r){ bd = d; best = [x, y]; } }
-      return !!best && aimed(p, best[0], best[1], .45); },
+    ai(i, lvl = 2){ const p = ps[i]; let best = null, bd = 1e9; for (let k = 0; k < grid.length; k++){ if (grid[k] === i) continue; const x = (k % cols + .5) * cell, y = (Math.floor(k / cols) + .5) * ch, d = Math.hypot(x - p.x, y - p.y); if (d < bd && d > r){ bd = d; best = [x, y]; } }
+      return !!best && aimed(p, best[0], best[1], [.5, .42, .34][lvl]); },
     result(){ if (time > 0) return null; const k = count(), top = Math.max(...k), who = k.map((v, i) => v === top ? i : -1).filter(i => i >= 0); return who.length === 1 ? who[0] : -1; },
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -356,7 +365,7 @@ function stars({ n, w, h, u, col, fx }){
       for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) separate(ps[i], ps[j], r, r);
       ps.forEach((p, i) => { if (Math.hypot(p.x - star.x, p.y - star.y) < r + 3.5 * u){ got[i]++; fx("hit"); drop(); } });
     },
-    ai(i){ return aimed(ps[i], star.x, star.y, .42); },
+    ai(i, lvl = 2){ return aimed(ps[i], star.x, star.y, [.48, .4, .32][lvl]); },
     result(){ const i = got.findIndex(v => v >= 5); return i >= 0 ? i : null; },
     draw(c){
       c.fillStyle = col.surface; c.fillRect(0, 0, w, h);
@@ -396,7 +405,7 @@ function beep(kind){
 const CHEERS = { ar:["يا سلام! 😎", "ولا في الأحلام 😂", "حد يلحق الباقي 🚑", "إيه الحلاوة دي 🍬", "اتفرّجوا واتعلّموا 👀", "كده كتير عليهم 😭", "بالراحة عليهم 🙈", "ده حظ ولا شطارة؟ 🤔"],
                  en:["Too good! 😎", "Unreal 😂", "Somebody call a medic 🚑", "Smooth 🍬", "Watch and learn 👀", "That was brutal 😭", "Go easy on them 🙈", "Luck or skill? 🤔"] };
 // how sharp the computer is: how often it looks, how often it gets it wrong, and how long it daydreams
-const LEVELS = [{ rate:4, wrong:.3, nap:[1.8, 1.1] }, { rate:9, wrong:.12, nap:[3.5, .5] }, { rate:60, wrong:0, nap:null }];
+const LEVELS = [{ rate:6, wrong:.2, nap:[2.4, .8] }, { rate:15, wrong:.05, nap:[6, .3] }, { rate:60, wrong:0, nap:null }];
 
 export function closeGames(){ const g = document.getElementById("games"); if (g && g._close) g._close(); }
 
@@ -446,7 +455,7 @@ export function openGames(opts = {}){
     // the computer looks at the game only every so often, sometimes decides wrong, and sometimes daydreams: that's what makes the easy level easy
     const think = (k, i, dt) => { if (game.rawAi) return !!game.ai(i, level); const b = brain[k];
       if (lv.nap){ b.nap -= dt; if (b.nap <= 0){ b.sleep = lv.nap[1] * rnd(.6, 1.3); b.nap = lv.nap[0] * rnd(.7, 1.4); } if (b.sleep > 0){ b.sleep -= dt; return b.want = false; } }
-      b.t -= dt; if (b.t <= 0){ b.t = 1 / lv.rate; const real = !!(game.ai && game.ai(i)); b.want = Math.random() < lv.wrong ? Math.random() < .4 : real; } return b.want; };
+      b.t -= dt; if (b.t <= 0){ b.t = 1 / lv.rate; const real = !!(game.ai && game.ai(i, level)); b.want = Math.random() < lv.wrong ? Math.random() < .4 : real; } return b.want; };
     const score = () => root.querySelectorAll(".g-btn").forEach(b => { b.querySelector("i").textContent = "★".repeat(wins[+b.dataset.p]); });
     const down = i => { if (paused || held[i]) return; held[i] = true; if (phase === "run" && game.press) game.press(i); root.querySelector(`.g-btn[data-p="${i}"]`)?.classList.add("on"); };
     const up = i => { held[i] = false; root.querySelector(`.g-btn[data-p="${i}"]`)?.classList.remove("on"); };
