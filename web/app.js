@@ -479,19 +479,35 @@ const SOLO_TOPICS = [
   ["s_family", ["ماما","بابا","اخويا","اختي ","اهلي","جدتي","جدي ","mom","mum","dad","brother","sister","my family","parents"]],
   ["s_friend", ["صاحبتي","صاحبي","صحابي","اصحابي","الشله","friend","bestie"]],
   ["s_money",  ["فلوس","مفلس","مصروف","اشتريت","غالي","money","broke","bought","expensive"]],
-  ["s_food",   ["جعان","اكلت","طبخت","فطرت","اتغديت","اتعشيت","hungry","ate","cooked"]],
+  ["s_meal",   ["طعميه","فول ","كشري","بيتزا","فراخ","رز ","تونه","شاورما","برجر","مكرونه","ملوخيه","محشي","سمك","لحمه","كفته","حواوشي","سندوتش","شيبسي","شوكولاته","ايس كريم","كيك","بطاطس","pizza","burger","chicken","pasta","tuna","falafel","shawarma","fries"]],
+  ["s_food",   ["جعان"," كلت","باكل","هاكل","بكل ","اكلت","طبخت","فطرت","اتغديت","اتعشيت","hungry","ate","cooked"]],
   ["s_pray",   ["ادعيلي","دعوه","يارب","صليت","قران","pray for me","prayed"]],
   ["d_miss",   ["وحشتني","وحشتيني","وحشني","واحشني","واحشاني","وحشاني","miss you","missed you","miss u","missing","i miss"]],
   ["s_night",  ["تصبح","هنام","رايحه انام","رايح انام","good night","going to sleep","going to bed"]],
   ["s_thanks", ["شكرا","متشكر","ميرسي","thank you","thanks"]],
   ["d_ghor",   ["غور ","غوري ","اتغور","get lost","go away"]],
+  ["s_nosay",  ["معنديش حاجه","مش عايزه احكي","مش عايز احكي","ماليش مزاج احكي","مليش مزاج","مفيش حاجه احكيها","مفيش حاجه اقولها","nothing to say","don't want to talk","dont want to talk"]],
+  ["s_dunno",  ["معرفش","مش عارف","ماعرفش","مااعرفش","idk","i don't know","i dont know","dunno","not sure"]],
   ["s_nothing",["مفيش جديد","مفيش حاجه جديده","مفيش حاجه","ولا حاجه","زي ما انا","نفس الحال","يوم عادي","عادي","nothing new","nothing much","same as always","just a normal day"]],
   ["s_bye",    [" باي","مع السلامه","هقفل","هخرج","bye","see you","gotta go"]],
-  ["d_greet",  ["ازيك","عامل ايه","اخبارك","عامله ايه","صباح الخير","مساء الخير","هاي ","اهلا","السلام عليكم"," هالو"," هلو "," هلا ","مرحبا","how are you","how r u","hello","hi","hey","good morning","good evening"]],
-  ["s_ok",     ["تمام","ماشي","كويس","كويسه","الحمد لله بخير","بخير","اوك","اوكي","i'm fine","im fine","i'm good","im good","okay"]],
+  ["d_greet",  ["ازيك","عامل ايه","اخبارك","عامله ايه","how are you","how r u"]],
+  ["s_hello",  ["صباح الخير","مساء الخير","هاي ","اهلا","السلام عليكم"," هالو"," هلو "," هلا ","مرحبا","hello","hi","hey","good morning","good evening"]],
+  ["s_ok",     [" فل "," الفل ","زي الفل","تمام","ماشي","كويس","كويسه","الحمد لله بخير","بخير","اوك","اوكي","i'm fine","im fine","i'm good","im good","okay"]],
   ["d_story",  ["عايزه احكي","عايز احكي","هحكيلك","احكيلك","هقولك حاجه","want to talk","let me tell you","i need to talk"]],
 ];
 const SOLO_MORE_F = {
+  s_hello:["أهلًا 👋 عاملة إيه النهارده؟","هاي 🤍 يومك ماشي إزاي؟","أهلًا بيكي 🌸 احكيلي"],
+  d_greet:["الحمد لله تمام 🤍 وإنتي عاملة إيه؟","تمام طول ما إنتي بتحكيلي 😄 وإنتي أخبارك إيه؟"],
+  s_app:["ميرسي 🤍 مبسوطة إنه عاجبك","ده بيفرّحني بجد 😄 وهيبقى أحلى كمان","حبيبتي 🌸 لو فيه حاجة نفسك تتضاف قوليلنا من الشكاوي والاقتراحات"],
+  s_fixed:["أيوه اتصلح 😄 جرّبي وقوليلي","الحمد لله 🤍 لو حاجة تانية مش ظابطة قوليلي"],
+  s_wow:["😄😄 إيه اللي عجبك كده؟","حلو صح؟ ✨","واو فعلًا 🤩"],
+  s_meal:["بالهنا والشفا 😋","يا سلام، أكلة حلوة 😋 بالهنا","بالهنا والشفا 🤍 متنسيش تشربي مية كمان"],
+  s_nosay:["ولا يهمك 🤍 مش لازم نحكي، أنا هنا وقت ما تحبي","براحتك خالص 🌸 الدفتر مستنيكي","تمام، ساعات السكوت مريح برضه 🤍"],
+  s_dunno:["ولا يهمك 🤍 مش لازم تعرفي دلوقتي","عادي خالص، خدي وقتك 🌸","مفيش مشكلة 😊 لما تحبي تحكي أنا هنا"],
+  s_no:["تمام 🤍 مش لازم، أنا هنا وقت ما تحبي","ماشي 🌸 براحتك خالص"],
+  s_no2:["تمام 🤍","ماشي 🌸","براحتك 🤍"],
+  s_yes:["طب احكيلي 👂🏽","يلا، أنا سامعاكي 🤍"],
+  s_ack:["فهمتك 🤍","تمام، أنا سامعاكي 🌸","ماشي 😊 احكي وقت ما تحبي"],
   s_crisis:["اللي كتبتيه ده مهم ومش هعدّيه 🤍 إنتي مش لوحدك. كلّمي دلوقتي حد بتثقي فيه من أهلك أو صحابك وقوليله اللي جواكي. ولو حاسة إنك في خطر، اطلبي الإسعاف أو روحي أقرب مستشفى."],
   s_anx:["الخوف ده مفهوم 🤍 خدي نفس عميق وطلّعيه براحة. إيه أكتر حاجة قلقاكي بالظبط؟","القلق بيكبّر الحاجات. اكتبي أسوأ حاجة ممكن تحصل، وبعدين اكتبي هتتصرفي إزاي. هتلاقيها أصغر","إنتي عدّيتي حاجات أصعب قبل كده. خطوة واحدة بس دلوقتي 🌱"],
   s_angry:["من حقك تتعصبي 😤 طلّعي كل اللي جواكي هنا الأول","العصبية دي معناها إن في حاجة مهمة عندك اتداس عليها. إيه اللي ضايقك أكتر؟","اكتبي كل اللي نفسك تقوليه هنا، وبعد ما تهدي قرّري هتعملي إيه"],
@@ -524,6 +540,18 @@ const SOLO_MORE_F = {
   s_more:["وبعدين؟ كمّلي 👂🏽","وإنتي حسّيتي بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
 };
 const SOLO_MORE_M = {
+  s_hello:["أهلًا 👋 عامل إيه النهارده؟","هاي 🤍 يومك ماشي إزاي؟","أهلًا بيك 🌸 احكيلي"],
+  d_greet:["الحمد لله تمام 🤍 وإنت عامل إيه؟","تمام طول ما إنت بتحكيلي 😄 وإنت أخبارك إيه؟"],
+  s_app:["ميرسي 🤍 مبسوط إنه عاجبك","ده بيفرّحني بجد 😄 وهيبقى أحلى كمان","حبيبي 🌸 لو فيه حاجة نفسك تتضاف قولّنا من الشكاوي والاقتراحات"],
+  s_fixed:["أيوه اتصلح 😄 جرّب وقولّي","الحمد لله 🤍 لو حاجة تانية مش ظابطة قولّي"],
+  s_wow:["😄😄 إيه اللي عجبك كده؟","حلو صح؟ ✨","واو فعلًا 🤩"],
+  s_meal:["بالهنا والشفا 😋","يا سلام، أكلة حلوة 😋 بالهنا","بالهنا والشفا 🤍 متنساش تشرب مية كمان"],
+  s_nosay:["ولا يهمك 🤍 مش لازم نحكي، أنا هنا وقت ما تحب","براحتك خالص 🌸 الدفتر مستنيك","تمام، ساعات السكوت مريح برضه 🤍"],
+  s_dunno:["ولا يهمك 🤍 مش لازم تعرف دلوقتي","عادي خالص، خد وقتك 🌸","مفيش مشكلة 😊 لما تحب تحكي أنا هنا"],
+  s_no:["تمام 🤍 مش لازم، أنا هنا وقت ما تحب","ماشي 🌸 براحتك خالص"],
+  s_no2:["تمام 🤍","ماشي 🌸","براحتك 🤍"],
+  s_yes:["طب احكيلي 👂🏽","يلا، أنا سامعك 🤍"],
+  s_ack:["فهمتك 🤍","تمام، أنا سامعك 🌸","ماشي 😊 احكي وقت ما تحب"],
   s_crisis:["اللي كتبته ده مهم ومش هعدّيه 🤍 إنت مش لوحدك. كلّم دلوقتي حد بتثق فيه من أهلك أو صحابك وقوله اللي جواك. ولو حاسس إنك في خطر، اطلب الإسعاف أو روح أقرب مستشفى."],
   s_anx:["الخوف ده مفهوم 🤍 خد نفس عميق وطلّعه براحة. إيه أكتر حاجة قلقاك بالظبط؟","القلق بيكبّر الحاجات. اكتب أسوأ حاجة ممكن تحصل، وبعدين اكتب هتتصرف إزاي. هتلاقيها أصغر","إنت عدّيت حاجات أصعب قبل كده. خطوة واحدة بس دلوقتي 🌱"],
   s_angry:["من حقك تتعصب 😤 طلّع كل اللي جواك هنا الأول","العصبية دي معناها إن في حاجة مهمة عندك اتداس عليها. إيه اللي ضايقك أكتر؟","اكتب كل اللي نفسك تقوله هنا، وبعد ما تهدى قرّر هتعمل إيه"],
@@ -556,6 +584,18 @@ const SOLO_MORE_M = {
   s_more:["وبعدين؟ كمّل 👂🏽","وإنت حسّيت بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
 };
 const SOLO_MORE_EN = {
+  s_hello:["Hi 👋 how's your day?","Hey 🤍 how are you doing?","Hello 🌸 tell me"],
+  d_greet:["All good 🤍 how about you?","Fine as long as you're writing to me 😄 How are you?"],
+  s_app:["Thank you 🤍 so glad you like it","That makes me happy 😄 It'll get even better","If there's something you'd like added, tell us in Feedback 🌸"],
+  s_fixed:["Yes, it's fixed 😄 Try it and tell me","Good 🤍 If anything else isn't right, tell me"],
+  s_wow:["😄😄 What did you like?","Nice, right? ✨","Wow indeed 🤩"],
+  s_meal:["Enjoy 😋","Sounds tasty 😋","Enjoy 🤍 don't forget some water too"],
+  s_nosay:["That's okay 🤍 we don't have to talk. I'm here whenever you like","Totally fine 🌸 your diary is here","Sometimes quiet is nice too 🤍"],
+  s_dunno:["That's okay 🤍 you don't have to know right now","No rush at all 🌸","No problem 😊 I'm here when you want to talk"],
+  s_no:["Okay 🤍 no need. I'm here whenever you like","Alright 🌸 whatever you like"],
+  s_no2:["Okay 🤍","Alright 🌸","Sure 🤍"],
+  s_yes:["Go on, tell me 👂🏽","I'm listening 🤍"],
+  s_ack:["Got it 🤍","Okay, I'm listening 🌸","Alright 😊 write whenever you like"],
   s_crisis:["What you wrote matters and I won't skip past it 🤍 You are not alone. Please talk right now to someone you trust, a family member or a friend, and tell them how you feel. If you think you are in danger, call emergency services or go to the nearest hospital."],
   s_anx:["That fear makes sense 🤍 Take one slow breath. What exactly is worrying you most?","Worry makes things look bigger. Write the worst that could happen, then how you would handle it. It often shrinks","You've got through harder things before. Just one step for now 🌱"],
   s_angry:["You're allowed to be angry 😤 Let it all out here first","Anger usually means something important to you got stepped on. What bothered you most?","Write everything you want to say here, then decide what to do once you've cooled down"],
@@ -590,7 +630,12 @@ const SOLO_MORE_EN = {
 const dSoloOn = () => !!(S && S.dSolo === true);
 let lastSolo = "";
 function soloTopic(text){
-  const n = " " + norm(String(text).toLowerCase()).replace(/[^\p{L}\p{N}']+/gu, " ").trim() + " ";
+  // "واوععع" = "واوع", "هاااي" = "هاي"
+  const n = " " + norm(String(text).toLowerCase()).replace(/[^\p{L}\p{N}']+/gu, " ").replace(/(\p{L})\1{2,}/gu, "$1").trim() + " ";
+  // كلام عن التطبيق نفسه
+  if (/ (?:ال)?(?:اب|ابلكيشن|ابليكيشن|برنامج|تطبيق|موقع|نونو|app|nono)/.test(n) && / (?:حلو|حلوه|جميل|جميله|تحفه|عسل|روعه|جامد|خطير|nice|great|amazing|cool|love|awesome)/.test(n)) return "s_app";
+  if (/ (?:اتصلح|اتصلحت|اتظبط|اتظبطت|بقي شغال|بقا شغال|اشتغل خلاص|fixed|works now)/.test(n)) return "s_fixed";
+  if (/^ (?:و+ا+و+ع*|واو|wo+w|wo+ah|ي+ا+ه+|ياي|yay|omg|يس|yes+s) $/.test(n)) return "s_wow";
   // a word counts when it isn't denied: not after "مش"/"not", and not inside a "ما…ش" verb. English words must start a word (short ones must be the whole word); a keyword ending in a space must end the word
   const hit = w => { const k = norm(w.toLowerCase()); let i = -1;
     while ((i = n.indexOf(k, i + 1)) !== -1){
@@ -604,18 +649,30 @@ function soloTopic(text){
   for (const [cat, words] of SOLO_TOPICS){ const c = words.filter(hit).length; if (cat === "s_crisis"){ if (c && !n.includes(" الضحك ") && !/ laugh/.test(n)) return cat; continue; } if (c > top){ top = c; best = cat; } }
   if (best) return best;
   // a one-word answer like "yes", "no", "ok": these are too short to search inside other words
-  if (/^ (?:اه|ايوه|ايوا|اكيد|لا|لأ|لاء|مش عارفه?|yes|yeah|yep|no|nope|maybe|ممكن) $/.test(n)) return "s_yesno";
+  if (/^ (?:لا|لأ|لاء|لا خلاص|no|nope|nah) $/.test(n)) return "s_no";
+  if (/^ (?:اه|ايوه|ايوا|اكيد|طبعا|yes|yeah|yep|sure) $/.test(n)) return "s_yes";
+  if (/^ (?:ممكن|يمكن|maybe) $/.test(n)) return "s_yesno";
   if (/[?؟]/.test(text)) return "s_q";
   const words = n.trim().split(" ").length;
   return words >= 25 ? "s_long" : words <= 4 ? "s_short" : "s_more";
 }
 function soloReply(text){
-  const cat = soloTopic(text), more = isEN() ? SOLO_MORE_EN : (isMale() ? SOLO_MORE_M : SOLO_MORE_F);
+  let cat = soloTopic(text);
+  const more = isEN() ? SOLO_MORE_EN : (isMale() ? SOLO_MORE_M : SOLO_MORE_F);
   // always the friend's voice, also for someone linked: the partner's own lines are handled before this
   const solo = isEN() ? SOLO_EN : (isMale() ? SOLO_M : SOLO_F);
+  // اللي اتقال قبل كده في الشات ده: منكررش نفس الرد، ولو آخر رد كان سؤال والرد قصير مش هنسأل تاني
+  const hist = (S.diary || []).filter(e => e.chat === S.chatId && e.from !== "him").slice(-10);
+  const recent = hist.map(e => e.reply || e.pending).filter(x => typeof x === "string");
+  const prev = recent[recent.length - 1] || lastSolo || "";
+  const asked = /[?؟]\s*\S*$/.test(prev.trim());
+  const prevCat = hist.length ? soloTopic(hist[hist.length - 1].text || "") : "";
+  if (cat === "s_no" && (prevCat === "s_no" || prevCat === "s_nosay")) cat = "s_no2";
+  else if ((cat === "s_short" || cat === "s_more" || cat === "s_yesno") && asked) cat = "s_ack";
+  else if (cat === "s_yes" && !asked) cat = "s_ok";
   const pool = (more[cat] || (solo[cat] && solo[cat].length ? solo[cat] : more.s_more)).filter(Boolean);
-  const fresh = pool.filter(t => t !== lastSolo);
-  return lastSolo = pick(fresh.length ? fresh : pool);
+  const fresh = pool.filter(t => !recent.includes(t) && t !== lastSolo);
+  return lastSolo = pick(fresh.length ? fresh : pool.filter(t => t !== prev).length ? pool.filter(t => t !== prev) : pool);
 }
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
