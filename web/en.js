@@ -115,4 +115,5 @@ export const EN = {
 "فودافون كاش":"Vodafone Cash","ومن أعمالي كمان (دوس وحمّله):":"More of my work (tap to download):","طُوبَى: قرآن وأذكار ومواقيت صلاة ومقاطع إسلامية":"Tuba: Quran, azkar, prayer times & Islamic clips"
 ,"🔔 شغّلي الإشعارات":"🔔 Unmute","🔕 كتم":"🔕 Mute","🔕 الشات ده اتكتم، مش هيجيلك منه إشعارات":"🔕 Chat muted, no notifications from it","🔔 الإشعارات رجعت للشات ده":"🔔 Notifications are back for this chat"
 ,"شغّلي الإشعارات":"Unmute","كتم":"Mute"
+,"رد":"Reply","إلغاء الرد":"Cancel reply","الرسالة دي مش ظاهرة":"That message isn't loaded"
 };

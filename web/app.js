@@ -1378,6 +1378,42 @@ function sendReact(mid, e){
   ctx.box.msgs = ctx.box.msgs.concat(m); keepTyping(render);
   fb.set(`${ctx.base}/${id}`, m, false).catch(() => { ctx.box.msgs = ctx.box.msgs.filter(x => x.id !== id); render(); toast("مقدرتش أبعت، اتأكدي من النت"); });
 }
+/* reply to a message: hold it, pick ↩️, and the new message carries rp:{ id, n, t } (who and what), shown as a small quote on top */
+let RP = null;
+const rpSelf = () => isEN() ? "You" : isMale() ? "إنت" : "إنتي";
+function rpBar(){
+  const ctx = chatCtx(); if (!RP || !ctx || RP.base !== ctx.base) return "";
+  return `<div class="rpbar"><span class="rpq"><b>↩️ ${esc(RP.from === UID ? rpSelf() : RP.n)}</b>${esc(RP.t)}</span><button type="button" class="x small" data-act="rp-x" aria-label="${isEN() ? "Cancel reply" : "إلغاء الرد"}">✕</button></div>`;
+}
+function rpQuote(m){
+  const q = m.rp; if (!q || typeof q !== "object" || !q.id) return "";
+  const n = q.from === UID ? rpSelf() : String(q.n || "").slice(0, 40), t = String(q.t || "").slice(0, 90);
+  return `<button type="button" class="rpq" data-act="rp-go" data-v="${rid(q.id)}"><b>${esc(n)}</b>${esc(t)}</button>`;
+}
+function rpTake(){ const ctx = chatCtx(); if (!RP || !ctx || RP.base !== ctx.base) return {}; const o = { rp:{ id:RP.id, from:RP.from, n:RP.n, t:RP.t } }; RP = null; return o; }
+function rpStart(mid){
+  const ctx = chatCtx(); if (!ctx) return; const m = ctx.box.msgs.find(x => rid(x.id) === rid(mid)); if (!m) return;
+  RP = { base:ctx.base, id:rid(m.id), from:m.from, n:String(m.name || ctx.members[m.from] || "").slice(0, 40), t:String(m.text || "").replace(/\s+/g, " ").slice(0, 90) };
+  keepTyping(render); setTimeout(() => { const i = document.querySelector(".composer textarea"); if (i) i.focus(); }, 30);
+}
+/* swipe a message sideways to reply to it (like WhatsApp): the bubble follows the finger, past 60px it's a reply */
+let swRp = null;
+document.addEventListener("touchstart", e => {
+  swRp = null; if (e.touches.length !== 1 || !e.target.closest) return;
+  const b = e.target.closest(".chat .msg[data-mid] .bub"); if (!b || e.target.closest("button, .og")) return;
+  const t = e.touches[0]; swRp = { b, m:b.closest(".msg"), x:t.clientX, y:t.clientY, dx:0, on:false };
+}, { passive:true });
+document.addEventListener("touchmove", e => {
+  if (!swRp) return; const t = e.touches[0], dx = t.clientX - swRp.x, dy = t.clientY - swRp.y;
+  if (!swRp.on){ if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)){ swRp = null; return; } if (Math.abs(dx) < 10) return; swRp.on = true; rxClose(); }
+  swRp.dx = Math.max(-80, Math.min(80, dx)); swRp.b.style.transition = "none"; swRp.b.style.transform = `translateX(${swRp.dx}px)`;
+  swRp.m.classList.toggle("rpgo", Math.abs(swRp.dx) >= 60);
+}, { passive:true });
+["touchend", "touchcancel"].forEach(ev => document.addEventListener(ev, () => {
+  if (!swRp) return; const r = swRp; swRp = null; if (!r.on) return;
+  r.b.style.transition = "transform .2s ease"; r.b.style.transform = ""; r.m.classList.remove("rpgo");
+  if (Math.abs(r.dx) >= 60){ if (navigator.vibrate) try { navigator.vibrate(10); } catch(err){} rpStart(r.m.dataset.mid); }
+}, { passive:true }));
 /* hold a finger on a message (or right-click on a computer) to pick a reaction */
 let rxTimer = 0, rxAt = null;
 function rxClose(){ const p = $("#rxpick"); if (p) p.remove(); }
@@ -1385,7 +1421,7 @@ function rxOpen(msgEl){
   rxClose(); const mid = msgEl.dataset.mid, b = msgEl.querySelector(".bub").getBoundingClientRect(), mine = (foldReacts((chatCtx() || {box:{msgs:[]}}).box.msgs).get(mid) || new Map()).get(UID);
   const p = document.createElement("div"); p.id = "rxpick"; p.setAttribute("role", "menu");
   const one = e => `<button type="button" role="menuitem" class="${e === mine ? "on" : ""}" data-act="react" data-v="${rid(mid)}|${e}">${e}</button>`;
-  p.innerHTML = `<div class="rxrow">${quickReacts().map(x => one(x[0])).join("")}<button type="button" class="rxmore" aria-label="${isEN() ? "More" : "رياكت تاني"}">➕</button></div>`;
+  p.innerHTML = `<div class="rxrow">${quickReacts().map(x => one(x[0])).join("")}<button type="button" class="rxmore" aria-label="${isEN() ? "More" : "رياكت تاني"}">➕</button><button type="button" class="rxreply" data-act="reply" data-v="${rid(mid)}" aria-label="${isEN() ? "Reply" : "رد"}">↩️</button></div>`;
   document.body.appendChild(p);
   const place = () => { const w = p.offsetWidth, h = p.offsetHeight, top = b.top - h - 8 < 70 ? Math.min(b.bottom + 8, innerHeight - h - 90) : b.top - h - 8;
     p.style.top = Math.max(8, top) + "px"; p.style.left = Math.max(8, Math.min(innerWidth - w - 8, b.left + b.width / 2 - w / 2)) + "px"; };
@@ -1416,7 +1452,7 @@ function chatBack(){ if (FR.open) openFriend(null); else if (GR.open) openGroup(
 let swAt = null;
 document.addEventListener("touchstart", e => {
   swAt = null; if (!inSubChat() || e.touches.length !== 1 || $("#layer").innerHTML || document.querySelector("#rxpick")) return;
-  if (e.target.closest && e.target.closest(".msg.og, textarea, input, select")) return; // لوحة اللعب والكتابة ليهم السحب بتاعهم
+  if (e.target.closest && e.target.closest(".msg.og, textarea, input, select, .chat .msg[data-mid] .bub")) return; // لوحة اللعب والكتابة ليهم السحب بتاعهم، والسحب على رسالة = رد
   const t = e.touches[0]; swAt = [t.clientX, t.clientY, Date.now()];
 }, { passive:true });
 document.addEventListener("touchend", e => {
@@ -1465,14 +1501,14 @@ function friendChatView(f){
     if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
-    out += m.from === UID ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
-      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div><button class="x small" data-act="fr-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
+    out += m.from === UID ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${rpQuote(m)}${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
+      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub">${rpQuote(m)}${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div><button class="x small" data-act="fr-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
   });
   const today = todayLog(FR.acts[oid]);
   return `<div class="row between"><button class="btn ghost small" data-act="fr-back">رجوع</button><span class="row" style="gap:6px">${muteBtn("f:" + f.id)}<button class="btn ghost small" data-act="fr-remove" data-v="${esc(f.id)}">شيلي من صحابي</button></span></div>
     <section class="hello"><h1>👭 ${on}</h1><p>${presTag(FR.acts[oid])}</p><p>${today.length ? "النهارده: " + today.map(x => esc(x.e + " " + x.t)).join(" · ") : "لسه مفيش حاجة النهارده"}</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">قولي أهلًا 👋</div>`}</div>
-    <form class="composer" data-form="frmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="ftext" rows="1" placeholder="اكتبي لـ ${on}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+    ${rpBar()}<form class="composer" data-form="frmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="ftext" rows="1" placeholder="اكتبي لـ ${on}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function openFriend(fid){
   if (FR.unsub){ try { FR.unsub(); } catch(e){} FR.unsub = null; }
@@ -1520,14 +1556,14 @@ function friendsView(){
     if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d), mine = m.from === UID;
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
-    out += mine ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
-      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub"><small class="from">${esc(m.name || "")}</small>${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div><button class="x small" data-act="g-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
+    out += mine ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${rpQuote(m)}${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
+      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub"><small class="from">${esc(m.name || "")}</small>${rpQuote(m)}${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div><button class="x small" data-act="g-report" data-v="${esc(m.id)}" aria-label="بلّغي" title="بلّغي">🚩</button></div>`;
   });
   const names = Object.values(g.names || {}).map(esc).join("، ");
   return `<div class="row between"><button class="btn ghost small" data-act="g-back">رجوع</button><span class="row" style="gap:6px">${muteBtn("g:" + g.id)}<button class="btn ghost small" data-act="g-info">الكود والأعضاء</button></span></div>
     <section class="hello"><h1>${esc(g.name)}</h1><p>${names}</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">قولوا أهلًا لبعض 👋</div>`}</div>
-    <form class="composer" data-form="gmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+    ${rpBar()}<form class="composer" data-form="gmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="gtext" rows="1" placeholder="اكتبي للجروب…" aria-label="اكتبي للجروب"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function coupleView(){
   let last = "", out = ""; const games = foldGames(CP.msgs), R = foldReacts(CP.msgs);
@@ -1536,14 +1572,14 @@ function coupleView(){
     if (m.g){ out += gameBubble(m, games); return; }
     const d = new Date(m.ts), dk = dkey(d), tm = tf(d);
     if (dk !== last){ last = dk; out += `<div class="daysep">${dk===dkey()?"النهارده":prettyDate(d)}</div>`; }
-    out += m.from === UID ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
-      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub">${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`;
+    out += m.from === UID ? `<div class="msg me" data-mid="${rid(m.id)}"><div class="bub">${rpQuote(m)}${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`
+      : `<div class="msg him" data-mid="${rid(m.id)}"><div class="bub">${rpQuote(m)}${esc(m.text)}<span class="tm num">${tm}</span>${reactRow(m.id, R)}</div></div>`;
   });
   const pn = esc(P.user ? P.user.name : "");
   return `${diarySwitch()}
     <section class="hello"><h1>${esc(S.user.name)} 💞 ${pn}</h1><p>${presTag(P.user)}</p><p>شاتكم إنتوا الاتنين بس، بعيد عن دفتر حكاياتي</p></section>
     <div class="chat" id="chat">${out || `<div class="empty">ابدئي إنتي وقولي ${P.user && P.user.gender==="f" ? "لها" : "له"} حاجة حلوة 💌</div>`}</div>
-    <form class="composer" data-form="cmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="ctext" rows="1" placeholder="اكتبي لـ ${pn}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
+    ${rpBar()}<form class="composer" data-form="cmsg"><button type="button" class="send play" data-act="og-menu" aria-label="ألعاب">🎮</button><textarea class="in" id="ctext" rows="1" placeholder="اكتبي لـ ${pn}…" aria-label="اكتبي رسالة"></textarea><button class="send" type="submit" aria-label="ابعتي">➤</button></form>`;
 }
 function actSaveItems(items){ const mine = FR.mine || {items:[], log:[]}; FR.mine = Object.assign({}, mine, {items}); render(); fb.set(`act/${UID}`, {items, log:mine.log||[], name:ME.name, seen:Date.now()}, false).catch(()=>toast("مقدرتش أحفظ")); }
 function keepTyping(fn){ const a = document.activeElement, id = a && a.id, val = id && a.value; fn(); if (id){ const el = document.getElementById(id); if (el){ el.value = val; el.focus(); } } }
@@ -2273,6 +2309,9 @@ document.addEventListener("click", e => {
     case "week-summary": weekSheet(); break;
     case "og-menu": onlineGamesSheet(); break;
     case "react": { const [mid, e] = String(v).split("|"); rxClose(); sendReact(mid, e); break; }
+    case "reply": { rxClose(); rpStart(v); break; }
+    case "rp-x": { RP = null; keepTyping(render); break; }
+    case "rp-go": { const el = document.querySelector(`.chat .msg[data-mid="${rid(v)}"]`); if (!el){ toast(isEN() ? "That message isn't loaded" : "الرسالة دي مش ظاهرة"); break; } el.scrollIntoView({ block:"center", behavior:"smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1400); break; }
     case "og-start": startGame(v); break;
     case "og-new": startGame(v); break;
     case "og": { const ctx = chatCtx(); if (!ctx) break; const [gid, what, a0] = String(v).split(":"), arg = what === "ans" ? (($("#oga-" + gid) || {}).value || "") : a0, st = foldGames(ctx.box.msgs).get(gid), g = gameAction(st, UID, what, arg);
@@ -2606,21 +2645,21 @@ document.addEventListener("submit", e => {
     case "actnew": { const t = val("act-t"); if (!t) return; const e = val("act-e") || "⭐"; actSaveItems(((FR.mine||{}).items||[]).concat({id:uid(), e, t})); closeSheet(); break; }
     case "frmsg": {
       const t = val("ftext"); const f = FR.list.find(x=>x.id===FR.open); if (!t || !f) return;
-      const id = uid() + uid(), m = {id, from:UID, name:ME.name, text:t, ts:Date.now()}, path = `friends/${f.id}/msgs/${id}`;
+      const id = uid() + uid(), m = Object.assign({id, from:UID, name:ME.name, text:t, ts:Date.now()}, rpTake()), path = `friends/${f.id}/msgs/${id}`;
       FR.msgs = FR.msgs.concat(m); keepTyping(render); $("#ftext").value = ""; $("#ftext").focus(); scrollChat();
       fb.set(path, m, false).then(() => { moderate(m, path, UID); if (!((FR.acts[friendOf(f)]||{}).mute||{})[f.id]) pushTo((f.topics||{})[friendOf(f)], `👭 ${ME.name}`, t); }).catch(() => { FR.msgs = FR.msgs.filter(x=>x.id!==id); render(); toast("مقدرتش أبعت"); });
       break;
     }
     case "cmsg": {
       const t = val("ctext"); if (!t || !P || !P.linked || !CP.cid) return;
-      const id = uid() + uid(), m = {id, from:UID, text:t, ts:Date.now()}, path = `couples/${CP.cid}/msgs/${id}`;
+      const id = uid() + uid(), m = Object.assign({id, from:UID, text:t, ts:Date.now()}, rpTake()), path = `couples/${CP.cid}/msgs/${id}`;
       CP.msgs = CP.msgs.concat(m); keepTyping(render); $("#ctext").value = ""; $("#ctext").focus(); scrollChat();
       fb.set(path, m, false).then(() => { moderate(m, path, UID); pushTo(P.user && P.user.ntfy, `💞 ${S.user.name}`, t); }).catch(() => { CP.msgs = CP.msgs.filter(x=>x.id!==id); render(); toast("مقدرتش أبعت، اتأكدي من النت"); });
       break;
     }
     case "gmsg": {
       const t = val("gtext"); if (!t || !GR.open) return;
-      const id = uid() + uid(), m = {id, from:UID, name:ME.name, text:t, ts:Date.now()}, path = `groups/${GR.open}/msgs/${id}`;
+      const id = uid() + uid(), m = Object.assign({id, from:UID, name:ME.name, text:t, ts:Date.now()}, rpTake()), path = `groups/${GR.open}/msgs/${id}`;
       GR.msgs = GR.msgs.concat(m); keepTyping(render); $("#gtext").value = ""; scrollChat();
       fb.set(path, m, false).then(() => { moderate(m, path, null); SEEN.mine.add(m.ts); const g = GR.list.find(x=>x.id===GR.open) || {}; fb.set(`groups/${GR.open}`, {last:m.ts, lastText:(ME.name + ": " + t).slice(0,70)}).catch(()=>{}); Object.entries(g.topics||{}).forEach(([k,tp]) => { if (k !== UID && (g.members||[]).includes(k)) pushTo(tp, `👭 ${g.name||""}`, ME.name + ": " + t); }); }).catch(() => toast("مقدرتش أبعت"));
       break;
