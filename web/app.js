@@ -315,7 +315,7 @@ function seed(){
     care:{[k]:{water:3,sleep:7}},
     diary:[{id:uid(),ts:addDays(t,-1).getTime(),text:"النهارده الدكتور شرح حتة صعبة أوي في المحاضرة بس فهمتها لوحدي 🥹",cat:"d_study",reply:"انا فخور بيكي يا بنوتي 🤏🏽"}],
     msgs:defMsgs("f"),
-    alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
+    alarm:{wake:"07:30", reminders:[{id:uid(),time:"20:00",text:"🐷 حوّشتي حاجة النهارده؟ ولو جنيه"},{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null
   };
 }
@@ -323,13 +323,16 @@ function blank(){
   return { v:1, theme:"basbousa", dark:"auto", lang:(()=>{ try { return localStorage.getItem("nw-lang") || "ar"; } catch(e){ return "ar"; } })(), pin:null, tab:"home", sample:false,
     money:{allowance:0, period:"month", expenses:[]}, schedule:[], tasks:[], subjects:[], sessions:[], exams:[], grades:[],
     moods:{}, care:{}, prayers:{}, cycle:{on:false, history:[]}, diary:[], msgs:defMsgs("f"), rules:[], share:{},
-    alarm:{wake:"07:30", reminders:[{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
+    alarm:{wake:"07:30", reminders:[{id:uid(),time:"20:00",text:"🐷 حوّشتي حاجة النهارده؟ ولو جنيه"},{id:uid(),time:"21:00",text:"سجّلتي مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}]},
     lastMorning:null, timer:null, chatId:"c0", durations:{focus:25, rest:5}, vacation:{on:false}, loveOff:false, stage:"uni", work:[],
     clock:"auto", pray:{on:true, remind:true, azkar:true, kahf:true, fast:false}, loc:null, nudge:{every:4}, azkarDone:{} };
 }
 function normalize(s, gender){
   const b = blank();
   for (const k in b) if (s[k] === undefined || s[k] === null && k !== "pin" && k !== "lastMorning" && k !== "timer") s[k] = b[k];
+  // تذكير التحويشة اتضاف بعدين: يتحط مرة واحدة للحسابات القديمة (وتقدر تمسحه من التذكيرات)
+  if (!s.savRem && s.alarm && Array.isArray(s.alarm.reminders)){ s.savRem = 1;
+    if (!s.alarm.reminders.some(r => /حوّش/.test(r.text || ""))) { s.alarm.reminders.push({id:uid(), time:"20:00", text:(gender || (s.user && s.user.gender)) === "m" ? "🐷 حوّشت حاجة النهارده؟ ولو جنيه" : "🐷 حوّشتي حاجة النهارده؟ ولو جنيه"}); s.alarm.reminders.sort((a,b)=>a.time<b.time?-1:1); } }
   const dm = defMsgs(gender, s.religionHint); for (const k in dm) if (k.startsWith("d_")) { if (!Array.isArray(s.msgs[k])) s.msgs[k] = []; } else if (!s.msgs[k] || !s.msgs[k].length) s.msgs[k] = dm[k];
   // love messages: lists nobody edited (only old default lines) move to the new, longer default list
   if (Array.isArray(s.msgs.love)){ const known = new Set(LOVE_OLD.concat(dm.love || [], DEFAULT_MSGS.love, DEFAULT_MSGS_M.love));
@@ -855,8 +858,19 @@ function notifyPartner(text, force){
   if (!force) try { const last = +localStorage.getItem("nw-alert") || 0; if (Date.now() - last < 3600e3) return; localStorage.setItem("nw-alert", Date.now()); } catch(e){}
   fetch("https://ntfy.sh/" + P.user.ntfy, {method:"POST", body:text, headers:{"Title":"Nono's World","Tags":"heart","Priority":"high"}}).catch(()=>{});
 }
+/* لينك دعوة باسم كل واحد: تعرف مين جاب مين */
+const SITE_URL = "https://teto-boday.github.io/nonos-world/";
+const cleanRef = (x) => { x = String(x || "").trim().replace(/^@/, "").toLowerCase(); return /^[a-z0-9_.]{3,20}$/.test(x) ? x : ""; };
+(() => { try { const r = cleanRef(new URLSearchParams(location.search).get("r")); if (r) localStorage.setItem("nw-ref", r); } catch(e){} })();
+const savedRef = () => { try { return cleanRef(localStorage.getItem("nw-ref")); } catch(e){ return ""; } };
+const myInvite = () => SITE_URL + "?r=" + encodeURIComponent((S && S.user && S.user.username) || (ME && ME.username) || "");
+async function shareApp(){
+  const url = myInvite(), text = isMale() ? "نزّل Nono's World 🌍 فلوسك ومذاكرتك ويومك في مكان واحد" : "نزّلي Nono's World 🌍 فلوسك ومذاكرتك ويومك في مكان واحد";
+  try { if (navigator.share) { await navigator.share({title:"Nono's World", text, url}); return; } } catch(e){ if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(text + "\n" + url); toast(isMale() ? "اتنسخ اللينك 📋 ابعته لصحابك" : "اتنسخ اللينك 📋 ابعتيه لصحابك"); } catch(e){ prompt("انسخي اللينك:", url); }
+}
 const genCode = () => (Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6)).toUpperCase().replace(/[O0I1]/g,"7").slice(0,6);
-async function signUp(name, username, pass, gender, religion = "muslim"){
+async function signUp(name, username, pass, gender, religion = "muslim", ref = ""){
   let resolveSU, rejectSU; signingUp = new Promise((r,j)=>{resolveSU=r; rejectSU=j;}); signingUp.catch(()=>{});
   try {
     let uidNew;
@@ -870,11 +884,12 @@ async function signUp(name, username, pass, gender, religion = "muslim"){
     }
     const code = genCode(), topic = "nw-" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     const me = {name, username:username.toLowerCase(), gender, partner:null, share:{}, invite:code, ntfy:topic, religion, createdAt:Date.now()};
+    ref = cleanRef(ref); if (ref && ref !== me.username) me.ref = ref; // مين اللي بعتله التطبيق
     // queued writes go out in order, so the user doc lands before the rest; no need to wait for the server here
     const meWrite = fb.set(`users/${uidNew}`, me, false);
     meWrite.catch(e => { console.warn("me write", e); toast("حصلت مشكلة في حفظ الحساب، جرّبي تاني"); });
     const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion); st.stage = U.stage || "uni";
-    if (gender === "m") st.alarm.reminders = [{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
+    if (gender === "m") st.alarm.reminders = [{id:uid(),time:"20:00",text:"🐷 حوّشت حاجة النهارده؟ ولو جنيه"},{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
     U.fresh = {uid:uidNew, me, st};
     try { localStorage.setItem("nw-welcome", uidNew); } catch(e){}
     resolveSU();
@@ -912,7 +927,7 @@ function notifSheet(){
     : d === "win" ? `<p>إنتي على الكمبيوتر ✅ الإشعارات شغالة لوحدها طول ما البرنامج شغال جنب الساعة.</p>`
     : `<p>إنتي فاتحة من المتصفح. علشان الإشعارات توصلك على الموبايل وهو مقفول، افتحي التطبيق من الموبايل وهيوريكي الطريقة. ولو عايزة على الكمبيوتر، نزّلي برنامج الويندوز من الموقع.</p>`;
   sheet(`<h2>🔔 خلّي الإشعارات توصلك</h2>
-    <p class="muted small" style="margin:-6px 0 6px">علشان رسايل ${P && P.linked ? "شريكك وصحابك" : "صحابك"} والجروبات توصلك حتى لو التطبيق مقفول خالص. دقيقة واحدة ومرة واحدة بس 💗</p>
+    <p class="muted small" style="margin:-6px 0 6px">علشان رسايل ${P && P.linked ? "شريكك وصحابك" : "صحابك"} والجروبات وتذكير التحويشة والمصاريف والصلاة توصلك حتى لو التطبيق مقفول خالص. دقيقة واحدة ومرة واحدة بس 💗</p>
     ${steps}
     <p class="muted small">🔒 الكود ده بتاعك إنتي بس، متقوليهوش لحد.</p>
     ${d === "ios" || d === "android" ? `<button class="btn ghost small block" style="margin-bottom:8px" data-act="notif-test">🧪 ابعتيلي إشعار تجربة</button>` : ""}
@@ -939,7 +954,8 @@ function startupChecks(){
       setTimeout(() => tryAz(0), 1500); } } catch(e){}
   setTimeout(vacationCheck, 300);
   setTimeout(() => { let snooze = 0; try { snooze = +localStorage.getItem("nw-ntfy-snooze") || 0; } catch(e){}
-    if (notifNeeded() && Date.now() > snooze && !$("#layer").innerHTML) notifSheet(); }, 2500);
+    let iosAsk = false; try { iosAsk = DEVICE() === "ios" && !localStorage.getItem("nw-ntfy-ios2"); if (iosAsk && notifNeeded()) localStorage.setItem("nw-ntfy-ios2", "1"); } catch(e){}
+    if (notifNeeded() && (Date.now() > snooze || iosAsk) && !$("#layer").innerHTML) notifSheet(); }, 2500); // على الأيفون بتطلع تاني مرة واحدة حتى لو قال "بعدين" قبل كده
   const t = new Date(), k = dkey(t), now = t.toTimeString().slice(0,5);
   if (!vacDue() && S.lastMorning !== k && now >= S.alarm.wake && t.getHours() < 14){ S.lastMorning = k; save(); setTimeout(morningSheet, 400); }
   else if (S.user.gender !== "m" && cycleOn() && S.lastCare !== k && !vacDue()){ S.lastCare = k; save(); setTimeout(() => message("🤍", pick(MS("period")), "دلع زيادة الأيام دي"), 500); }
@@ -1155,6 +1171,8 @@ function homeView(){
       <div class="big num" style="margin-top:8px">${fmt(Math.max(0,mi.left))} <small>${CUR()} فاضلين</small></div>
       <div class="muted small" style="margin-top:4px">${L.daily}: تقدري تصرفي النهارده <b class="num">${fmt(Math.max(0,mi.todayLeft))}</b> ${CUR()}</div>
     </button>
+
+    ${savMini()}
 
     <button class="card" data-act="tab" data-v="day" style="text-align:right;border:0">
       <div class="row between"><h3>${L.day}</h3><span class="pill">${doneN}/${today.length} ✅</span></div>
@@ -1759,7 +1777,7 @@ function adminView(){
   if (A.sel && A.st){
     const u = A.users.find(x=>x.id===A.sel) || {};
     return withState(A.st, () => dashboard({name:u.name||"", gender:u.gender, title:`👤 ${esc(u.name||"")} <small class="muted">@${esc(u.username||"")}</small>`, all:true, admin:true, fullChat:true, canReply:false,
-      banner:`<div class="banner"><span>👑 عرض إداري · ${u.partner?"مربوط بـ "+esc((A.users.find(x=>x.id===u.partner)||{}).name||"?"):"مش مربوط"}</span><button class="btn small" data-act="adm-back">رجوع</button></div>
+      banner:`<div class="banner"><span>👑 عرض إداري · ${u.partner?"مربوط بـ "+esc((A.users.find(x=>x.id===u.partner)||{}).name||"?"):"مش مربوط"}${u.ref?` · ↩️ جه عن طريق ${esc((A.users.find(x=>x.username===u.ref)||{}).name||"")} @${esc(u.ref)}`:" · ↩️ مش معروف جه منين"}${(() => { const k = A.users.filter(x=>x.ref && x.ref === u.username); return k.length ? " · 🎁 جاب: "+k.map(x=>esc(x.name)).join("، ") : ""; })()}${u.createdAt ? " · 📅 اتسجّل "+new Date(u.createdAt).toLocaleDateString("ar-EG") : ""}</span><button class="btn small" data-act="adm-back">رجوع</button></div>
       <div class="card" style="margin-bottom:10px"><h3>💌 رسالة خاصة تظهرله في شاشة الفتح</h3>
         <textarea class="in" id="adm-special" style="margin-top:8px" placeholder="إنتي أغلى وأجمل حاجة حصلتلي في الدنيا، أنا بجد آسف على كل اللي عملته">${escP(u.special||"")}</textarea>
         <button class="btn small" style="margin-top:8px" data-act="adm-special" data-v="${esc(u.id)}">حفظ الرسالة</button></div>
@@ -1809,12 +1827,12 @@ function adminView(){
   <div class="card"><div class="row between"><div><h3>⚡ نفّذ الطلبات دلوقتي</h3><p class="muted small" style="margin:4px 0 0">تغيير الباسورد واليوزر ومسح الحسابات. افتح الصفحة ودوس <b dir="ltr">Run workflow</b> مرتين، وبعد دقيقة يكون اتنفّذ.</p></div><a class="btn small" style="text-decoration:none" href="https://github.com/Teto-Boday/nonos-world/actions/workflows/reset.yml" target="_blank" rel="noopener">⚡ نفّذ دلوقتي</a></div></div>
   <div class="card"><h3>📣 ابعت رسالة للكل</h3><p class="muted small" style="margin:4px 0 10px">بتوصل إشعار للي عامل ntfy، وبتظهر جوه التطبيق للكل أول ما يفتحوه.</p>
     <form class="form" data-form="adm-bcast"><input class="in" id="ab-title" maxlength="60" placeholder="العنوان (اختياري)" aria-label="العنوان"><textarea class="in" id="ab-text" rows="3" required maxlength="500" placeholder="الرسالة" aria-label="الرسالة"></textarea>
-    <div class="seg"><button type="button" data-act="bc-to" data-v="all" aria-pressed="${(U.bcTo||"all")==="all"}">الكل</button><button type="button" data-act="bc-to" data-v="f" aria-pressed="${U.bcTo==="f"}">🎀 البنات</button><button type="button" data-act="bc-to" data-v="m" aria-pressed="${U.bcTo==="m"}">🧢 الولاد</button></div>
+    <div class="seg"><button type="button" data-act="bc-to" data-v="all" aria-pressed="${(U.bcTo||"all")==="all"}">الكل</button><button type="button" data-act="bc-to" data-v="f" aria-pressed="${U.bcTo==="f"}">🎀 البنات</button><button type="button" data-act="bc-to" data-v="m" aria-pressed="${U.bcTo==="m"}">🧢 الولاد</button><button type="button" data-act="bc-to" data-v="ios" aria-pressed="${U.bcTo==="ios"}">📱 الأيفون</button></div>
     <div class="item"><div class="grow"><div class="t">💬 يقدروا يردّوا عليها</div><div class="s">${U.bcReply ? "هيظهرلهم مكان يكتبوا فيه رد" : "إعلان بس، من غير رد"}</div></div><button type="button" class="switch" data-act="bc-reply" role="switch" aria-checked="${!!U.bcReply}" aria-label="يقدروا يردّوا"><i></i></button></div>
     <button class="btn" type="submit">📣 ابعت</button></form></div>
   <div class="card"><div class="row between"><h3>👥 الحسابات <span class="muted small">· 🟢 ${A.users.filter(u=>presence(u).c==="on").length} فاتحين دلوقتي · 🔴 ${A.users.filter(u=>presence(u).c==="off").length} غايبين أسبوع</span></h3><button class="btn ghost small" data-act="adm-reload">🔄</button></div>
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
-    <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t"><span class="pres ${presence(u).c}" title="${presence(u).t}"></span>${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">${presence(u).t} · @${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}</div></div></button></li>`).join("")}</ul></div>`;
+    <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t"><span class="pres ${presence(u).c}" title="${presence(u).t}"></span>${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">${presence(u).t} · @${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}${u.ref?" · ↩️ عن طريق @"+esc(u.ref):""}${(() => { const n = A.users.filter(x=>x.ref && x.ref === u.username).length; return n ? " · 🎁 جاب "+n : ""; })()}</div></div></button></li>`).join("")}</ul></div>`;
 }
 async function loadAdmin(){
   const A = U.admin;
@@ -1841,7 +1859,7 @@ let lastBeat = 0;
 function heartbeat(force){
   if (!CLOUD || !UID || !ME || document.visibilityState !== "visible") return;
   const now = Date.now(); if (!force && now - lastBeat < 3 * 6e4) return; lastBeat = now;
-  fb.set(`users/${UID}`, {seen:now}).catch(()=>{}); fb.set(`act/${UID}`, {seen:now, name:ME.name}).catch(()=>{});
+  fb.set(`users/${UID}`, {seen:now, dev:DEVICE()}).catch(()=>{}); fb.set(`act/${UID}`, {seen:now, name:ME.name}).catch(()=>{});
 }
 setInterval(heartbeat, 6e4);
 setInterval(() => { if (S && !$("#layer").innerHTML && (S.tab === "mate" || (S.tab === "diary" && U.dmode !== "me"))) keepTyping(render); }, 6e4);
@@ -1915,6 +1933,9 @@ function partnerCard(){
 function settingsView(){
   return `<section class="hello"><h1>الإعدادات ⚙️</h1><p>${esc(S.user.name)} · @${esc(S.user.username)}</p></section>
   ${IS_ADMIN ? `<button class="btn block" style="margin-bottom:12px" data-act="tab" data-v="admin">👑 لوحة التحكم</button>` : ""}
+  ${CLOUD ? `<div class="card"><h3>${isMale() ? "💌 ابعت التطبيق لصحابك" : "💌 ابعتي التطبيق لصحابك"}</h3><div style="height:10px"></div>
+    <div class="item" style="margin-bottom:8px"><div class="grow t num" dir="ltr" style="word-break:break-all;font-size:13px">${esc(myInvite())}</div><button class="mini" data-act="copy" data-v="${esc(myInvite())}">نسخ</button></div>
+    <button class="btn block" data-act="share-app">${isMale() ? "📤 ابعت اللينك" : "📤 ابعتي اللينك"}</button></div>` : ""}
   <div class="card"><h3>الثيم 🎨</h3>
     <div class="themes" style="margin-top:10px">${THEMES.map(t=>`<button data-act="theme" data-v="${t.k}" aria-pressed="${S.theme===t.k}"><span class="sw" style="background:linear-gradient(135deg,${t.a},${t.a2})"></span>${isEN() ? t.n : "\uE000" + t.n + "\uE001"}</button>`).join("")}</div>
     <div class="sectionlbl" style="margin:14px 4px 6px">🌙 الوضع الليلي</div>
@@ -2032,6 +2053,8 @@ function authView(){
       ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>
       <div class="seg" role="group" aria-label="بتدرسي فين"><button type="button" data-act="astage" data-v="uni" aria-pressed="${U.stage==="uni"}">جامعة 🎓</button><button type="button" data-act="astage" data-v="school" aria-pressed="${U.stage==="school"}">مدرسة 🎒</button><button type="button" data-act="astage" data-v="grad" aria-pressed="${U.stage==="grad"}">متخرّجة 💼</button></div>
       <div class="seg" role="group" aria-label="الديانة"><button type="button" data-act="arel" data-v="muslim" aria-pressed="${U.rel!=="christian"}">مسلمة</button><button type="button" data-act="arel" data-v="christian" aria-pressed="${U.rel==="christian"}">مسيحية</button></div>`}
+      ${login || !CLOUD ? "" : savedRef() ? `<input type="hidden" id="a-ref" value="${esc(savedRef())}">` /* جاي من لينك دعوة: بيتسجّل لوحده ومن غير ما يظهر أو يتغير */
+        : `<label class="f">مين اللي بعتلك التطبيق؟ (اختياري)<input class="in" id="a-ref" dir="ltr" placeholder="مثلًا nono" maxlength="21" autocapitalize="none" autocorrect="off" spellcheck="false"></label>`}
       <div class="notice" id="a-err" style="display:none;color:var(--bad);font-weight:700"></div>
       <button class="btn" type="submit" ${U.busy?"disabled":""}>${U.busy?"لحظة…":login?"ادخلي":"اعملي حساب"}</button>
       ${login?"":`<div class="notice">🔒 بتسجيلك، إنتي موافقة إن بياناتك محفوظة أونلاين، وإن صاحب التطبيق يقدر يوصلها لأغراض الإدارة ومنع الإساءة.</div>`}
@@ -2105,6 +2128,16 @@ function forgotSheet(){
     <label class="f">حاجة تأكد إنه حسابك (اختياري)<input class="in" id="fg-note" maxlength="140" placeholder="اسمك في التطبيق، اسم شريكك…"></label>
     <button class="btn" type="submit" id="fg-btn">ابعتي الطلب</button>
   </form>`);
+}
+// التحويشة في الرئيسية: الرصيد وزرار تحوّشي على طول
+function savMini(){
+  const tot = savTotal();
+  return `<div class="card sav-mini">
+    <div class="row between"><h3>🐷 التحويشة</h3><span class="pill good">🔒 متجمدة</span></div>
+    <div class="big num" style="margin-top:8px">${fmt(tot)} <small>${CUR()}</small></div>
+    <div class="muted small" style="margin-top:4px">${tot ? "متجمدة لوقت الزنقة 💪" : "لسه فاضية، حطّي حاجة صغيرة على جنب"}</div>
+    <div class="row" style="gap:8px;margin-top:10px"><button class="btn small" data-act="sav-add">＋ حوّشي</button><button class="btn ghost small" data-act="tab" data-v="money">التفاصيل</button></div>
+  </div>`;
 }
 function savCard(){
   const tot = savTotal(), last = savList().slice(-4).reverse();
@@ -2446,6 +2479,7 @@ document.addEventListener("click", e => {
     case "report": { const e = S.diary.find(x=>x.id===v); if (!e) break; fb.add("reports", {kind:"report", path:`u/${UID}/chat/${v}`, owner:UID, author:ME.partner||null, by:UID, text:e.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
     case "forgot": forgotSheet(); break;
     case "adm-open": adminOpen(v); break;
+    case "share-app": shareApp(); break;
     case "adm-copen": { const A = U.admin, u = A.users.find(x=>x.id===v); if (!u || !u.partner) break; const cid = coupleId(u.id, u.partner), o = A.users.find(x=>x.id===u.partner) || {};
       A.gcouple = {name:`💞 ${u.name||""} و ${o.name||"?"}`, members:[u.id, u.partner]}; A.gback = v; A.gsel = "c:" + cid; A.gpath = `couples/${cid}/msgs`; A.gmsgs = null; render();
       fb.list(A.gpath, 2000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; toast("مقدرتش أحمّل الرسايل"); }).then(()=>{ if (A.gsel === "c:" + cid) render(); }); window.scrollTo({top:0}); break; }
@@ -2775,7 +2809,7 @@ document.addEventListener("submit", e => {
       if (!/^[A-Za-z0-9_.]{3,20}$/.test(user)){ const er = $("#a-err"); er.textContent = gx("اسم المستخدم من 3 لـ 20 حرف إنجليزي أو رقم", authBoy()); er.style.display = "block"; return; }
       const nm = val("a-name") || user;
       U.busy = true; render();
-      const p = U.authMode === "login" ? fb.signIn(user, pass) : signUp(nm, user, pass, U.ag || "f", U.rel || "muslim");
+      const p = U.authMode === "login" ? fb.signIn(user, pass) : signUp(nm, user, pass, U.ag || "f", U.rel || "muslim", val("a-ref"));
       p.then(() => { U.busy = false; }).catch(err => { U.busy = false; render(); const er = $("#a-err"); if (er){ er.textContent = gx(authError(err), authBoy()); er.style.display = "block"; } });
       break;
     }
@@ -2790,7 +2824,7 @@ document.addEventListener("submit", e => {
     case "adm-notify": { const u = U.admin.users.find(x=>x.id===f.dataset.v), t = val("an-text"); if (!u || !t) return;
       adminSend([u], "💌 رسالة من Nono's World", t, U.anReply !== false).then(n => { $("#an-text").value = ""; toast(`✅ اتبعتت لـ ${u.name}${u.ntfy ? "" : " (هتظهرله أول ما يفتح، علشان معملش ntfy)"}`); }); break; }
     case "adm-bcast": { const t = val("ab-text"), title = val("ab-title") || "📣 Nono's World"; if (!t) return; const to = U.bcTo || "all";
-      const list = U.admin.users.filter(u => !u.banned && (to === "all" || (u.gender||"f") === to));
+      const list = U.admin.users.filter(u => !u.banned && (to === "all" || (to === "ios" ? u.dev === "ios" : (u.gender||"f") === to)));
       adminSend(list, title, t, !!U.bcReply).then(() => { $("#ab-text").value = ""; $("#ab-title").value = ""; toast(`✅ اتبعتت لـ ${list.length} حساب`); }); break; }
     case "amsg-reply": { const t = val("amr-text"); if (!t) return;
       fb.add("feedback", {uid:UID, name:ME.name, kind:"reply", re:(f.dataset.v || "").slice(0, 60), text:t, at:Date.now()}).then(()=>{ closeSheet(); toast("اتبعت ردّك 💌"); }).catch(()=>toast("مقدرتش أبعت، اتأكدي من النت")); break; }
@@ -2953,6 +2987,19 @@ function schedulePushIOS(){
   try { localStorage.setItem("nw-ntfy-h2", String(to)); } catch(e){}
   ME.ntfyH = to; fb.set(`users/${UID}`, {ntfyH:to}).catch(()=>{});
 }
+// iPhone: تذكيراتك (التحويشة والمصاريف والمذاكرة...) بتوصل كإشعارات ntfy متأجلة، بنفس الطريقة
+function scheduleRemIOS(){
+  if (!CLOUD || !ME || !ME.ntfy || DEVICE() !== "ios" || !notifDone() || !S || !S.alarm) return;
+  const now = Date.now(); let h = +(ME.ntfyR || 0); try { h = Math.max(h, +localStorage.getItem("nw-ntfy-r") || 0); } catch(e){}
+  if (h > now + 12 * 36e5) return;
+  const from = Math.max(h, now + 6e4), to = now + 36 * 36e5, out = [];
+  for (let d = new Date(from); d.getTime() <= to + 864e5; d = addDays(d, 1)) (S.alarm.reminders || []).forEach(r => {
+    const [hh, mm] = String(r.time || "").split(":").map(Number); if (isNaN(hh)) return;
+    const at = new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm || 0).getTime(); if (at > from && at <= to) out.push([at, r.text]); });
+  out.slice(0, 30).forEach(([at, text]) => fetch(`https://ntfy.sh/${ME.ntfy}?title=${encodeURIComponent("Nono's World 🌍")}&delay=${Math.floor(at / 1000)}`, {method:"POST", body:text}).catch(()=>{}));
+  try { localStorage.setItem("nw-ntfy-r", String(to)); } catch(e){}
+  ME.ntfyR = to; fb.set(`users/${UID}`, {ntfyR:to}).catch(()=>{});
+}
 /* ================= reminders & alarm (native on Android, in-app elsewhere) ================= */
 const LN = () => window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
 let lastSchedule = "";
@@ -3008,8 +3055,8 @@ function inAppReminders(){
 }
 setInterval(inAppReminders, 20000);
 setInterval(scheduleNative, 15000);
-setInterval(() => { try { schedulePushIOS(); } catch(e){} }, 10 * 6e4);
-setTimeout(() => { try { schedulePushIOS(); } catch(e){} }, 8000);
+setInterval(() => { try { schedulePushIOS(); scheduleRemIOS(); } catch(e){} }, 10 * 6e4);
+setTimeout(() => { try { schedulePushIOS(); scheduleRemIOS(); } catch(e){} }, 8000);
 
 
 /* ================= page tours: a ring around each thing, one tab at a time, shown once per device ================= */
