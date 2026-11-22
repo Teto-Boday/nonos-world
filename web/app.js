@@ -840,7 +840,12 @@ function setupPartner(){
     render();
   }, () => { P.linked = false; render(); }));
 }
-function linkRequestSheet(d){
+/* سجل الطلبات (ارتباط وصداقة) بيفضل محفوظ حتى بعد القبول أو الرفض، والأدمن بس اللي بيشوفه */
+function reqLog(kind, from, to, fromName, toName, result){
+  if (!CLOUD || !UID || !from || !to) return;
+  fb.add("reqLog", {kind, from, to, fromName:String(fromName||"").slice(0,40), toName:String(toName||"").slice(0,40), result, by:UID, at:Date.now()}).catch(()=>{});
+}
+function linkRequestSheet(d){ U.linkReq = d;
   sheet(`<div class="popmsg"><div class="em">💞</div><p>${esc(d.name)} عايز يربط حسابه بيكي</p><small>لو وافقتي هيقدر يشوف الأقسام اللي إنتي مفعّلاها في "شريكي يشوف إيه"، وتقدري تغيّريها أو تفكّي الربط في أي وقت.</small></div>
   <div class="form" style="margin-top:14px"><button class="btn" data-act="link-accept" data-v="${esc(d.from)}">💞 موافقة</button><button class="btn ghost" data-act="link-decline">لأ</button></div>`);
 }
@@ -851,6 +856,7 @@ async function sendCode(code){
   if (inv.uid === UID) return toast("ده الكود بتاعك إنت 😅");
   await saveMe({partner: inv.uid});
   await fb.set(`linkRequests/${inv.uid}`, {from:UID, name:ME.name, at:Date.now()}, false);
+  reqLog("link", UID, inv.uid, ME.name, inv.name, "sent");
   closeSheet(); toast("اتبعت الطلب لـ " + inv.name + " 💌"); setupPartner();
 }
 function notifyPartner(text, force){
@@ -1822,7 +1828,11 @@ function adminView(){
     <label class="f">🎀 للبنات<textarea class="in" id="cfg-cheer-f" rows="5" placeholder="إنتي قدها 💪">${escP(((CFG.cheer||{}).f||[]).join("\n"))}</textarea></label>
     <label class="f" style="margin-top:8px">🧢 للولاد<textarea class="in" id="cfg-cheer-m" rows="5" placeholder="كمّل يا بطل 🔥">${escP(((CFG.cheer||{}).m||[]).join("\n"))}</textarea></label>
     <button class="btn block" style="margin-top:10px" data-act="adm-cheer">حفظ التشجيع للكل</button></div>
-  <div class="card"><h3>👭 الصحاب</h3><ul class="list" style="margin-top:10px">${(A.friends||[]).length ? A.friends.map(f=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-fopen" data-v="${esc(f.id)}"><span class="ic">${f.status==="ok"?"👭":"⏳"}</span><div class="grow"><div class="t">${Object.values(f.names||{}).map(esc).join(" و ")}</div><div class="s">${f.status==="ok"?"صحاب":"طلب لسه"}</div></div></button></li>`).join("") : `<li class="empty">مفيش صحاب لسه</li>`}</ul></div>
+  <div class="card"><h3>💞 طلبات ارتباط لسه متقبلتش</h3><ul class="list" style="margin-top:10px">${(A.links||[]).length ? A.links.slice().sort((a,b)=>(b.at||0)-(a.at||0)).map(r=>{ const to = A.users.find(x=>x.id===r.id) || {}; return `<li class="item"><span class="ic">💌</span><div class="grow"><div class="t">${esc(admName(r.from, r.name))} ← بعت لـ ${esc(admName(r.id, to.name))}</div><div class="s">${to.gender==="m"?"لسه مقبلش":"لسه مقبلتش"}${r.at?" · "+agoAr(r.at):""}</div></div></li>`; }).join("") : `<li class="empty">${A.links === null ? "مقدرتش أجيبهم (محتاج تحديث قواعد Firebase)" : "مفيش طلبات مستنية ✨"}</li>`}</ul></div>
+  <div class="card"><h3>📜 سجل الطلبات</h3><p class="muted small" style="margin:4px 0 0">كل طلب ارتباط أو صداقة: اتبعت، اتقبل، اترفض، اتلغى، أو اتفك.</p><ul class="list" style="margin-top:10px">${(A.rlog||[]).length ? A.rlog.slice(0, 150).map(r=>{ const R = {sent:["⏳","بعت"], accepted:["✅","اتقبل"], declined:["❌","اترفض"], cancelled:["↩️","اتلغى"], unlinked:["💔","اتفك"], unfriended:["👋","اتشال من الصحاب"]}[r.result] || ["•", r.result], k = r.kind === "link" ? "💞 ارتباط" : "👭 صداقة";
+    return `<li class="item"><span class="ic">${R[0]}</span><div class="grow"><div class="t">${esc(admName(r.from, r.fromName))} ← ${esc(admName(r.to, r.toName))}</div><div class="s">${k} · ${R[1]}${r.at?" · "+agoAr(r.at):""}</div></div></li>`; }).join("") : `<li class="empty">${A.rlog === null ? "مقدرتش أجيبه (محتاج تحديث قواعد Firebase)" : "لسه مفيش حاجة، هيبدأ يتسجّل من دلوقتي"}</li>`}</ul></div>
+  <div class="card"><h3>👭 الصحاب</h3><ul class="list" style="margin-top:10px">${(A.friends||[]).length ? A.friends.slice().sort((a,b)=>(a.status==="ok")-(b.status==="ok") || (b.at||0)-(a.at||0)).map(f=>{ const to = (f.members||[]).find(m=>m!==f.from), toU = A.users.find(x=>x.id===to) || {};
+    return `<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-fopen" data-v="${esc(f.id)}"><span class="ic">${f.status==="ok"?"👭":"⏳"}</span><div class="grow"><div class="t">${f.status==="ok" ? Object.values(f.names||{}).map(esc).join(" و ") : `${esc(admName(f.from, (f.names||{})[f.from]))} ← بعت لـ ${esc(admName(to, toU.name))}`}</div><div class="s">${f.status==="ok"?"صحاب":(toU.gender==="m"?"طلب صداقة · لسه مقبلش":"طلب صداقة · لسه مقبلتش")+(f.at?" · "+agoAr(f.at):"")}</div></div></button></li>`; }).join("") : `<li class="empty">مفيش صحاب لسه</li>`}</ul></div>
   <div class="card"><h3>📦 نسخة من كل البيانات</h3><p class="muted small" style="margin:6px 0 10px">ملف فيه كل الحسابات وبياناتهم وشاتاتهم والجروبات والبلاغات والآراء.</p><button class="btn ghost block" data-act="adm-export">⬇️ نزّل كل البيانات</button></div>
   <div class="card"><div class="row between"><div><h3>⚡ نفّذ الطلبات دلوقتي</h3><p class="muted small" style="margin:4px 0 0">تغيير الباسورد واليوزر ومسح الحسابات. افتح الصفحة ودوس <b dir="ltr">Run workflow</b> مرتين، وبعد دقيقة يكون اتنفّذ.</p></div><a class="btn small" style="text-decoration:none" href="https://github.com/Teto-Boday/nonos-world/actions/workflows/reset.yml" target="_blank" rel="noopener">⚡ نفّذ دلوقتي</a></div></div>
   <div class="card"><h3>📣 ابعت رسالة للكل</h3><p class="muted small" style="margin:4px 0 10px">بتوصل إشعار للي عامل ntfy، وبتظهر جوه التطبيق للكل أول ما يفتحوه.</p>
@@ -1834,15 +1844,17 @@ function adminView(){
     <input class="in" id="adm-q" placeholder="دوّر بالاسم أو اليوزر" value="${esc(A.q)}" style="margin-top:10px">
     <ul class="list" style="margin-top:10px">${list.map(u=>`<li><button class="item" style="width:100%;border:0;text-align:right" data-act="adm-open" data-v="${esc(u.id)}"><span class="ic">${u.gender==="m"?"🧢":"🎀"}</span><div class="grow"><div class="t"><span class="pres ${presence(u).c}" title="${presence(u).t}"></span>${esc(u.name)} ${u.banned?"⛔":""}</div><div class="s">${presence(u).t} · @${esc(u.username)}${u.partner?" · 💞 "+esc((A.users.find(x=>x.id===u.partner)||{}).name||""):""}${u.ref?" · ↩️ عن طريق @"+esc(u.ref):""}${(() => { const n = A.users.filter(x=>x.ref && x.ref === u.username).length; return n ? " · 🎁 جاب "+n : ""; })()}</div></div></button></li>`).join("")}</ul></div>`;
 }
+const admName = (id, fallback) => { const u = (U.admin.users||[]).find(x=>x.id===id); return u ? u.name + " @" + u.username : (fallback || "؟"); };
+const agoAr = (t) => { const p = presence({seen:t}); return p.t === "فاتح دلوقتي" ? "دلوقتي" : p.t; };
 async function loadAdmin(){
   const A = U.admin;
   // everything in parallel, each with a time limit, so one slow list never blocks the panel
   const lim = (pr, ms = 12000) => Promise.race([pr, new Promise((_, j) => setTimeout(() => j(new Error("timeout")), ms))]);
   const get = (p, n, o) => lim(fb.list(p, n, o)).catch(() => null);
-  const [users, reports, feedback, resets, groups, friends] = await Promise.all([get("users", 1000), get("reports", 200), get("feedback", 100, "at"), get("resetRequests", 100), get("groups", 300), get("friends", 500)]);
+  const [users, reports, feedback, resets, groups, friends, links, rlog] = await Promise.all([get("users", 1000), get("reports", 200), get("feedback", 100, "at"), get("resetRequests", 100), get("groups", 300), get("friends", 500), get("linkRequests", 300), lim(fb.list("reqLog", 400, "at")).catch(() => null)]);
   if (!users) toast("النت بطيء، مقدرتش أحمّل الحسابات، اسحب لتحت أو دوس 🔄");
   A.users = (users || []).filter(u=>!u.deleting).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  A.reports = reports || []; A.feedback = feedback || []; A.resets = resets || []; A.groups = groups || []; A.friends = friends || [];
+  A.reports = reports || []; A.feedback = feedback || []; A.resets = resets || []; A.groups = groups || []; A.friends = friends || []; A.links = links; A.rlog = rlog; // null = القواعد لسه مش سامحة
   if (S.tab === "admin") render();
 }
 /* green dot + "open now" for partner and friends */
@@ -2473,9 +2485,9 @@ document.addEventListener("click", e => {
     }
     case "logout": try { localStorage.removeItem("nw-name"); } catch(e){} U.authMode = "login"; closeSheet(); $("#tabs")?.remove(); if (CLOUD){ pushNow(); fb.signOut(); } else { S.user = null; save(); render(); } break;
     case "copy": { (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(()=>toast("اتنسخ ✅")).catch(()=>toast(v)); break; }
-    case "unlink": { if (!CLOUD) break; const pid = ME.partner; saveMe({partner:null}); fb.del(`linkRequests/${pid}`).catch(()=>{}); setupPartner(); render(); toast("اتفك الربط"); break; }
-    case "link-accept": { saveMe({partner:v}); fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); setupPartner(); toast("اتربطتوا 💞"); break; }
-    case "link-decline": { fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); break; }
+    case "unlink": { if (!CLOUD) break; const pid = ME.partner; reqLog("link", UID, pid, ME.name, P && P.user ? P.user.name : "", "unlinked"); saveMe({partner:null}); fb.del(`linkRequests/${pid}`).catch(()=>{}); setupPartner(); render(); toast("اتفك الربط"); break; }
+    case "link-accept": { reqLog("link", v, UID, (U.linkReq||{}).name, ME.name, "accepted"); saveMe({partner:v}); fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); setupPartner(); toast("اتربطتوا 💞"); break; }
+    case "link-decline": { if (U.linkReq) reqLog("link", U.linkReq.from, UID, U.linkReq.name, ME.name, "declined"); fb.del(`linkRequests/${UID}`).catch(()=>{}); closeSheet(); break; }
     case "report": { const e = S.diary.find(x=>x.id===v); if (!e) break; fb.add("reports", {kind:"report", path:`u/${UID}/chat/${v}`, owner:UID, author:ME.partner||null, by:UID, text:e.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>toast("مقدرتش أبعت البلاغ")); break; }
     case "forgot": forgotSheet(); break;
     case "adm-open": adminOpen(v); break;
@@ -2550,7 +2562,7 @@ document.addEventListener("click", e => {
         <p class="muted small" style="margin-top:10px">🔒 صحابك بيشوفوا بس "عملتي إيه النهارده" اللي بتدوسي عليه، وشاتكم. مش بيشوفوا دفترك ولا فلوسك ولا مذاكرتك ولا أي حاجة تانية.</p>`)).catch(() => toast("مقدرتش، اتأكدي من النت"));
       break;
     }
-    case "fr-accept": { const f = FR.list.find(x=>x.id===v); if (!f) break; fb.set(`friends/${v}`, {status:"ok", names:Object.assign({}, f.names||{}, {[UID]:ME.name}), topics:Object.assign({}, f.topics||{}, {[UID]:ME.ntfy||""})}).then(()=>toast("بقيتوا صحاب 👭")).catch(()=>toast("مقدرتش")); break; }
+    case "fr-accept": { const f = FR.list.find(x=>x.id===v); if (!f) break; reqLog("friend", f.from, UID, (f.names||{})[f.from], ME.name, "accepted"); fb.set(`friends/${v}`, {status:"ok", names:Object.assign({}, f.names||{}, {[UID]:ME.name}), topics:Object.assign({}, f.topics||{}, {[UID]:ME.ntfy||""})}).then(()=>toast("بقيتوا صحاب 👭")).catch(()=>toast("مقدرتش")); break; }
     case "mute": {
       const on = !isMuted(v); if (on) MUTE[v] = 1; else delete MUTE[v];
       try { localStorage.setItem("nw-mute", JSON.stringify(MUTE)); } catch(e){}
@@ -2561,7 +2573,9 @@ document.addEventListener("click", e => {
     }
     case "fr-remove": { const f = FR.list.find(x=>x.id===v); if (!f) break; const nm = esc((f.names||{})[friendOf(f)] || "");
       sheet(`<h2>${f.status === "ok" ? "تشيلي " + nm + " من صحابك؟" : "تلغي الطلب؟"}</h2><div class="form"><button class="btn danger" data-act="fr-remove-ok" data-v="${esc(v)}">أيوه</button><button class="btn ghost" data-act="close">لأ</button></div>`); break; }
-    case "fr-remove-ok": closeSheet(); if (FR.open === v) openFriend(null); fb.del(`friends/${v}`).catch(()=>toast("مقدرتش")); break;
+    case "fr-remove-ok": { const f = FR.list.find(x=>x.id===v); if (f){ const o = friendOf(f), on = (f.names||{})[o] || "";
+        if (f.status === "ok") reqLog("friend", UID, o, ME.name, on, "unfriended"); else if (f.from === UID) reqLog("friend", UID, o, ME.name, on, "cancelled"); else reqLog("friend", o, UID, on, ME.name, "declined"); } }
+      closeSheet(); if (FR.open === v) openFriend(null); fb.del(`friends/${v}`).catch(()=>toast("مقدرتش")); break;
     case "fr-report": { const m = FR.msgs.find(x=>x.id===v); if (!m) break; fb.add("reports", {kind:"user", path:`friends/${FR.open}/msgs/${v}`, owner:m.from, author:m.from, by:UID, text:m.text}).then(()=>toast("اتبعت البلاغ 🚩")).catch(()=>{}); break; }
     case "act-do": {
       const mine = FR.mine || {items:[], log:[]}, it = (mine.items||[]).find(x=>x.id===v); if (!it) break;
@@ -2732,7 +2746,8 @@ document.addEventListener("submit", e => {
         if (inv.uid === UID) return toast("ده الكود بتاعك إنتي 😅");
         const pid = coupleId(UID, inv.uid), ex = FR.list.find(x=>x.id===pid);
         if (ex && ex.status === "ok") return toast("إنتوا صحاب أصلًا 👭");
-        if (ex && ex.from !== UID) return fb.set(`friends/${pid}`, {status:"ok", names:Object.assign({}, ex.names||{}, {[UID]:ME.name}), topics:Object.assign({}, ex.topics||{}, {[UID]:ME.ntfy||""})}).then(()=>{ closeSheet(); toast("بقيتوا صحاب 👭"); });
+        if (ex && ex.from !== UID) { reqLog("friend", ex.from, UID, (ex.names||{})[ex.from], ME.name, "accepted"); } if (ex && ex.from !== UID) return fb.set(`friends/${pid}`, {status:"ok", names:Object.assign({}, ex.names||{}, {[UID]:ME.name}), topics:Object.assign({}, ex.topics||{}, {[UID]:ME.ntfy||""})}).then(()=>{ closeSheet(); toast("بقيتوا صحاب 👭"); });
+        reqLog("friend", UID, inv.uid, ME.name, inv.name, "sent");
         return fb.set(`friends/${pid}`, {members:[UID, inv.uid].sort(), names:{[UID]:ME.name}, topics:{[UID]:ME.ntfy||""}, from:UID, status:"pending", at:Date.now()}, false)
           .then(() => { closeSheet(); toast("اتبعت الطلب لـ " + inv.name + " 💌"); });
       }).catch(() => toast("مقدرتش، جرّبي تاني"));
