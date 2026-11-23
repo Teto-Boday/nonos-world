@@ -1709,6 +1709,8 @@ function adminExtra(){
     ${isMuslim() ? `<div class="muted small" style="margin-top:8px">🕌 صلوات النهارده: ${PRAYERS.map(([p,t]) => `${(S.prayers[dkey()]||{})[p] ? "✅" : "⬜"} ${t}`).join(" · ")}</div>` : `<div class="muted small" style="margin-top:8px">مسيحية، الصلاة مش ظاهرة عندها</div>`}
     ${S.user.gender !== "m" ? `<div class="muted small" style="margin-top:6px">🤍 البريود: ${cycleOn() ? `شغال من ${esc(cyc.start||"")} (${cyc.days||7} أيام)` : "مش شغال دلوقتي"}${hist.length ? " · اللي فات: " + hist.map(h => `${esc(h.start)} (${h.days}ي)`).join("، ") : ""}</div>` : ""}
     <div class="muted small" style="margin-top:6px">⚙️ كلام الحب: ${S.loveOff ? "مقفول" : "شغال"} · ${stage()==="grad" ? "متخرّج" : stage()==="school" ? "مدرسة" : "جامعة"} · العملة: ${S.currency==="usd" ? "دولار" : "جنيه"} · الثيم: ${esc(S.theme||"")}</div>
+    ${(() => { const L2 = savList(), dep = L2.filter(x=>x.amt>0), out = L2.filter(x=>x.amt<0), last = dep.slice().sort((a,b)=>a.date<b.date?1:-1)[0];
+      return `<div class="muted small" style="margin-top:6px">🐷 التحويشة: ${L2.length ? `<b class="num">${fmt(savTotal())}</b> ${CUR()} · حوّش ${dep.length} مرة${last ? ` (آخر مرة ${esc(last.date)})` : ""}${out.length ? ` · فكّ ${out.length} مرة بـ <span class="num">${fmt(-out.reduce((a,x)=>a+x.amt,0))}</span> ${CUR()}` : ""}` : "لسه مبدأش"}</div>`; })()}
     ${(S.work||[]).length ? `<div class="muted small" style="margin-top:6px">💼 الشغل: ${(S.work||[]).map(w => `${w.done?"✅":"⬜"} ${esc(w.title)}`).join(" · ")}</div>` : ""}
   </div>`;
 }
