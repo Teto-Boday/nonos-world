@@ -1694,7 +1694,7 @@ function dashboard(o){
     <ul class="list" style="margin-top:10px">${grades.map(g=>{const p=g.score/g.total*100;return `<li class="item"><div class="grow t">${esc(g.type)} ${esc(g.subject)}</div><span class="pill ${p>=75?"good":p>=50?"warn":"bad"} num">${g.score} من ${g.total}</span></li>`}).join("")}</ul></div>`:lock(L.study)}
   <div class="grid2">
     ${sh("day")?`<div class="card"><h3>${L.day}</h3><ul class="list" style="margin-top:8px">${tasks.length?tasks.map(x=>`<li class="item ${x.status||""}"><div class="grow t">${esc(x.title)}</div><span class="small">${x.status==="done"?"✅":x.status==="lazy"?"🙈":"⏳"}</span></li>`).join(""):`<li class="empty">مفيش مهمات النهارده</li>`}</ul></div>`:lock(L.day)}
-    ${sh("money")?`<div class="card"><div class="row between"><h3>الفلوس</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div><div class="big num" style="margin-top:8px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div></div>`:lock("الفلوس")}
+    ${sh("money")?`<div class="card"><div class="row between"><h3>الفلوس</h3><span class="pill ${mi.state==="ok"?"good":mi.state==="near"?"warn":"bad"}">${L.left[mi.state]}</span></div><div class="big num" style="margin-top:8px">${fmt(mi.left)} <small>${CUR()} فاضلين</small></div><div class="muted small" style="margin-top:6px">🐷 ${savTotal() ? `${fem ? "محوّشة" : "محوّش"} <b class="num">${fmt(savTotal())}</b> ${CUR()}` : `لسه ${fem ? "محوّشتش" : "محوّشش"}`}</div></div>`:lock("الفلوس")}
   </div>
   ${o.footer||""}`, o.gender);
 }
