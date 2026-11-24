@@ -430,3 +430,8 @@ img{-webkit-user-drag:none}
 .chat .msg[data-mid]{position:relative}
 .chat .msg.rpgo::before{content:"↩️";position:absolute;top:50%;inset-inline-end:-4px;transform:translateY(-50%);font-size:20px;opacity:.9}
 .chat .msg.me.rpgo::before{inset-inline-end:auto;inset-inline-start:-4px}
+
+/* الرئيسية: الصلاة أصغر */
+.prayers.compact{gap:4px;margin-top:4px}
+.prayers.compact button{padding:4px 0;font-size:12px;border-radius:10px}
+.prayers.compact .ptime{font-size:10.5px}

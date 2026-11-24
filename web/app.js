@@ -1197,13 +1197,9 @@ function homeView(){
 
     <div class="card">
       <h3>${L.care}</h3>
-      <div class="sectionlbl" style="margin:8px 0 4px">💧 كوبايات المية</div>
-      <div class="cups">${Array.from({length:8},(_,i)=>`<button data-act="water" data-v="${i+1}" class="${i<care.water?"f":""}" aria-label="${i+1} كوباية">💧</button>`).join("")}</div>
-      <div class="row between wrap" style="margin-top:10px"><span class="sectionlbl" style="margin:0">${S.user.gender === "m" ? "💪" : "💅"} اهتميتي بنفسك النهارده</span><span class="muted small num">${care.stars||0} من 5</span></div>
-      <div class="stars" style="margin-top:4px">${Array.from({length:5},(_,i)=>`<button data-act="star" data-v="${i+1}" class="${i<(care.stars||0)?"f":""}" aria-label="${i+1} نجوم">⭐</button>`).join("")}</div>
-      <div class="row between" style="margin-top:10px"><span class="sectionlbl" style="margin:0">😴 نمتي كام ساعة؟</span>
+      <div class="row between" style="margin-top:6px"><span class="sectionlbl" style="margin:0">😴 نمتي كام ساعة؟</span>
         <div class="row"><button class="mini" data-act="sleep" data-v="-1" aria-label="أقل">−</button><b class="num">${care.sleep}</b><button class="mini" data-act="sleep" data-v="1" aria-label="أكتر">+</button></div></div>
-      ${prayersBlock(k)}
+      ${prayersBlock(k, true)}
       ${S.user.gender !== "m" ? cycleBlock() : ""}
     </div>
   </div>
@@ -1686,7 +1682,7 @@ function dashboard(o){
   ${upset?`<div class="card alert"><h3>🚨 ${name} ${fem?"مضايقة":"مضايق"}</h3><p class="small" style="margin:4px 0 10px">${m&&(mood==="sad"||mood==="stressed")?`${fem?"اختارت":"اختار"} ${m.e} ${m.t} النهارده`:(fem?"كتبت":"كتب")+" حكاية زعلانة"}، ${fem?"كلّمها":"كلّمه"} 🤍</p><button class="btn small" ${send}>💌 ابعت كلمة</button></div>`:""}
   <div class="grid2">
     ${sh("mood")?`<div class="card"><h3>النفسيه</h3><div class="big" style="margin-top:6px">${m?m.e+` <small>${m.t}</small>`:`<small>لسه ${fem?"مختارتش":"مختارش"}</small>`}</div></div>`:lock("النفسيه")}
-    ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.water||0}</b><span>💧 كوباية</span></div><div class="stat"><b class="num">${care.stars||0}/5</b><span>⭐ اهتمام</span></div><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات</span></div></div>${(o.gender !== "m" && cycleOn()) || !isMuslim() ? "" : `<div class="muted small" style="margin-top:8px">الصلاة: <b class="num">${PRAYERS.filter(([p])=>(S.prayers[k]||{})[p]).length}</b> من 5</div>`}</div>`:lock(L.care)}
+    ${sh("care")?`<div class="card"><h3>${L.care}</h3><div class="stats" style="margin-top:8px"><div class="stat"><b class="num">${care.sleep||0}</b><span>😴 ساعات نوم</span></div></div>${(o.gender !== "m" && cycleOn()) || !isMuslim() ? "" : `<div class="muted small" style="margin-top:8px">الصلاة: <b class="num">${PRAYERS.filter(([p])=>(S.prayers[k]||{})[p]).length}</b> من 5</div>`}</div>`:lock(L.care)}
   </div>
   ${sh("diary")?`<div class="card"><div class="row between"><h3>${L.diary}</h3><button class="btn small" ${send}>ردّ بنفسك 💌</button></div>
     <div class="chat" style="padding-bottom:0;margin-top:10px">${chat.length?chat.map(e=>{const tm=tf(new Date(e.ts)); const flag = o.admin && e.flagged ? " 🚩" : "";
@@ -1705,10 +1701,10 @@ function adminExtra(){
   const days = Array.from({length:7}, (_,i) => dkey(addDays(new Date(), -i)));
   const short = k => SHORT[fromKey(k).getDay()] + " " + fromKey(k).getDate();
   const rows = days.map(k => { const pr = S.prayers[k] || {}, c = S.care[k] || {}, m = MOODS.find(x=>x.k===S.moods[k]);
-    return `<tr><td>${short(k)}</td>${isMuslim() ? `<td class="num">${PRAYERS.filter(([p])=>pr[p]).length}/5</td>` : ""}<td>${m ? m.e : "·"}</td><td class="num">${c.water||0}💧</td><td class="num">${c.sleep||0}س</td><td class="num">${c.stars||0}⭐</td>${S.user.gender !== "m" ? `<td>${cycleOn(k) ? "🤍" : ""}</td>` : ""}</tr>`; }).join("");
+    return `<tr><td>${short(k)}</td>${isMuslim() ? `<td class="num">${PRAYERS.filter(([p])=>pr[p]).length}/5</td>` : ""}<td>${m ? m.e : "·"}</td><td class="num">${c.sleep||0}س</td>${S.user.gender !== "m" ? `<td>${cycleOn(k) ? "🤍" : ""}</td>` : ""}</tr>`; }).join("");
   const cyc = S.cycle || {}, hist = (cyc.history||[]).slice(-6).reverse();
   return `<div class="card"><h3>👑 كل حاجة (آخر 7 أيام)</h3>
-    <div style="overflow-x:auto;margin-top:8px"><table class="admtbl"><tr><th>اليوم</th>${isMuslim() ? "<th>الصلاة</th>" : ""}<th>المود</th><th>مية</th><th>نوم</th><th>اهتمام</th>${S.user.gender !== "m" ? "<th>بريود</th>" : ""}</tr>${rows}</table></div>
+    <div style="overflow-x:auto;margin-top:8px"><table class="admtbl"><tr><th>اليوم</th>${isMuslim() ? "<th>الصلاة</th>" : ""}<th>المود</th><th>نوم</th>${S.user.gender !== "m" ? "<th>بريود</th>" : ""}</tr>${rows}</table></div>
     ${isMuslim() ? `<div class="muted small" style="margin-top:8px">🕌 صلوات النهارده: ${PRAYERS.map(([p,t]) => `${(S.prayers[dkey()]||{})[p] ? "✅" : "⬜"} ${t}`).join(" · ")}</div>` : `<div class="muted small" style="margin-top:8px">مسيحية، الصلاة مش ظاهرة عندها</div>`}
     ${S.user.gender !== "m" ? `<div class="muted small" style="margin-top:6px">🤍 البريود: ${cycleOn() ? `شغال من ${esc(cyc.start||"")} (${cyc.days||7} أيام)` : "مش شغال دلوقتي"}${hist.length ? " · اللي فات: " + hist.map(h => `${esc(h.start)} (${h.days}ي)`).join("، ") : ""}</div>` : ""}
     <div class="muted small" style="margin-top:6px">⚙️ كلام الحب: ${S.loveOff ? "مقفول" : "شغال"} · ${stage()==="grad" ? (jobOn() ? "مش بيدرس (شغال)" : "مش بيدرس") : stage()==="school" ? "مدرسة" : "جامعة"} · العملة: ${S.currency==="usd" ? "دولار" : "جنيه"} · الثيم: ${esc(S.theme||"")}</div>
@@ -1718,7 +1714,7 @@ function adminExtra(){
     ${(S.work||[]).length ? `<div class="muted small" style="margin-top:6px">💼 الشغل: ${(S.work||[]).map(w => `${w.done?"✅":"⬜"} ${esc(w.title)}`).join(" · ")}</div>` : ""}
   </div>`;
 }
-function prayersBlock(k){
+function prayersBlock(k, compact){
   if (!isMuslim()) return "";
   const pr = S.prayers[k] || {}, n = PRAYERS.filter(([p])=>pr[p]).length;
   if (S.user.gender !== "m" && cycleOn(k)) return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small">معذورة الأيام دي، ربنا يتقبل منك</span></div>
@@ -1726,8 +1722,8 @@ function prayersBlock(k){
   const tt = timesFor(fromKey(k)), nx = k === dkey() ? nextPrayer() : null, fri = new Date().getDay() === 5 && k === dkey();
   return `<div class="row between" style="margin-top:12px"><span class="sectionlbl" style="margin:0">الصلاة</span><span class="muted small num">${n} من 5</span></div>
     ${nx ? (isEN() ? `<div class="muted small" style="margin:2px 4px 6px">🕌 Next: <b>${nx.n}</b> at <b class="num">${hhmm(nx.at)}</b> · in ${inMins(nx.at - Date.now())}</div>` : `<div class="muted small" style="margin:2px 4px 6px">🕌 الجاية: <b>${nx.n}</b> الساعة <b class="num">${hhmm(nx.at)}</b> · بعد ${inMins(nx.at - Date.now())} <span style="opacity:.7">(${esc(myLoc().name)})</span></div>`) : ""}
-    <div class="prayers">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}<small class="num ptime">${hhmm(tt[p])}</small></button>`).join("")}</div>
-    ${k === dkey() && !isEN() ? `<div class="hadith">📜 ${esc(hadithAt(Math.floor(Date.now() / 864e5) * 3 + new Date().getHours() % 3))}</div>` : ""}
+    <div class="prayers${compact ? " compact" : ""}">${PRAYERS.map(([p,t])=>`<button data-act="pray" data-v="${p}" aria-pressed="${!!pr[p]}">${t}<small class="num ptime">${hhmm(tt[p])}</small></button>`).join("")}</div>
+    ${k === dkey() && !isEN() && !compact ? `<div class="hadith">📜 ${esc(hadithAt(Math.floor(Date.now() / 864e5) * 3 + new Date().getHours() % 3))}</div>` : ""}
     ${k === dkey() ? `<div class="row wrap" style="gap:8px;margin-top:8px"><button class="btn ghost small" data-act="azkar" data-v="${azkarNow()}">📿 ${azkarNow() === "m" ? "أذكار الصباح" : "أذكار المساء"}</button>${fri ? `<a class="btn ghost small" style="text-decoration:none" href="https://quran.com/ar/18" target="_blank" rel="noopener">📖 سورة الكهف</a>` : ""}</div>` : ""}`;
 }
 function cycleBlock(){
