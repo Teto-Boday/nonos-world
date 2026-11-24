@@ -48,7 +48,7 @@ const MOODS = [
 const CATS = [
   {k:"food",e:"🍔",t:"أكل",c:"#f08a5d"},{k:"ride",e:"🚕",t:"مواصلات",c:"#f6c445"},{k:"clothes",e:"👗",t:"لبس",c:"#e85d8a"},
   {k:"uni",e:"📚",t:"كلية",c:"#7f6ad6"},{k:"out",e:"🎡",t:"خروجات",c:"#43b3ae"},{k:"gift",e:"🎁",t:"هدايا",c:"#d65aa0"},
-  {k:"care", get e(){ return (typeof S !== "undefined" && S && S.user && S.user.gender === "m") ? "🧴" : "💄"; }, get t(){ return (typeof S !== "undefined" && S && S.user && S.user.gender === "m") ? "عناية شخصية" : "ميكب وعناية"; }, c:"#ff9fb7"},{k:"other",e:"✨",t:"حاجات تانية",c:"#a3a3b5"}
+  {k:"care", get e(){ return (typeof S !== "undefined" && S && S.user && S.user.gender === "m") ? "🧴" : "💄"; }, get t(){ return (typeof S !== "undefined" && S && S.user && S.user.gender === "m") ? "عناية شخصية" : "ميكب وعناية"; }, c:"#ff9fb7"},{k:"fuel",e:"⛽",t:"بنزين",c:"#e07a3f"},{k:"fix",e:"🔧",t:"صيانة",c:"#6f8fa8"},{k:"other",e:"✨",t:"حاجات تانية",c:"#a3a3b5"}
 ];
 const GTYPES = ["كويز","ميدترم","فاينل"];
 const SHARE = [["mood","النفسيه 💭"],["diary","دفتر حكاياتي 📔"],["study","المذاكرة والدرجات 📚"],["day","يومي ومهماتي 🗓️"],["money","الفلوس 💸"],["care","الدلع"]];
@@ -191,7 +191,7 @@ const MASC = {"إنتي":"إنت","انتي":"انت","وانتي":"وانت","�
 "اتأكدي":"اتأكد","اتبسطي":"اتبسط","احفظي":"احفظ","واحفظي":"واحفظ","واحفظيه":"واحفظه","اختاري":"اختار","تختاري":"تختار","بتختاري":"بتختار","ادخلي":"ادخل","تدخلي":"تدخل",
 "اربطي":"اربط","ارتاحي":"ارتاح","استخدمي":"استخدم","استمتعي":"استمتع","اشربي":"اشرب","اصرفي":"اصرف","اعملي":"اعمل","اكتبي":"اكتب","اكتبيه":"اكتبه","تكتبي":"تكتب",
 "الصقي":"الصق","امسحي":"امسح","انسخي":"انسخ","وانسخي":"وانسخ","وانسخيه":"وانسخه","تنسخيها":"تنسخها","اهتميتي":"اهتميت","بتذاكريها":"بتذاكرها","تذاكري":"تذاكر",
-"بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","سجّلتي":"سجّلت","تصرفي":"تصرف",
+"بتعافري":"بتعافر","بقيتي":"بقيت","بلّغي":"بلّغ","بيكي":"بيك","تخلّصي":"تخلّص","تزعلي":"تزعل","تسجّلي":"تسجّل","سجّلي":"سجّل","بتشتغلي":"بتشتغل","دفعتي":"دفعت","بتكسبي":"بتكسب","اشتغلتي":"اشتغلت","وشوفي":"وشوف","طالبة":"طالب","وبتشتغلي":"وبتشتغل","وشغالة":"وشغال","تبقي":"تبقى","محوّشة":"محوّش","مفعّلة":"مفعّل","واعرفي":"واعرف","بتسجّليها":"بتسجّلها","سجّلتي":"سجّلت","تصرفي":"تصرف",
 "تصرفيهم":"تصرفهم","صرفتي":"صرفت","صرفتيهم":"صرفتهم","تعالي":"تعالى","تعبانة":"تعبان","تغيّريها":"تغيّرها","غيّري":"غيّر","تفكّي":"تفكّ","فكّي":"فكّ","فكّيه":"فكّه",
 "تقدري":"تقدر","وتقدري":"وتقدر","تقفلي":"تقفل","تقفليه":"تقفله","تنسي":"تنسى","جبتي":"جبت","جرّبي":"جرّب","ودوسي":"ودوس","تردّي":"تردّ","ردّك":"ردّك","ابعتي":"ابعت","افتحيه":"افتحه","حابة":"حابب","ناوية":"ناوي","تصومي":"تصوم","تتسحّري":"تتسحّر","تقوليه":"تقوله","صلّيتي":"صلّيت","معلّمتيش":"معلّمتش","تقري":"تقرا","قوليها":"قولها","وقوليها":"وقولها","تحددي":"تحدد","اختاري":"اختار","تسجّلي":"تسجّل","تعرفي":"تعرف","معاكي":"معاك","متنسيش":"متنساش","سجّليها":"سجّلها","تنسي":"تنسى","والزقي":"والزق","متقوليهوش":"متقولهوش","فاتحة":"فاتح","وهيوريكي":"وهيوريك","عايزة":"عايز","نزّلي":"نزّل","والزقي":"والزق","فعّلي":"فعّل","فاتحة":"فاتح","يوريكي":"يوريك","وهيوريكي":"وهيوريك","متقوليهوش":"متقولهوش","افتحي":"افتح","متخرّجة":"متخرّج","بتدرسي":"بتدرس","وراكي":"وراك","هتدخلي":"هتدخل","وجرّبي":"وجرّب","حابة":"حابب","حطّي":"حطّ","حكيتي":"حكيت",
 "خليكي":"خليك","خلّيكي":"خلّيك","خلّصتي":"خلّصت","دلّعتي":"دلّعت","دوسي":"دوس","ذاكرتي":"ذاكرت","رجّعي":"رجّع","رجّعيها":"رجّعها","زعلانة":"زعلان","سيبيها":"سيبها",
@@ -894,8 +894,9 @@ async function signUp(name, username, pass, gender, religion = "muslim", ref = "
     // queued writes go out in order, so the user doc lands before the rest; no need to wait for the server here
     const meWrite = fb.set(`users/${uidNew}`, me, false);
     meWrite.catch(e => { console.warn("me write", e); toast("حصلت مشكلة في حفظ الحساب، جرّبي تاني"); });
-    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion); st.stage = U.stage || "uni";
+    const st = blank(); st.theme = gender === "m" ? "leil" : "basbousa"; st.msgs = defMsgs(gender, religion); st.stage = U.stage || "uni"; st.newsSeen = NEWS_V; try { localStorage.setItem("nw-news", NEWS_V); } catch(e){}
     if (gender === "m") st.alarm.reminders = [{id:uid(),time:"20:00",text:"🐷 حوّشت حاجة النهارده؟ ولو جنيه"},{id:uid(),time:"21:00",text:"سجّلت مصاريف النهارده؟ 💸"},{id:uid(),time:"18:00",text:"يلا حبه جد 📚"}];
+    if (U.job) { st.money.job = {type:U.job}; st.jobRem = 1; st.alarm.reminders.push({id:uid(), time:"23:00", text:gender === "m" ? "💼 قفلت يوم الشغل؟ شوف فضل معاك كام النهارده" : "💼 قفلتي يوم الشغل؟ شوفي فضل معاكي كام النهارده"}); }
     U.fresh = {uid:uidNew, me, st};
     try { localStorage.setItem("nw-welcome", uidNew); } catch(e){}
     resolveSU();
@@ -961,7 +962,8 @@ function startupChecks(){
   setTimeout(vacationCheck, 300);
   setTimeout(() => { let snooze = 0; try { snooze = +localStorage.getItem("nw-ntfy-snooze") || 0; } catch(e){}
     let iosAsk = false; try { iosAsk = DEVICE() === "ios" && !localStorage.getItem("nw-ntfy-ios2"); if (iosAsk && notifNeeded()) localStorage.setItem("nw-ntfy-ios2", "1"); } catch(e){}
-    if (notifNeeded() && (Date.now() > snooze || iosAsk) && !$("#layer").innerHTML) notifSheet(); }, 2500); // على الأيفون بتطلع تاني مرة واحدة حتى لو قال "بعدين" قبل كده
+    if (notifNeeded() && (Date.now() > snooze || iosAsk) && !$("#layer").innerHTML) notifSheet(); }, 2500);
+  setTimeout(() => { if (!$("#layer").innerHTML && newsDue()) newsSheet(); }, 4000); // إعلان الجديد: مرة واحدة لكل إصدار // على الأيفون بتطلع تاني مرة واحدة حتى لو قال "بعدين" قبل كده
   const t = new Date(), k = dkey(t), now = t.toTimeString().slice(0,5);
   if (!vacDue() && S.lastMorning !== k && now >= S.alarm.wake && t.getHours() < 14){ S.lastMorning = k; save(); setTimeout(morningSheet, 400); }
   else if (S.user.gender !== "m" && cycleOn() && S.lastCare !== k && !vacDue()){ S.lastCare = k; save(); setTimeout(() => message("🤍", pick(MS("period")), "دلع زيادة الأيام دي"), 500); }
@@ -1179,6 +1181,7 @@ function homeView(){
     </button>
 
     ${savMini()}
+    ${jobCard()}
 
     <button class="card" data-act="tab" data-v="day" style="text-align:right;border:0">
       <div class="row between"><h3>${L.day}</h3><span class="pill">${doneN}/${today.length} ✅</span></div>
@@ -1711,6 +1714,7 @@ function adminExtra(){
     <div class="muted small" style="margin-top:6px">⚙️ كلام الحب: ${S.loveOff ? "مقفول" : "شغال"} · ${stage()==="grad" ? "متخرّج" : stage()==="school" ? "مدرسة" : "جامعة"} · العملة: ${S.currency==="usd" ? "دولار" : "جنيه"} · الثيم: ${esc(S.theme||"")}</div>
     ${(() => { const L2 = savList(), dep = L2.filter(x=>x.amt>0), out = L2.filter(x=>x.amt<0), last = dep.slice().sort((a,b)=>a.date<b.date?1:-1)[0];
       return `<div class="muted small" style="margin-top:6px">🐷 التحويشة: ${L2.length ? `<b class="num">${fmt(savTotal())}</b> ${CUR()} · حوّش ${dep.length} مرة${last ? ` (آخر مرة ${esc(last.date)})` : ""}${out.length ? ` · فكّ ${out.length} مرة بـ <span class="num">${fmt(-out.reduce((a,x)=>a+x.amt,0))}</span> ${CUR()}` : ""}` : "لسه مبدأش"}</div>`; })()}
+    ${jobOn() ? (() => { const w = jobStats(weekStartKey(), dkey()); return `<div class="muted small" style="margin-top:6px">🚗 شغل الأسبوع: ${jobTrip() ? `${w.trips} توصيلة · دخل <span class="num">${fmt(w.income)}</span> · مصاريف <span class="num">${fmt(w.spent)}</span> · صافي <b class="num">${fmt(w.net)}</b>` : `مصاريف شغل <b class="num">${fmt(w.spent)}</b>${+job().salary ? ` من مرتب <span class="num">${fmt(job().salary)}</span>` : ""}`}</div>`; })() : ""}
     ${(S.work||[]).length ? `<div class="muted small" style="margin-top:6px">💼 الشغل: ${(S.work||[]).map(w => `${w.done?"✅":"⬜"} ${esc(w.title)}`).join(" · ")}</div>` : ""}
   </div>`;
 }
@@ -2003,6 +2007,7 @@ function settingsView(){
     <div class="seg">${[["auto","زي الموبايل"],["12","12 ساعة (2:30 م)"],["24","24 ساعة (14:30)"]].map(([k,t])=>`<button data-act="clock" data-v="${k}" aria-pressed="${(S.clock||"auto")===k}">${t}</button>`).join("")}</div></div>
   <div class="card"><h3>📍 بتدرسي فين؟</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط المذاكرة والجدول على حسابك.</p>
     <div class="seg"><button data-act="set-stage" data-v="uni" aria-pressed="${stage()==="uni"}">جامعة 🎓</button><button data-act="set-stage" data-v="school" aria-pressed="${stage()==="school"}">مدرسة 🎒</button><button data-act="set-stage" data-v="grad" aria-pressed="${stage()==="grad"}">متخرّجة 💼</button></div></div>
+  ${jobSettings()}
   ${partnerCard()}
   ${CLOUD && ME ? `<div class="card"><h3>🔔 الإشعارات والتطبيق مقفول</h3><p class="muted small" style="margin:4px 0 0">${isEN() ? "Messages from your partner, groups and alerts reach you even when the app is fully closed." : `رسايل ${ME.gender==="m" ? "\uE000شريكتك\uE001" : "شريكك"} والجروبات والتنبيهات توصلك حتى لو التطبيق مقفول خالص.`}</p>
     <ol class="small" style="margin:8px 0 0;padding-inline-start:18px;line-height:1.9"><li>نزّل تطبيق <b>ntfy</b> (موجود على Google Play وApp Store ومتاح للكمبيوتر).</li><li>دوس <b>+</b> واكتب الاسم ده بالظبط:</li></ol>
@@ -2082,6 +2087,7 @@ function authView(){
       <label class="f">الباسورد<span class="pwwrap"><input class="in" id="a-pass" type="password" required minlength="6" autocomplete="${login?"current-password":"new-password"}" dir="ltr"><button type="button" class="pweye" data-act="showpw" aria-label="إظهار الباسورد">${EYE_SHUT}</button></span></label>
       ${login?"":`<div class="seg" role="group" aria-label="أنا"><button type="button" data-act="agender" data-v="f" aria-pressed="${(U.ag||"f")==="f"}">أنا بنت 🎀</button><button type="button" data-act="agender" data-v="m" aria-pressed="${U.ag==="m"}">أنا شاب 🧢</button></div>
       <div class="seg" role="group" aria-label="بتدرسي فين"><button type="button" data-act="astage" data-v="uni" aria-pressed="${U.stage==="uni"}">جامعة 🎓</button><button type="button" data-act="astage" data-v="school" aria-pressed="${U.stage==="school"}">مدرسة 🎒</button><button type="button" data-act="astage" data-v="grad" aria-pressed="${U.stage==="grad"}">متخرّجة 💼</button></div>
+      <div class="seg" role="group" aria-label="بتشتغلي"><button type="button" data-act="ajob" data-v="" aria-pressed="${!U.job}">مش بشتغل</button><button type="button" data-act="ajob" data-v="trip" aria-pressed="${U.job==="trip"}">🚗 بشتغل بالتوصيلة</button><button type="button" data-act="ajob" data-v="salary" aria-pressed="${U.job==="salary"}">📅 بشتغل بمرتب</button></div>
       <div class="seg" role="group" aria-label="الديانة"><button type="button" data-act="arel" data-v="muslim" aria-pressed="${U.rel!=="christian"}">مسلمة</button><button type="button" data-act="arel" data-v="christian" aria-pressed="${U.rel==="christian"}">مسيحية</button></div>`}
       ${login || !CLOUD ? "" : savedRef() ? `<input type="hidden" id="a-ref" value="${esc(savedRef())}">` /* جاي من لينك دعوة: بيتسجّل لوحده ومن غير ما يظهر أو يتغير */
         : `<label class="f">مين اللي بعتلك التطبيق؟ (اختياري)<input class="in" id="a-ref" dir="ltr" placeholder="مثلًا nono" maxlength="21" autocapitalize="none" autocorrect="off" spellcheck="false"></label>`}
@@ -2158,6 +2164,97 @@ function forgotSheet(){
     <label class="f">حاجة تأكد إنه حسابك (اختياري)<input class="in" id="fg-note" maxlength="140" placeholder="اسمك في التطبيق، اسم شريكك…"></label>
     <button class="btn" type="submit" id="fg-btn">ابعتي الطلب</button>
   </form>`);
+}
+/* ================= 💼 شغلي: للي بيشتغل جنب الدراسة =================
+   بالتوصيلة (أوبر، توصيل طلبات، فريلانس): كل توصيلة دخل، والبنزين والأكل مصاريف
+   بمرتب (شركة، محل، سوبر ماركت): بيسجّل أكل ومواصلات الشغل ويشوف نسبتهم من المرتب
+   كله في نفس محفظة الفلوس: الدخل من "فلوس جاتلك" والمصاريف من المصاريف، ومتعلّم عليهم job */
+const JOB_EXP = [["fuel","⛽","بنزين"],["food","🍔","أكل"],["ride","🚕","مواصلات"],["fix","🔧","صيانة"],["other","➕","حاجة تانية"]];
+const job = () => (S.money.job || {});
+const jobOn = () => !!job().type;
+const jobTrip = () => job().type === "trip";
+const weekStartKey = () => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 1) % 7)); return dkey(d); }; // الأسبوع من السبت
+const monthStartKey = () => { const d = new Date(); return dkey(new Date(d.getFullYear(), d.getMonth(), 1)); };
+function jobStats(sk, ek){
+  const inc = (S.money.incomes || []).filter(e => e.job && e.date >= sk && e.date <= ek), exp = S.money.expenses.filter(e => e.job && e.date >= sk && e.date <= ek);
+  const income = inc.reduce((a,e)=>a+e.amt,0), spent = exp.reduce((a,e)=>a+e.amt,0), byCat = {}, perDay = {};
+  exp.forEach(e => { byCat[e.cat] = (byCat[e.cat]||0) + e.amt; perDay[e.date] = (perDay[e.date]||0) - e.amt; });
+  inc.forEach(e => { perDay[e.date] = (perDay[e.date]||0) + e.amt; });
+  const best = Object.entries(perDay).sort((a,b)=>b[1]-a[1])[0], j = job();
+  let ms = (j.shifts || []).filter(x => x.d >= sk && x.d <= ek).reduce((a,x)=>a + (x.e - x.s), 0);
+  if (j.on && dkey(new Date(j.on)) >= sk && dkey(new Date(j.on)) <= ek) ms += Date.now() - j.on;
+  return {inc, exp, trips:inc.length, income, spent, net:income - spent, byCat, days:Object.keys(perDay).length, best, hours:ms / 36e5};
+}
+/* ================= إعلان الجديد: بيظهر مرة واحدة لكل حد بعد التحديث ================= */
+const NEWS_V = "2026-11-24";
+const newsDue = () => { try { return S && !S.newsSeen?.includes?.(NEWS_V) && localStorage.getItem("nw-news") !== NEWS_V; } catch(e){ return false; } };
+const newsDone = () => { try { localStorage.setItem("nw-news", NEWS_V); } catch(e){} if (S) { S.newsSeen = NEWS_V; save(); } };
+function newsSheet(){
+  newsDone();
+  sheet(`<h2>🆕 الجديد في Nono's World</h2>
+    <ul class="list" style="margin-top:10px">
+      <li class="item"><span class="ic">💼</span><div class="grow"><div class="t">شغلي</div><div class="s">لو بتشتغلي جنب الدراسة، جامعة أو مدرسة: أوبر، توصيل، محل، شركة. سجّلي كل توصيلة ومصاريف البنزين والأكل بدوسة، واعرفي فضل معاكي كام كل يوم وأسبوع وشهر.</div></div></li>
+      <li class="item"><span class="ic">🐷</span><div class="grow"><div class="t">التحويشة في الرئيسية</div><div class="s">حوّشي بدوسة من أول صفحة، وشوفي محوّشة كام.</div></div></li>
+      <li class="item"><span class="ic">💌</span><div class="grow"><div class="t">ابعتي التطبيق لصحابك</div><div class="s">من الإعدادات، بلينك جاهز.</div></div></li>
+      <li class="item"><span class="ic">🔔</span><div class="grow"><div class="t">على الأيفون</div><div class="s">التذكيرات، زي المصاريف والتحويشة، بقت توصل والتطبيق مقفول لو مفعّلة ntfy.</div></div></li>
+    </ul>
+    <button class="btn block" style="margin-top:12px" data-act="news-job">💼 فعّلي شغلي</button>
+    <button class="btn ghost block" style="margin-top:8px" data-act="close">تمام 👍</button>`);
+}
+function jobCard(){
+  if (!jobOn()) return "";
+  const t = dkey(), st = jobStats(t, t), j = job(), trip = jobTrip(), run = j.on ? Math.max(1, Math.round((Date.now() - j.on) / 6e4)) : 0;
+  return `<div class="card job-card">
+    <div class="row between"><h3>💼 شغل النهارده</h3>${trip ? `<button class="mini" data-act="job-shift">${j.on ? `⏹️ خلّصت · ${hm(run)}` : "▶️ بدأت الشغل"}</button>` : ""}</div>
+    ${trip ? `<button class="btn block" style="margin-top:10px" data-act="job-add" data-v="trip">＋ توصيلة</button>` : ""}
+    <div class="chips" style="margin-top:8px">${JOB_EXP.filter(x => trip || (x[0] !== "fuel" && x[0] !== "fix")).map(([k,e,tt]) => `<button type="button" class="chip" data-act="job-add" data-v="${k}">${e} ${tt}</button>`).join("")}</div>
+    <div style="margin-top:10px">${trip
+      ? `<div class="small">${st.trips} توصيلة · دخل <b class="num">${fmt(st.income)}</b> · مصاريف <b class="num">${fmt(st.spent)}</b></div><div class="big num" style="margin-top:4px">${fmt(st.net)} <small>${CUR()} صافي النهارده</small></div>${st.hours >= 0.25 && st.net > 0 ? `<div class="muted small">حوالي <b class="num">${fmt(st.net / st.hours)}</b> ${CUR()} في الساعة</div>` : ""}`
+      : `<div class="small">مصاريف الشغل النهارده <b class="num">${fmt(st.spent)}</b> ${CUR()}</div>`}</div>
+    <button class="mini" style="margin-top:10px" data-act="job-report">📊 النهارده والأسبوع والشهر</button>
+  </div>`;
+}
+function jobAddSheet(k){
+  const trip = k === "trip", m = JOB_EXP.find(x => x[0] === k) || JOB_EXP[4];
+  sheet(`<h2>${trip ? "＋ توصيلة" : m[1] + " " + m[2]}</h2>
+  <form class="form" data-form="job-add"><input type="hidden" id="j-k" value="${k}">
+    <label class="f">${trip ? "التوصيلة دي جابت كام؟" : "دفعتي كام؟"} (${CUR()})<input class="in num" id="j-amt" type="number" inputmode="decimal" enterkeyhint="done" min="1" step="any" required></label>
+    ${k === "other" ? `<label class="f">في إيه؟ (لو حابة)<input class="in" id="j-note" placeholder="زيت، غسيل، شحن…"></label>` : ""}
+    <button class="btn" type="submit">حفظ</button>
+  </form>`, el => { const i = el.querySelector("#j-amt"); if (i) i.focus(); });
+}
+function jobBlock(title, st, kind){
+  const trip = jobTrip(), j = job(), sal = +j.salary || 0;
+  const salFor = kind === "week" ? (j.every === "week" ? sal : sal * 12 / 52) : kind === "month" ? (j.every === "week" ? sal * 52 / 12 : sal) : 0;
+  const cats = Object.entries(st.byCat).sort((a,b)=>b[1]-a[1]).map(([c,v]) => { const C = CATS.find(x=>x.k===c) || {e:"✨", t:c}; return `${C.e} ${C.t} <b class="num">${fmt(v)}</b>`; }).join(" · ");
+  return `<div class="card"><h3>${title}</h3>
+    ${trip ? `<div class="row between" style="margin-top:8px"><span>${st.trips} توصيلة</span><span>دخل <b class="num">${fmt(st.income)}</b></span></div>` : ""}
+    <div class="muted small" style="margin-top:6px">${cats || "مفيش مصاريف شغل"}</div>
+    ${trip ? `<div class="big num" style="margin-top:6px">${fmt(st.net)} <small>${CUR()} صافي</small></div>
+      ${st.trips ? `<div class="muted small">متوسط التوصيلة <b class="num">${fmt(st.income / st.trips)}</b>${st.hours >= 0.25 ? ` · اشتغلتي ${hm(Math.round(st.hours * 60))} · حوالي <b class="num">${fmt(st.net / st.hours)}</b> في الساعة` : ""}${kind !== "day" && st.best ? ` · أحسن يوم ${esc(st.best[0].slice(5))} (<span class="num">${fmt(st.best[1])}</span>)` : ""}</div>` : ""}
+      ${st.income > 0 ? `<div class="small" style="margin-top:6px">المصاريف بتاكل <b class="num">${Math.round(st.spent / st.income * 100)}%</b> من دخل الشغل</div>` : ""}`
+    : `<div class="big num" style="margin-top:6px">${fmt(st.spent)} <small>${CUR()} مصاريف شغل</small></div>
+      ${salFor > 0 ? `<div class="small" style="margin-top:6px"><b class="num">${Math.round(st.spent / salFor * 100)}%</b> من مرتبك راحوا في مصاريف الشغل${st.spent / salFor > 0.3 ? " … كتير شوية، خلّي بالك 👀" : " 👌"}</div>` : kind !== "day" ? `<div class="muted small" style="margin-top:6px">حطّي مرتبك من الإعدادات عشان تعرفي بيروح منه كام في المية</div>` : ""}`}
+  </div>`;
+}
+function jobReportSheet(){
+  const t = dkey(), today = jobStats(t, t), items = today.inc.map(e => ({...e, k:"inc"})).concat(today.exp.map(e => ({...e, k:"exp"}))).sort((a,b)=>(b.t||0)-(a.t||0));
+  sheet(`<h2>💼 الشغل</h2>
+    ${jobBlock("النهارده", today, "day")}
+    ${items.length ? `<div class="card"><h3>تسجيلات النهارده</h3><ul class="list" style="margin-top:8px">${items.map(e => { const C = e.k === "inc" ? {e:"🚗", t:isEN() ? "trip" : "توصيلة"} : (CATS.find(x=>x.k===e.cat) || {e:"✨", t:""});
+      return `<li class="item"><span class="ic">${C.e}</span><div class="grow"><div class="t">${e.k === "inc" ? "+" : "−"}<span class="num">${fmt(e.amt)}</span> ${e.note ? esc(e.note) : C.t}</div>${e.t ? `<div class="s">${new Date(e.t).toLocaleTimeString(isEN() ? "en-US" : "ar-EG", {hour:"numeric", minute:"2-digit"})}</div>` : ""}</div><button class="x" data-act="job-del" data-v="${e.k}:${e.id}" aria-label="امسح">✕</button></li>`; }).join("")}</ul></div>` : ""}
+    ${jobBlock("الأسبوع ده (من السبت)", jobStats(weekStartKey(), t), "week")}
+    ${jobBlock("الشهر ده", jobStats(monthStartKey(), t), "month")}`);
+}
+function jobSettings(){
+  const j = job();
+  return `<div class="card" id="jobSet"><h3>💼 ${stage() === "grad" ? "شغلي" : "وبتشتغلي جنب الدراسة؟"}</h3><p class="muted small" style="margin:4px 0 10px">${stage() === "grad" ? "سجّلي دخل الشغل ومصاريفه، وشوفي بيفضل معاكي كام كل يوم وكل أسبوع وكل شهر." : "عادي تبقي طالبة في الجامعة أو المدرسة وشغالة كمان. سجّلي دخل الشغل ومصاريفه، وشوفي بيفضل معاكي كام كل يوم وكل أسبوع وكل شهر."}</p>
+    <div class="seg"><button type="button" data-act="job-type" data-v="" aria-pressed="${!j.type}">مش بشتغل</button><button type="button" data-act="job-type" data-v="trip" aria-pressed="${j.type==="trip"}">🚗 بالتوصيلة</button><button type="button" data-act="job-type" data-v="salary" aria-pressed="${j.type==="salary"}">📅 بمرتب</button></div>
+    <p class="muted small" style="margin:8px 0 0">${j.type === "trip" ? "أوبر، توصيل طلبات، فريلانس: كل توصيلة بتسجّليها لوحدها، والبنزين والأكل مصاريف." : j.type === "salary" ? "شركة، محل، سوبر ماركت: سجّلي أكل ومواصلات الشغل، والبرنامج يقولك بياخدوا كام من مرتبك." : ""}</p>
+    ${j.type === "salary" ? `<form class="form" data-form="job-sal" style="margin-top:10px"><label class="f">المرتب (${CUR()})<input class="in num" id="js-amt" type="number" inputmode="decimal" min="0" value="${+j.salary || ""}" placeholder="4000"></label>
+      <div class="seg"><button type="button" data-act="job-every" data-v="month" aria-pressed="${(j.every||"month")==="month"}">كل شهر</button><button type="button" data-act="job-every" data-v="week" aria-pressed="${j.every==="week"}">كل أسبوع</button></div>
+      <button class="btn" type="submit">حفظ</button></form>` : ""}
+  </div>`;
 }
 // التحويشة في الرئيسية: الرصيد وزرار تحوّشي على طول
 function savMini(){
@@ -2512,6 +2609,15 @@ document.addEventListener("click", e => {
     case "share-app": shareApp(); break;
     case "rl-hide": { const h = admHidden(); if (h.has(v)) h.delete(v); else h.add(v); try { localStorage.setItem("nw-adm-hide", JSON.stringify([...h].slice(-2000))); } catch(e){} render(); break; }
     case "rl-show": U.showHidden = !U.showHidden; render(); break;
+    case "job-add": jobAddSheet(v); break;
+    case "news-job": closeSheet(); go("settings"); setTimeout(() => { const c = document.getElementById("jobSet"); if (c) c.scrollIntoView({behavior:"smooth", block:"center"}); }, 150); break;
+    case "job-report": jobReportSheet(); break;
+    case "job-shift": { const j = S.money.job = S.money.job || {}; if (j.on){ j.shifts = (j.shifts || []).concat({s:j.on, e:Date.now(), d:dkey(new Date(j.on))}).slice(-400); const m = Math.round((Date.now() - j.on) / 6e4); j.on = null; toast("اشتغلتي " + hm(Math.max(1, m)) + " النهارده 💪"); } else { j.on = Date.now(); toast("بالتوفيق 🚗 دوسي خلّصت لما تخلّصي"); } save(); render(); break; }
+    case "job-del": { const [k, id] = v.split(":"); if (k === "inc") S.money.incomes = (S.money.incomes || []).filter(e => e.id !== id); else S.money.expenses = S.money.expenses.filter(e => e.id !== id); save(); render(); jobReportSheet(); break; }
+    case "job-type": { const j = S.money.job = S.money.job || {}; j.type = v || null;
+      if (v && !S.jobRem && S.alarm && Array.isArray(S.alarm.reminders)) { S.jobRem = 1; if (!S.alarm.reminders.some(r => /الشغل/.test(r.text || ""))) { S.alarm.reminders.push({id:uid(), time:"23:00", text:isEN() ? "💼 Closed your work day? See what you kept today" : isMale() ? "💼 قفلت يوم الشغل؟ شوف فضل معاك كام النهارده" : "💼 قفلتي يوم الشغل؟ شوفي فضل معاكي كام النهارده"}); S.alarm.reminders.sort((a,b)=>a.time<b.time?-1:1); } }
+      save(); render(); if (v) toast("تمام ✅ هتلاقي كارت الشغل في الرئيسية"); break; }
+    case "job-every": { const j = S.money.job = S.money.job || {}; j.every = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break; }
     case "adm-copen": { const A = U.admin, u = A.users.find(x=>x.id===v); if (!u || !u.partner) break; const cid = coupleId(u.id, u.partner), o = A.users.find(x=>x.id===u.partner) || {};
       A.gcouple = {name:`💞 ${u.name||""} و ${o.name||"?"}`, members:[u.id, u.partner]}; A.gback = v; A.gsel = "c:" + cid; A.gpath = `couples/${cid}/msgs`; A.gmsgs = null; render();
       fb.list(A.gpath, 2000, "ts").then(l=>{ A.gmsgs = l; }).catch(()=>{ A.gmsgs = []; toast("مقدرتش أحمّل الرسايل"); }).then(()=>{ if (A.gsel === "c:" + cid) render(); }); window.scrollTo({top:0}); break; }
@@ -2563,6 +2669,7 @@ document.addEventListener("click", e => {
     case "adm-rmmsg": { const r = U.admin.reports.find(x=>x.id===v); if (!r) break; (r.path ? fb.del(r.path) : Promise.resolve()).then(()=>fb.del(`reports/${v}`)).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); toast("اتمسحت 🗑️"); }); break; }
     case "adm-dismiss": { fb.del(`reports/${v}`).then(()=>{ U.admin.reports = U.admin.reports.filter(x=>x.id!==v); render(); }); break; }
     case "authmode": U.authMode = U.authMode === "login" ? "signup" : "login"; render(); break;
+    case "ajob": U.job = v || null; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "astage": U.stage = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "arel": U.rel = v; b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.v===v)); break;
     case "set-lang": { const from = LANG(); try { localStorage.setItem("nw-lang", v); } catch(e){} if (S) { if (S.user && from !== v) swapDefaultMsgs(S, S.user.gender, S.user.religion, from, v); S.lang = v; S._love = null; S._pmsg = null; save(); } closeSheet(); render(); break; }
@@ -2672,6 +2779,14 @@ document.addEventListener("submit", e => {
       if (amt > savTotal()) { toast("مش هينفع، اللي في التحويشة " + fmt(savTotal())); return; }
       savTake(amt); break;
     }
+    case "job-add": {
+      const amt = parseFloat(val("j-amt")), k = val("j-k"); if (!(amt > 0)) return;
+      if (k === "trip") S.money.incomes = (S.money.incomes || []).concat({id:uid(), amt, note:"", date:dkey(), job:"trip", t:Date.now()});
+      else S.money.expenses.push({id:uid(), amt, cat:k, note:val("j-note"), date:dkey(), job:1, t:Date.now()});
+      save(); closeSheet(); render(); const st = jobStats(dkey(), dkey());
+      toast(jobTrip() ? "اتسجلت ✅ صافي النهارده " + fmt(st.net) : "اتسجلت ✅ مصاريف الشغل النهارده " + fmt(st.spent)); break;
+    }
+    case "job-sal": { const a = parseFloat(val("js-amt")); const j = S.money.job = S.money.job || {}; j.salary = a > 0 ? a : 0; j.every = j.every || "month"; save(); render(); toast("اتحفظ ✅"); break; }
     case "inc": {
       const amt = parseFloat(val("i-amt")); if (!(amt > 0)) return;
       S.money.incomes = (S.money.incomes || []).concat({id:uid(), amt, note:val("i-note"), date:dkey()}); save(); closeSheet(); render();
