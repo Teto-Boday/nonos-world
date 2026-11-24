@@ -699,6 +699,8 @@ function soloReply(text){
 const coupleId = (a, b) => [a, b].sort().join("_");
 const SEEN = {him:null, mate:null, groups:null, mine:new Set(), tried:new Set()};
 let UID = null, ME = null, IS_ADMIN = false, P = null, unsubs = [], punsubs = [], pushTimer = null, lastPushed = {}, lastDiary = new Map(), signingUp = null;
+// PRE: the account opened straight from the copy on the device, before Firebase finished checking the sign-in online (that check can take seconds on mobile data)
+let PRE = null, bootAt = 0, diaryReady = false;
 const secData = (st, sec) => { const o = {}; SEC[sec].forEach(k => o[k] = st[k] === undefined ? null : st[k]); return o; };
 function save(){
   if (!CLOUD){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} return; }
@@ -715,6 +717,7 @@ function pushNow(){
   const seen = new Set();
   S.diary.forEach(e => {
     seen.add(e.id); if (e.pending) return;
+    if (!diaryReady && (e.ts||0) < bootAt) return; // the cloud list isn't here yet: only send what was written since opening, not the whole diary again
     const j = JSON.stringify(e);
     if (lastDiary.get(e.id) !== j){ lastDiary.set(e.id, j); fb.set(`u/${UID}/chat/${e.id}`, e, false).then(()=>moderate(e, `u/${UID}/chat/${e.id}`, UID)).catch(err => console.warn("chat", err)); }
   });
@@ -729,11 +732,11 @@ function moderate(e, path, owner){
   if (BAD.some(w => n.includes(norm(w)))){ e.flagged = true; fb.add("reports", {kind:"auto", path, owner, author: e.from==="him" ? (ME.partner||null) : owner, by: UID, text: e.text}).catch(()=>{}); }
 }
 function stopAll(list){ list.forEach(u => { try{u();}catch(e){} }); list.length = 0; }
-function forgetAccount(id){ try { [KEY + ":" + id, KEY + ":me:" + id, "nw-name", "nw-welcome"].forEach(k => localStorage.removeItem(k)); } catch(e){} }
+function forgetAccount(id){ try { [KEY + ":" + id, KEY + ":me:" + id, "nw-name", "nw-welcome", "nw-uid"].forEach(k => localStorage.removeItem(k)); } catch(e){} }
 async function boot(u){
-  stopAll(unsubs); stopAll(punsubs); P = null; ME = null; IS_ADMIN = false; lastPushed = {}; lastDiary = new Map();
-  if (!u){ UID = null; S = null; render(); return; }
-  UID = u.uid;
+  stopAll(unsubs); stopAll(punsubs); P = null; ME = null; IS_ADMIN = false; lastPushed = {}; lastDiary = new Map(); bootAt = Date.now(); diaryReady = false;
+  if (!u){ UID = null; S = null; try { localStorage.removeItem("nw-uid"); } catch(e){} render(); return; }
+  UID = u.uid; try { localStorage.setItem("nw-uid", UID); } catch(e){}
   if (signingUp) { try { await signingUp; } catch(e){} }
   const meKey = KEY + ":me:" + UID;
   let cachedS = null, cachedME = null;
@@ -775,6 +778,7 @@ async function boot(u){
     IS_ADMIN = !!adm; const st = blank();
     Object.keys(SEC).forEach((sec, i) => { const d = secs[i]; if (d) Object.assign(st, d); });
     apply(meDoc, st, true);
+    try { localStorage.setItem(KEY + ":" + UID, JSON.stringify(S)); } catch(e){} // keep a copy so next time it opens straight away
   }
   SEEN.him = null; SEEN.mate = null; SEEN.groups = null;
   unsubs.push(fb.listenCol(`u/${UID}/chat`, list => {
@@ -782,8 +786,10 @@ async function boot(u){
     if (SEEN.him) him.filter(e => !SEEN.him.has(e.id)).forEach(e => { if (!(S.tab === "diary" && document.visibilityState === "visible")) notice(`💌 ${P && P.user ? P.user.name : "شريكك"}`, e.text || ""); });
     SEEN.him = new Set(him.map(e => e.id));
     const local = new Map(S.diary.filter(e=>e.pending).map(e=>[e.id,e]));
+    const fresh = diaryReady ? [] : S.diary.filter(e => !e.pending && (e.ts||0) >= bootAt && !list.some(x => x.id === e.id));
     S.diary = list.map(e => { const {at, ...rest} = e; lastDiary.set(e.id, JSON.stringify(rest)); return rest; });
     local.forEach((e,id) => { if (!S.diary.some(x=>x.id===id)) S.diary.push(e); });
+    fresh.forEach(e => S.diary.push(e)); if (!diaryReady){ diaryReady = true; if (fresh.length) save(); }
     if (S.tab === "diary" && U.dmode === "me" && !$("#layer").innerHTML){ keepTyping(render); scrollChat(); }
   }));
   unsubs.push(fb.listen(`u/${UID}/sec/msgs`, d => { if (!d) return; const j = JSON.stringify(secData(Object.assign({}, S, d), "msgs")); if (j !== lastPushed.msgs){ S.msgs = d.msgs || S.msgs; S.rules = d.rules || []; lastPushed.msgs = j; } }));
@@ -3348,8 +3354,17 @@ addEventListener("resize", () => spotPlace());
 if (CLOUD){
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
   S = null; render();
-  const t0 = Date.now();
-  fb.onUser(u => { const wait = u ? Math.max(0, 700 - (Date.now() - t0)) : 0; setTimeout(() => { U.booting = false; boot(u).catch(e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); }); }, wait); });
+  const t0 = Date.now(), fail = e => { console.error(e); toast("حصلت مشكلة في التحميل، جرّبي تاني"); };
+  // Firebase checks the sign-in online before it answers (slow on mobile data), so if this device already has the account saved, open it right away and let Firebase confirm in the background
+  let pre = null, preT = null;
+  try { pre = localStorage.getItem("nw-uid"); if (pre && !(localStorage.getItem(KEY + ":" + pre) && localStorage.getItem(KEY + ":me:" + pre))) pre = null; } catch(e){ pre = null; }
+  if (pre) preT = setTimeout(() => { preT = null; PRE = pre; U.booting = false; boot({uid: pre}).catch(fail); }, 600);
+  fb.onUser(u => {
+    if (preT){ clearTimeout(preT); preT = null; }
+    if (PRE && u && u.uid === PRE){ PRE = null; return; } // confirmed: it's already open
+    PRE = null;
+    const wait = u ? Math.max(0, 600 - (Date.now() - t0)) : 0; setTimeout(() => { U.booting = false; boot(u).catch(fail); }, wait);
+  });
 } else {
   S = normalize(load());
   if (S.vacation.on && S.vacation.until && dkey() > S.vacation.until) S.vacation = {on:false};
