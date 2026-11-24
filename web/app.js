@@ -499,6 +499,9 @@ const SOLO_TOPICS = [
   ["d_story",  ["عايزه احكي","عايز احكي","هحكيلك","احكيلك","هقولك حاجه","want to talk","let me tell you","i need to talk"]],
 ];
 const SOLO_MORE_F = {
+  s_laugh:["😂😂 إيه اللي ضحكك؟ احكيلي","ضحكتك دي حلوة 😄","هههه 😄 دايمًا يا رب"],
+  s_tease:["😄 أنا؟ ده أنا غلبان خالص","هههه ماشي 😅 احكيلي بقى"],
+  s_gender:["آسفين 🙈 الحساب ده متسجّل إنه بنت. لو إنت ولد، غيّرها من ⚙️ الإعدادات من «أنا» واختار «شاب 🧢»، وهكلمك صح"],
   s_hello:["أهلًا 👋 عاملة إيه النهارده؟","هاي 🤍 يومك ماشي إزاي؟","أهلًا بيكي 🌸 احكيلي"],
   d_greet:["الحمد لله تمام 🤍 وإنتي عاملة إيه؟","تمام طول ما إنتي بتحكيلي 😄 وإنتي أخبارك إيه؟"],
   s_app:["ميرسي 🤍 مبسوطة إنه عاجبك","ده بيفرّحني بجد 😄 وهيبقى أحلى كمان","حبيبتي 🌸 لو فيه حاجة نفسك تتضاف قوليلنا من الشكاوي والاقتراحات"],
@@ -543,6 +546,9 @@ const SOLO_MORE_F = {
   s_more:["وبعدين؟ كمّلي 👂🏽","وإنتي حسّيتي بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
 };
 const SOLO_MORE_M = {
+  s_laugh:["😂😂 إيه اللي ضحكك؟ احكيلي","ضحكتك حلوة 😄","هههه 😄 دايمًا يا رب"],
+  s_tease:["😄 أنا؟ ده أنا غلبان خالص","هههه ماشي 😅 احكيلي بقى"],
+  s_gender:["آسفين 🙈 الحساب ده متسجّل إنه ولد. لو \uE000إنتي بنت، غيّريها من ⚙️ الإعدادات من «أنا» واختاري «بنت 🎀»\uE001، وهكلمك صح"],
   s_hello:["أهلًا 👋 عامل إيه النهارده؟","هاي 🤍 يومك ماشي إزاي؟","أهلًا بيك 🌸 احكيلي"],
   d_greet:["الحمد لله تمام 🤍 وإنت عامل إيه؟","تمام طول ما إنت بتحكيلي 😄 وإنت أخبارك إيه؟"],
   s_app:["ميرسي 🤍 مبسوط إنه عاجبك","ده بيفرّحني بجد 😄 وهيبقى أحلى كمان","حبيبي 🌸 لو فيه حاجة نفسك تتضاف قولّنا من الشكاوي والاقتراحات"],
@@ -587,6 +593,9 @@ const SOLO_MORE_M = {
   s_more:["وبعدين؟ كمّل 👂🏽","وإنت حسّيت بإيه ساعتها؟","احكيلي أكتر","فهمتك. وإيه اللي حصل بعد كده؟"],
 };
 const SOLO_MORE_EN = {
+  s_laugh:["😂😂 What made you laugh? Tell me","Love that laugh 😄","Haha 😄 always"],
+  s_tease:["😄 Me? I'm innocent","Haha okay 😅 tell me more"],
+  s_gender:["Sorry 🙈 this account is set up the other way. Change it in ⚙️ Settings under \"Me\" and I'll talk to you the right way"],
   s_hello:["Hi 👋 how's your day?","Hey 🤍 how are you doing?","Hello 🌸 tell me"],
   d_greet:["All good 🤍 how about you?","Fine as long as you're writing to me 😄 How are you?"],
   s_app:["Thank you 🤍 so glad you like it","That makes me happy 😄 It'll get even better","If there's something you'd like added, tell us in Feedback 🌸"],
@@ -635,6 +644,11 @@ let lastSolo = "";
 function soloTopic(text){
   // "واوععع" = "واوع", "هاااي" = "هاي"
   const n = " " + norm(String(text).toLowerCase()).replace(/[^\p{L}\p{N}']+/gu, " ").replace(/(\p{L})\1{2,}/gu, "$1").trim() + " ";
+  // ضحك: "هههه"، "هعععع"، "😂"
+  if (/^ (?:ه|هه|هع|ههع|هاه|هاها|هاهاها|ها ها|ها|خخ|كخخ|lol|lmao|haha|hahaha|hah|xd)(?: (?:ه|هع|ها|lol|haha))* $/.test(n) || (/[😂🤣😹😆😅]/u.test(text) && n.trim().split(" ").length <= 3)) return "s_laugh";
+  // لو الحساب متسجّل بالنوع الغلط
+  if (isMale() ? / (?:انا بنت|انا مش ولد|مش ولد|بقيت ولد|انا بنوته) /.test(n) : / (?:بقيتي بنت|بقيت بنت|انا ولد|انا شاب|انا راجل|انا مش بنت|مش بنت|بتكلميني كانى بنت|بتكلميني بنت) /.test(n)) return "s_gender";
+  if (/ (?:نوتي|naughty|رخم|رخمه|غلس|غلسه|بايخ|بايخه) /.test(n)) return "s_tease";
   // كلام عن التطبيق نفسه
   if (/ (?:ال)?(?:اب|ابلكيشن|ابليكيشن|برنامج|تطبيق|موقع|نونو|app|nono)/.test(n) && / (?:حلو|حلوه|جميل|جميله|تحفه|عسل|روعه|جامد|خطير|nice|great|amazing|cool|love|awesome)/.test(n)) return "s_app";
   if (/ (?:اتصلح|اتصلحت|اتظبط|اتظبطت|بقي شغال|بقا شغال|اشتغل خلاص|fixed|works now)/.test(n)) return "s_fixed";
@@ -652,7 +666,7 @@ function soloTopic(text){
   for (const [cat, words] of SOLO_TOPICS){ const c = words.filter(hit).length; if (cat === "s_crisis"){ if (c && !n.includes(" الضحك ") && !/ laugh/.test(n)) return cat; continue; } if (c > top){ top = c; best = cat; } }
   if (best) return best;
   // a one-word answer like "yes", "no", "ok": these are too short to search inside other words
-  if (/^ (?:لا|لأ|لاء|لا خلاص|no|nope|nah) $/.test(n)) return "s_no";
+  if (/^ (?:لا|لأ|لاء|لا خلاص|نو|no|nope|nah) $/.test(n)) return "s_no";
   if (/^ (?:اه|ايوه|ايوا|اكيد|طبعا|yes|yeah|yep|sure) $/.test(n)) return "s_yes";
   if (/^ (?:ممكن|يمكن|maybe) $/.test(n)) return "s_yesno";
   if (/[?؟]/.test(text)) return "s_q";
@@ -2003,6 +2017,8 @@ function settingsView(){
     <div class="seg">${[["auto","زي الموبايل"],["12","12 ساعة (2:30 م)"],["24","24 ساعة (14:30)"]].map(([k,t])=>`<button data-act="clock" data-v="${k}" aria-pressed="${(S.clock||"auto")===k}">${t}</button>`).join("")}</div></div>
   <div class="card"><h3>📍 بتدرسي فين؟</h3><p class="muted small" style="margin:4px 0 10px">علشان نظبط المذاكرة والجدول على حسابك.</p>
     <div class="seg"><button data-act="set-stage" data-v="uni" aria-pressed="${stage()==="uni"}">جامعة 🎓</button><button data-act="set-stage" data-v="school" aria-pressed="${stage()==="school"}">مدرسة 🎒</button><button data-act="set-stage" data-v="grad" aria-pressed="${stage()==="grad"}">مش بدرس 💼</button></div></div>
+  <div class="card"><h3>🙋 أنا</h3><p class="muted small" style="margin:4px 0 10px">علشان التطبيق يكلمك صح.</p>
+    <div class="seg"><button data-act="set-gender" data-v="f" aria-pressed="${!isMale()}">بنت 🎀</button><button data-act="set-gender" data-v="m" aria-pressed="${isMale()}">شاب 🧢</button></div></div>
   ${jobSettings()}
   ${partnerCard()}
   ${CLOUD && ME ? `<div class="card"><h3>🔔 الإشعارات والتطبيق مقفول</h3><p class="muted small" style="margin:4px 0 0">${isEN() ? "Messages from your partner, groups and alerts reach you even when the app is fully closed." : `رسايل ${ME.gender==="m" ? "\uE000شريكتك\uE001" : "شريكك"} والجروبات والتنبيهات توصلك حتى لو التطبيق مقفول خالص.`}</p>
@@ -2744,6 +2760,9 @@ document.addEventListener("click", e => {
     case "work-done": { const w = (S.work||[]).find(x=>x.id===v); if (!w) break; w.done = !w.done; save(); render(); if (w.done) toast(L.done + " · " + pick(MS("done"))); break; }
     case "work-del": S.work = (S.work||[]).filter(x=>x.id!==v); save(); render(); break;
     case "work-clear": S.work = (S.work||[]).filter(x=>!x.done); save(); render(); break;
+    case "set-gender": { const old = S.user.gender === "m" ? "m" : "f"; if (v === old) break; const rel = S.user.religion || "muslim";
+      const A = defMsgs(old, rel), B = defMsgs(v, rel); S.msgs = S.msgs || {}; for (const g in B) if (!S.msgs[g] || JSON.stringify(S.msgs[g]) === JSON.stringify(A[g])) S.msgs[g] = B[g];
+      S.user.gender = v; if (CLOUD && ME) saveMe({gender:v}); save(); render(); toast(v === "m" ? "تمام ✅ هكلمك كشاب من دلوقتي" : "تمام ✅ هكلمك كبنت من دلوقتي"); break; }
     case "set-stage": S.stage = v; save(); render(); toast("اتظبط ✅"); break;
     case "set-rel": { if (!CLOUD) { S.user.religion = v; render(); break; } saveMe({religion:v}); S.user.religion = v; render(); toast("اتحفظ ✅"); break; }
     case "agender": { const keepVals = ["a-name","a-user","a-pass"].map(id => (document.getElementById(id)||{}).value || ""); U.ag = v; render(); ["a-name","a-user","a-pass"].forEach((id,i) => { const el = document.getElementById(id); if (el) el.value = keepVals[i]; }); break; }
