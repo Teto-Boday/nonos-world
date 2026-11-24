@@ -501,6 +501,7 @@ const SOLO_TOPICS = [
 const SOLO_MORE_F = {
   s_laugh:["😂😂 إيه اللي ضحكك؟ احكيلي","ضحكتك دي حلوة 😄","هههه 😄 دايمًا يا رب"],
   s_tease:["😄 أنا؟ ده أنا غلبان خالص","هههه ماشي 😅 احكيلي بقى"],
+  s_appbad:["ليه يا حبيبتي بس بتقولي كده؟ 🥺 إيه اللي مضايقك فيه؟ قوليلي وأنا أصلّحه","ليه بس كده؟ 🥺 قوليلي إيه اللي مش عاجبك وهظبطه"],
   s_gender:["آسفين 🙈 الحساب ده متسجّل إنه بنت. لو إنت ولد، غيّرها من ⚙️ الإعدادات من «أنا» واختار «شاب 🧢»، وهكلمك صح"],
   s_hello:["أهلًا 👋 عاملة إيه النهارده؟","هاي 🤍 يومك ماشي إزاي؟","أهلًا بيكي 🌸 احكيلي"],
   d_greet:["الحمد لله تمام 🤍 وإنتي عاملة إيه؟","تمام طول ما إنتي بتحكيلي 😄 وإنتي أخبارك إيه؟"],
@@ -548,6 +549,7 @@ const SOLO_MORE_F = {
 const SOLO_MORE_M = {
   s_laugh:["😂😂 إيه اللي ضحكك؟ احكيلي","ضحكتك حلوة 😄","هههه 😄 دايمًا يا رب"],
   s_tease:["😄 أنا؟ ده أنا غلبان خالص","هههه ماشي 😅 احكيلي بقى"],
+  s_appbad:["ليه يا حبيبي بس بتقول كده؟ 🥺 إيه اللي مضايقك فيه؟ قولّي وأنا أصلّحه","ليه بس كده؟ 🥺 قولّي إيه اللي مش عاجبك وهظبطه"],
   s_gender:["آسفين 🙈 الحساب ده متسجّل إنه ولد. لو \uE000إنتي بنت، غيّريها من ⚙️ الإعدادات من «أنا» واختاري «بنت 🎀»\uE001، وهكلمك صح"],
   s_hello:["أهلًا 👋 عامل إيه النهارده؟","هاي 🤍 يومك ماشي إزاي؟","أهلًا بيك 🌸 احكيلي"],
   d_greet:["الحمد لله تمام 🤍 وإنت عامل إيه؟","تمام طول ما إنت بتحكيلي 😄 وإنت أخبارك إيه؟"],
@@ -595,6 +597,7 @@ const SOLO_MORE_M = {
 const SOLO_MORE_EN = {
   s_laugh:["😂😂 What made you laugh? Tell me","Love that laugh 😄","Haha 😄 always"],
   s_tease:["😄 Me? I'm innocent","Haha okay 😅 tell me more"],
+  s_appbad:["Why would you say that? 🥺 What's bothering you about it? Tell me and I'll fix it","Aw, why? 🥺 Tell me what you don't like and I'll sort it out"],
   s_gender:["Sorry 🙈 this account is set up the other way. Change it in ⚙️ Settings under \"Me\" and I'll talk to you the right way"],
   s_hello:["Hi 👋 how's your day?","Hey 🤍 how are you doing?","Hello 🌸 tell me"],
   d_greet:["All good 🤍 how about you?","Fine as long as you're writing to me 😄 How are you?"],
@@ -648,6 +651,8 @@ function soloTopic(text){
   if (/^ (?:ه|هه|هع|ههع|هاه|هاها|هاهاها|ها ها|ها|خخ|كخخ|lol|lmao|haha|hahaha|hah|xd)(?: (?:ه|هع|ها|lol|haha))* $/.test(n) || (/[😂🤣😹😆😅]/u.test(text) && n.trim().split(" ").length <= 3)) return "s_laugh";
   // لو الحساب متسجّل بالنوع الغلط
   if (isMale() ? / (?:انا بنت|انا مش ولد|مش ولد|بقيت ولد|انا بنوته) /.test(n) : / (?:بقيتي بنت|بقيت بنت|انا ولد|انا شاب|انا راجل|انا مش بنت|مش بنت|بتكلميني كانى بنت|بتكلميني بنت) /.test(n)) return "s_gender";
+  // كلام وحش عن التطبيق نفسه: نسأله ليه
+  if (/ (?:ال)?(?:اب|ابلكيشن|ابليكيشن|برنامج|تطبيق|موقع|app) /.test(n) && / (?:نوتي|naughty|وحش|وحشه|بايخ|بايخه|زفت|رخم|رخمه|سيء|سئ|وحش اوي|فاشل|مش حلو|مش حلوه|مش عاجبني|ممل|bad|boring|sucks) /.test(n)) return "s_appbad";
   if (/ (?:نوتي|naughty|رخم|رخمه|غلس|غلسه|بايخ|بايخه) /.test(n)) return "s_tease";
   // كلام عن التطبيق نفسه
   if (/ (?:ال)?(?:اب|ابلكيشن|ابليكيشن|برنامج|تطبيق|موقع|نونو|app|nono)/.test(n) && / (?:حلو|حلوه|جميل|جميله|تحفه|عسل|روعه|جامد|خطير|nice|great|amazing|cool|love|awesome)/.test(n)) return "s_app";
