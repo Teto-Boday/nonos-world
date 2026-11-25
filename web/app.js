@@ -3093,7 +3093,7 @@ function azkarSheet(kind){
 const HADITH = [
   ["سُئل النبي ﷺ: أي العمل أحب إلى الله؟ قال: «الصلاة على وقتها»", "متفق عليه"],
   ["«أرأيتم لو أن نهرًا بباب أحدكم يغتسل فيه كل يوم خمسًا، هل يبقى من درنه شيء؟» قالوا: لا، قال: «فذلك مثل الصلوات الخمس، يمحو الله بهن الخطايا»", "متفق عليه"],
-  ["«الصلوات الخمس، والجمعة إلى الجمعة، كفارة لما بينهن ما لم تُغشَ الكبائر»", "رواه مسلم"],
+  ["«الصلوات الخمس، والجمعة إلى الجمعة، كفارة لما بينهن ما لم تُغشَ الكبائر»", "رواه مسلم", null, "fri"],
   ["«أقرب ما يكون العبد من ربه وهو ساجد، فأكثروا الدعاء»", "رواه مسلم"],
   ["«من صلى البردين دخل الجنة» (الفجر والعصر)", "متفق عليه", ["fajr","asr"]],
   ["«من صلى الصبح فهو في ذمة الله»", "رواه مسلم", ["fajr"]],
@@ -3114,8 +3114,17 @@ const HADITH_SABR = [
   ["«ما من مسلم يصيبه أذى، مرض فما سواه، إلا حطّ الله به سيئاته كما تحطّ الشجرة ورقها»", "متفق عليه"]
 ];
 const sabrAt = n => { const [t, src] = HADITH_SABR[((n % HADITH_SABR.length) + HADITH_SABR.length) % HADITH_SABR.length]; return `${t} (${src})`; };
-// a hadith about a specific prayer (Fajr, Asr, Isha) only shows with that prayer; the rest fit any time
-const hadithAt = (n, p) => { const L = HADITH.filter(h => p ? !h[2] || h[2].includes(p) : !h[2]); const [t, src] = L[((n % L.length) + L.length) % L.length]; return `${t} (${src})`; };
+// a hadith about a specific prayer (Fajr, Asr, Isha) only shows with that prayer; the one that mentions Friday only on Fridays (on other days people read it as "today is Friday"); the rest fit any time
+const hOK = (h, p, fri) => (p ? !h[2] || h[2].includes(p) : !h[2]) && (h[3] !== "fri" || fri);
+const hTxt = h => `${h[0]} (${h[1]})`, hMod = (n, L) => ((n % L) + L) % L;
+const hadithAt = (n, p, d = new Date()) => { const L = HADITH.filter(h => hOK(h, p, d.getDay() === 5)); return hTxt(L[hMod(n, L.length)]); };
+// one day's hadiths: a different one for each prayer (and then for each reminder), so the same hadith doesn't come twice in a day
+function dayHadiths(d){
+  const dn = Math.floor(d.getTime() / 864e5), fri = d.getDay() === 5, used = new Set();
+  const pick = (n, p) => { const L = HADITH.filter(h => hOK(h, p, fri)); for (let j = 0; j < L.length; j++){ const h = L[hMod(n + j, L.length)]; if (!used.has(h)){ used.add(h); return hTxt(h); } } return hTxt(L[hMod(n, L.length)]); };
+  const ad = PRAYERS.map(([p], i) => pick(dn * 5 + i, p));
+  return {ad, pr: PRAYERS.map(([p], i) => pick(dn * 5 + i + 3, p))};
+}
 function prayerEvents(from, to){
   const out = [], male = isMale(), G = t => isEN() ? t : gx(t, male);
   for (let day = new Date(from); day.getTime() <= to + 864e5; day = addDays(day, 1)){
@@ -3123,10 +3132,10 @@ function prayerEvents(from, to){
     const period = S.user.gender !== "m" && cycleOn(k);
     const add = (key, at, title, body, kind) => { const ms = at.getTime(); if (ms > from && ms <= to) out.push({key, at:ms, title, body, kind}); };
     if (isMuslim() && S.pray && S.pray.on && !period){
-      const dn = Math.floor(d.getTime() / 864e5);
+      const H = dayHadiths(d);
       PRAYERS.forEach(([p, n], i) => {
-        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, hadithAt(dn * 5 + i, p), "adhan");
-        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍 لسه فيه وقت`), hadithAt(dn * 5 + i + 3, p), "remind");
+        add(`ad-${k}-${p}`, t[p], `🕌 حان الآن موعد صلاة ${n}`, H.ad[i], "adhan");
+        if (S.pray.remind && !(S.prayers[k] || {})[p]) add(`pr-${k}-${p}`, new Date(t[p].getTime() + 25 * 6e4), G(`صلّيتي ${n}؟ 🤍 لسه فيه وقت`), H.pr[i], "remind");
       });
     }
     if (isMuslim() && S.pray && S.pray.on && period){
